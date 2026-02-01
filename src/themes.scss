@@ -1,0 +1,11 @@
+// Theme wrapper with CSS variables for dynamic switching
+[data-theme="united"] {
+  @import "./scss/united-variables";
+  @import "bootstrap/scss/bootstrap";
+}
+
+[data-theme="solar"] {
+  @import "./scss/variables";
+  @import "bootstrap/scss/bootstrap";
+  @import "./scss/bootswatch";
+}
