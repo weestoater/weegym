@@ -1,0 +1,2 @@
+# weegym
+gym logging app
