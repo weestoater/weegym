@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import WorkoutSession from "./pages/WorkoutSession";
 import History from "./pages/History";
 import Programme from "./pages/Programme";
+import ActiveWellbeing from "./pages/ActiveWellbeing";
 import Settings from "./pages/Settings";
 
 function NavigationBar() {
@@ -18,6 +19,7 @@ function NavigationBar() {
   const navItems = [
     { path: "/", icon: "bi-house-door", label: "Home" },
     { path: "/workout", icon: "bi-play-circle", label: "Workout" },
+    { path: "/wellbeing", icon: "bi-activity", label: "Wellbeing" },
     { path: "/history", icon: "bi-clock-history", label: "History" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
@@ -90,6 +92,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/workout" element={<WorkoutSession />} />
+            <Route path="/wellbeing" element={<ActiveWellbeing />} />
             <Route path="/history" element={<History />} />
             <Route path="/programme" element={<Programme />} />
             <Route path="/settings" element={<Settings />} />

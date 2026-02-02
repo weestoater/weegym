@@ -13,7 +13,7 @@ function Settings() {
       defaultRestTime: 90,
       shortRestTime: 60,
       longRestTime: 120,
-      theme: "solar",
+      theme: "united",
     };
   });
 
@@ -32,7 +32,7 @@ function Settings() {
       defaultRestTime: 90,
       shortRestTime: 60,
       longRestTime: 120,
-      theme: "solar",
+      theme: "united",
     };
     setSettings(defaultSettings);
     localStorage.setItem("gymSettings", JSON.stringify(defaultSettings));
@@ -57,30 +57,16 @@ function Settings() {
         </div>
         <div className="card-body">
           <p className="text-muted small mb-3">
-            Choose your preferred color theme. The app will reload to apply
-            changes.
+            Currently using the United theme.
           </p>
-          <div className="d-grid gap-2">
-            <button
-              className={`btn ${settings.theme === "solar" ? "btn-primary" : "btn-outline-primary"}`}
-              onClick={() => setSettings({ ...settings, theme: "solar" })}
-            >
-              <i className="bi bi-sun me-2"></i>
-              <strong>Solar</strong>
-              <small className="d-block text-muted">
-                Dark theme with orange accents
-              </small>
-            </button>
-            <button
-              className={`btn ${settings.theme === "united" ? "btn-primary" : "btn-outline-primary"}`}
-              onClick={() => setSettings({ ...settings, theme: "united" })}
-            >
-              <i className="bi bi-ubuntu me-2"></i>
-              <strong>United</strong>
-              <small className="d-block text-muted">
+          <div className="text-center py-3">
+            <i className="bi bi-ubuntu fs-1 text-primary"></i>
+            <div className="mt-2">
+              <strong>United Theme</strong>
+              <div className="small text-muted">
                 Light theme with purple accents
-              </small>
-            </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
