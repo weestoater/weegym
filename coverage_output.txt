@@ -1,0 +1,146 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mD:/git/aws/weegym[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [31m❯[39m src/test/database.test.js [2m([22m[2m10 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 46[2mms[22m[39m
+     [32m✓[39m has saveWorkout function[32m 2[2mms[22m[39m
+     [32m✓[39m has getWorkouts function[32m 0[2mms[22m[39m
+     [32m✓[39m has deleteWorkout function[32m 0[2mms[22m[39m
+     [32m✓[39m has saveActiveWellbeingSession function[32m 0[2mms[22m[39m
+     [32m✓[39m has getActiveWellbeingSessions function[32m 0[2mms[22m[39m
+     [32m✓[39m has deleteActiveWellbeingSession function[32m 0[2mms[22m[39m
+     [32m✓[39m has getUserSettings function[32m 0[2mms[22m[39m
+     [32m✓[39m has saveUserSettings function[32m 0[2mms[22m[39m
+[31m     [31m×[31m can call getWorkouts[39m[32m 8[2mms[22m[39m
+[31m     [31m×[31m can call getActiveWellbeingSessions[39m[32m 1[2mms[22m[39m
+[90mstderr[2m | src/test/WorkoutSession.test.jsx[2m > [22m[2mWorkoutSession Component[2m > [22m[2mrenders WorkoutSession page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/Dashboard.test.jsx[2m > [22m[2mDashboard Component[2m > [22m[2mrenders welcome message
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/Settings.test.jsx[2m > [22m[2mSettings Component - Refactored[2m > [22m[2mrenders Settings page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/useSettings.test.js[2m > [22m[2museSettings Hook[2m > [22m[2mLoading Settings[2m > [22m[2mfalls back to localStorage on database error
+[22m[39mError loading settings: Error: Database error
+    at D:/git/aws/weegym/src/test/useSettings.test.js:53:9
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+
+[90mstderr[2m | src/test/ActiveWellbeing.test.jsx[2m > [22m[2mActiveWellbeing Component[2m > [22m[2mrenders Active Wellbeing page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/History.test.jsx[2m > [22m[2mHistory Component[2m > [22m[2mrenders History page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/useSettings.test.js[2m > [22m[2museSettings Hook[2m > [22m[2mLoading Settings[2m > [22m[2mhandles corrupted localStorage data
+[22m[39mError loading settings: Error: Database error
+    at D:/git/aws/weegym/src/test/useSettings.test.js:69:9
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+Error parsing stored settings: SyntaxError: Unexpected token 'i', "invalid json" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at D:/git/aws/weegym/src/hooks/useSettings.js:49:28
+
+ [32m✓[39m src/test/Dashboard.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 265[2mms[22m[39m
+ [32m✓[39m src/test/WorkoutSession.test.jsx [2m([22m[2m7 tests[22m[2m)[22m[33m 527[2mms[22m[39m
+ [32m✓[39m src/test/History.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[33m 443[2mms[22m[39m
+[90mstderr[2m | src/test/useSettings.test.js[2m > [22m[2museSettings Hook[2m > [22m[2mSaving Settings[2m > [22m[2msaves to localStorage even if database fails
+[22m[39mError saving settings: Error: Database error
+    at D:/git/aws/weegym/src/test/useSettings.test.js:157:9
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+
+ [32m✓[39m src/test/Settings.test.jsx [2m([22m[2m10 tests[22m[2m)[22m[33m 658[2mms[22m[39m
+ [32m✓[39m src/test/ActiveWellbeing.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 736[2mms[22m[39m
+     [33m[2m✓[22m[39m has navigation tabs [33m 351[2mms[22m[39m
+ [32m✓[39m src/test/useSettings.test.js [2m([22m[2m15 tests[22m[2m)[22m[33m 1312[2mms[22m[39m
+[90mstderr[2m | src/test/Programme.test.jsx[2m > [22m[2mProgramme Component[2m > [22m[2mrenders Programme page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/test/Programme.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 112[2mms[22m[39m
+ [32m✓[39m src/test/settingsValidation.test.js [2m([22m[2m18 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/test/Toast.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[32m 50[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/test/database.test.js[2m > [22mDatabase Module[2m > [22mcan call getWorkouts
+[31m[1mError[22m: [vitest] No "supabase" export is defined on the "../lib/supabaseClient" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi.mock(import("../lib/supabaseClient"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+[36m [2m❯[22m Module.getWorkouts src/lib/database.js:[2m33:33[22m[39m
+    [90m 31| [39m[90m// Get all workouts for the current user[39m
+    [90m 32| [39m[35mexport[39m [35masync[39m [35mfunction[39m [34mgetWorkouts[39m() {
+    [90m 33| [39m  [35mconst[39m { data[33m,[39m error } [33m=[39m [35mawait[39m supabase
+    [90m   | [39m                                [31m^[39m
+    [90m 34| [39m    [33m.[39m[35mfrom[39m([32m"workouts"[39m)
+    [90m 35| [39m    [33m.[39m[34mselect[39m([32m"*"[39m)
+[90m [2m❯[22m src/test/database.test.js:[2m71:35[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/database.test.js[2m > [22mDatabase Module[2m > [22mcan call getActiveWellbeingSessions
+[31m[1mError[22m: [vitest] No "supabase" export is defined on the "../lib/supabaseClient" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+[39m
+vi.mock(import("../lib/supabaseClient"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+[36m [2m❯[22m Module.getActiveWellbeingSessions src/lib/database.js:[2m102:33[22m[39m
+    [90m100| [39m[90m// Get all active wellbeing sessions[39m
+    [90m101| [39m[35mexport[39m [35masync[39m [35mfunction[39m [34mgetActiveWellbeingSessions[39m() {
+    [90m102| [39m  [35mconst[39m { data[33m,[39m error } [33m=[39m [35mawait[39m supabase
+    [90m   | [39m                                [31m^[39m
+    [90m103| [39m    [33m.[39m[35mfrom[39m([32m"active_wellbeing_sessions"[39m)
+    [90m104| [39m    [33m.[39m[34mselect[39m([32m"*"[39m)
+[90m [2m❯[22m src/test/database.test.js:[2m76:35[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m9 passed[39m[22m[90m (10)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m81 passed[39m[22m[90m (83)[39m
+[2m   Start at [22m 14:13:03
+[2m   Duration [22m 6.72s[2m (transform 561ms, setup 7.60s, import 930ms, tests 4.16s, environment 21.53s)[22m
+

@@ -1,0 +1,114 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mD:/git/aws/weegym[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m src/test/database.test.js [2m([22m[2m10 tests[22m[2m | [22m[33m2 skipped[39m[2m)[22m[32m 41[2mms[22m[39m
+[90mstderr[2m | src/test/useSettings.test.js[2m > [22m[2museSettings Hook[2m > [22m[2mLoading Settings[2m > [22m[2mfalls back to localStorage on database error
+[22m[39mError loading settings: Error: Database error
+    at D:/git/aws/weegym/src/test/useSettings.test.js:53:9
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+
+[90mstderr[2m | src/test/WorkoutSession.test.jsx[2m > [22m[2mWorkoutSession Component[2m > [22m[2mrenders WorkoutSession page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/useSettings.test.js[2m > [22m[2museSettings Hook[2m > [22m[2mLoading Settings[2m > [22m[2mhandles corrupted localStorage data
+[22m[39mError loading settings: Error: Database error
+    at D:/git/aws/weegym/src/test/useSettings.test.js:69:9
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+Error parsing stored settings: SyntaxError: Unexpected token 'i', "invalid json" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at D:/git/aws/weegym/src/hooks/useSettings.js:49:28
+
+[90mstderr[2m | src/test/ActiveWellbeing.test.jsx[2m > [22m[2mActiveWellbeing Component[2m > [22m[2mrenders Active Wellbeing page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/History.test.jsx[2m > [22m[2mHistory Component[2m > [22m[2mrenders History page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/Dashboard.test.jsx[2m > [22m[2mDashboard Component[2m > [22m[2mrenders welcome message
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/test/Settings.test.jsx[2m > [22m[2mSettings Component - Refactored[2m > [22m[2mrenders Settings page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/test/Dashboard.test.jsx [2m([22m[2m4 tests[22m[2m)[22m[32m 246[2mms[22m[39m
+[90mstderr[2m | src/test/useSettings.test.js[2m > [22m[2museSettings Hook[2m > [22m[2mSaving Settings[2m > [22m[2msaves to localStorage even if database fails
+[22m[39mError saving settings: Error: Database error
+    at D:/git/aws/weegym/src/test/useSettings.test.js:157:9
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:145:11
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:915:26
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1243:20
+    at new Promise (<anonymous>)
+    at runWithTimeout [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1209:10[90m)[39m
+    at [90mfile:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:37
+    at Traces.$ [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/traces.CCmnQaNT.js:142:27[90m)[39m
+    at trace [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4mvitest[24m/dist/chunks/test.B8ej_ZHS.js:239:21[90m)[39m
+    at runTest [90m(file:///D:/git/aws/weegym/[39mnode_modules/[4m@vitest[24m/runner/dist/index.js:1653:12[90m)[39m
+
+ [32m✓[39m src/test/History.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[33m 490[2mms[22m[39m
+ [32m✓[39m src/test/WorkoutSession.test.jsx [2m([22m[2m7 tests[22m[2m)[22m[33m 612[2mms[22m[39m
+     [33m[2m✓[22m[39m has exercise selection buttons [33m 307[2mms[22m[39m
+ [32m✓[39m src/test/Settings.test.jsx [2m([22m[2m10 tests[22m[2m)[22m[33m 678[2mms[22m[39m
+     [33m[2m✓[22m[39m displays rest time inputs [33m 353[2mms[22m[39m
+ [32m✓[39m src/test/ActiveWellbeing.test.jsx [2m([22m[2m6 tests[22m[2m)[22m[33m 771[2mms[22m[39m
+     [33m[2m✓[22m[39m has navigation tabs [33m 378[2mms[22m[39m
+ [32m✓[39m src/test/useSettings.test.js [2m([22m[2m15 tests[22m[2m)[22m[33m 1278[2mms[22m[39m
+[90mstderr[2m | src/test/Programme.test.jsx[2m > [22m[2mProgramme Component[2m > [22m[2mrenders Programme page
+[22m[39m⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/test/Programme.test.jsx [2m([22m[2m3 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32m✓[39m src/test/Toast.test.jsx [2m([22m[2m5 tests[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m src/test/settingsValidation.test.js [2m([22m[2m18 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m      Tests [22m [1m[32m81 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (83)[39m
+[2m   Start at [22m 14:15:38
+[2m   Duration [22m 6.75s[2m (transform 560ms, setup 7.43s, import 916ms, tests 4.29s, environment 21.09s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   51.62 |    49.59 |   42.44 |   51.58 |                   
+ src               |       0 |        0 |       0 |       0 |                   
+  App.jsx          |       0 |        0 |       0 |       0 | 17-69             
+ src/components    |    87.5 |      100 |      75 |   85.71 |                   
+  Toast.jsx        |    87.5 |      100 |      75 |   85.71 | 6                 
+ src/hooks         |      98 |       75 |     100 |   97.95 |                   
+  useSettings.js   |      98 |       75 |     100 |   97.95 | 38                
+ src/lib           |       0 |        0 |       0 |       0 |                   
+  database.js      |       0 |        0 |       0 |       0 | 10-175            
+ src/pages         |   51.31 |    50.79 |   42.85 |    50.9 |                   
+  ...Wellbeing.jsx |   68.14 |    63.38 |   67.56 |   67.61 | ...52-316,330,381 
+  Dashboard.jsx    |   62.85 |       50 |      50 |   62.85 | 24,35,40-58       
+  History.jsx      |      45 |    42.85 |   30.76 |      45 | ...64-127,150,173 
+  Programme.jsx    |     100 |      100 |     100 |     100 |                   
+  Settings.jsx     |   26.08 |       50 |    8.69 |   27.27 | ...,65-74,150-286 
+  ...utSession.jsx |   40.95 |    38.33 |   34.78 |   40.19 | ...70,246,254-517 
+ src/services      |       0 |      100 |       0 |       0 |                   
+  ...ngsService.js |       0 |      100 |       0 |       0 | 13-38             
+ src/utils         |     100 |      100 |     100 |     100 |                   
+  ...Validation.js |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------
