@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { saveWorkout as saveWorkoutToDb } from "../lib/database";
 
 // Sample programme data - will be moved to a data file later
 const PROGRAMME = {
@@ -327,24 +328,30 @@ function WorkoutSession() {
     }
   };
 
-  const saveWorkout = () => {
+  const saveWorkout = async () => {
     const endTime = new Date();
     const duration = Math.round((endTime - startTime) / 1000 / 60); // minutes
 
     const workoutData = {
-      id: Date.now(),
       date: startTime.toISOString(),
       name: workout.name,
       duration,
       exercises: workoutLog,
     };
 
-    const workouts = JSON.parse(localStorage.getItem("workouts") || "[]");
-    workouts.push(workoutData);
-    localStorage.setItem("workouts", JSON.stringify(workouts));
-
-    alert("Workout saved! Great job! 💪");
-    navigate("/");
+    try {
+      await saveWorkoutToDb(workoutData);
+      alert("Workout saved! Great job! 💪");
+      navigate("/");
+    } catch (error) {
+      console.error("Failed to save workout:", error);
+      // Fallback to localStorage if Supabase fails
+      const workouts = JSON.parse(localStorage.getItem("workouts") || "[]");
+      workouts.push({ id: Date.now(), ...workoutData });
+      localStorage.setItem("workouts", JSON.stringify(workouts));
+      alert("Workout saved locally! Great job! 💪");
+      navigate("/");
+    }
   };
 
   const skipRest = () => {

@@ -1,4 +1,9 @@
 import { useState, useEffect } from "react";
+import {
+  getActiveWellbeingSessions,
+  saveActiveWellbeingSession,
+  deleteActiveWellbeingSession,
+} from "../lib/database";
 
 function ActiveWellbeing() {
   const availableModes = ["Cardio", "Strength", "Stamina"];
@@ -27,52 +32,63 @@ function ActiveWellbeing() {
   const [sessions, setSessions] = useState([]);
   const [filterMachine, setFilterMachine] = useState("all");
   const [filterMode, setFilterMode] = useState("all");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = localStorage.getItem("activeWellbeingSessions");
-    if (stored) {
-      setSessions(JSON.parse(stored));
-    }
+    loadSessions();
   }, []);
 
-  const saveSessions = (newSessions) => {
-    localStorage.setItem(
-      "activeWellbeingSessions",
-      JSON.stringify(newSessions),
-    );
-    setSessions(newSessions);
+  const loadSessions = async () => {
+    try {
+      setLoading(true);
+      const data = await getActiveWellbeingSessions();
+      setSessions(data);
+    } catch (error) {
+      console.error("Failed to load sessions from Supabase:", error);
+      // Fallback to localStorage
+      const stored = localStorage.getItem("activeWellbeingSessions");
+      if (stored) {
+        setSessions(JSON.parse(stored));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMachine || !selectedMode || !score || !date) {
       alert("Please fill in all fields");
       return;
     }
 
-    const newSession = {
-      id: Date.now(),
+    const sessionData = {
       machine: selectedMachine,
       mode: selectedMode,
       score: parseInt(score),
       date: date,
-      timestamp: new Date().toISOString(),
     };
 
-    const updated = [...sessions, newSession].sort(
-      (a, b) => new Date(b.date) - new Date(a.date),
-    );
-    saveSessions(updated);
-
-    // Reset form
-    setScore("");
-    alert("Session logged successfully!");
+    try {
+      await saveActiveWellbeingSession(sessionData);
+      await loadSessions();
+      setScore("");
+      alert("Session logged successfully!");
+    } catch (error) {
+      console.error("Failed to save session:", error);
+      alert("Failed to save session. Please try again.");
+    }
   };
 
-  const deleteSession = (id) => {
+  const deleteSession = async (id) => {
     if (confirm("Are you sure you want to delete this session?")) {
-      const updated = sessions.filter((s) => s.id !== id);
-      saveSessions(updated);
+      try {
+        await deleteActiveWellbeingSession(id);
+        await loadSessions();
+      } catch (error) {
+        console.error("Failed to delete session:", error);
+        alert("Failed to delete session. Please try again.");
+      }
     }
   };
 
@@ -134,6 +150,23 @@ function ActiveWellbeing() {
         return "secondary";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mt-4">
+        <h2 className="mb-4">
+          <i className="bi bi-activity me-2"></i>
+          Active Wellbeing
+        </h2>
+        <div className="text-center py-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted mt-3">Loading sessions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mt-4">

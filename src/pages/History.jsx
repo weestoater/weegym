@@ -1,21 +1,59 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
+import {
+  getWorkouts,
+  deleteWorkout as deleteWorkoutFromDb,
+} from "../lib/database";
 
 function History() {
-  const [workouts, setWorkouts] = useState([])
-  const [selectedWorkout, setSelectedWorkout] = useState(null)
+  const [workouts, setWorkouts] = useState([]);
+  const [selectedWorkout, setSelectedWorkout] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedWorkouts = JSON.parse(localStorage.getItem('workouts') || '[]')
-    setWorkouts(storedWorkouts.reverse()) // Most recent first
-  }, [])
+    loadWorkouts();
+  }, []);
 
-  const deleteWorkout = (id) => {
-    if (window.confirm('Are you sure you want to delete this workout?')) {
-      const updatedWorkouts = workouts.filter(w => w.id !== id)
-      localStorage.setItem('workouts', JSON.stringify(updatedWorkouts.reverse()))
-      setWorkouts(updatedWorkouts)
-      setSelectedWorkout(null)
+  const loadWorkouts = async () => {
+    try {
+      setLoading(true);
+      const data = await getWorkouts();
+      setWorkouts(data);
+    } catch (error) {
+      console.error("Failed to load workouts from Supabase:", error);
+      // Fallback to localStorage
+      const storedWorkouts = JSON.parse(
+        localStorage.getItem("workouts") || "[]",
+      );
+      setWorkouts(storedWorkouts.reverse());
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const deleteWorkout = async (id) => {
+    if (window.confirm("Are you sure you want to delete this workout?")) {
+      try {
+        await deleteWorkoutFromDb(id);
+        await loadWorkouts();
+        setSelectedWorkout(null);
+      } catch (error) {
+        console.error("Failed to delete workout:", error);
+        alert("Failed to delete workout. Please try again.");
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-4">
+        <div className="text-center py-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="text-muted mt-3">Loading workouts...</p>
+        </div>
+      </div>
+    );
   }
 
   if (selectedWorkout) {
@@ -36,10 +74,10 @@ function History() {
               <div className="col-6">
                 <p className="text-muted small mb-0">Date</p>
                 <p className="mb-0">
-                  {new Date(selectedWorkout.date).toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric'
+                  {new Date(selectedWorkout.date).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
                   })}
                 </p>
               </div>
@@ -62,11 +100,11 @@ function History() {
         {Object.entries(
           selectedWorkout.exercises.reduce((acc, exercise) => {
             if (!acc[exercise.exerciseName]) {
-              acc[exercise.exerciseName] = []
+              acc[exercise.exerciseName] = [];
             }
-            acc[exercise.exerciseName].push(exercise)
-            return acc
-          }, {})
+            acc[exercise.exerciseName].push(exercise);
+            return acc;
+          }, {}),
         ).map(([exerciseName, sets]) => (
           <div key={exerciseName} className="card mb-3">
             <div className="card-header">
@@ -74,16 +112,21 @@ function History() {
             </div>
             <div className="list-group list-group-flush">
               {sets.map((set, index) => (
-                <div key={index} className="list-group-item d-flex justify-content-between">
+                <div
+                  key={index}
+                  className="list-group-item d-flex justify-content-between"
+                >
                   <span>Set {set.set}</span>
-                  <span className="fw-bold">{set.weight}kg × {set.reps} reps</span>
+                  <span className="fw-bold">
+                    {set.weight}kg × {set.reps} reps
+                  </span>
                 </div>
               ))}
             </div>
           </div>
         ))}
       </div>
-    )
+    );
   }
 
   return (
@@ -92,9 +135,14 @@ function History() {
 
       {workouts.length === 0 ? (
         <div className="text-center py-5">
-          <i className="bi bi-clock-history text-muted" style={{ fontSize: '4rem' }}></i>
+          <i
+            className="bi bi-clock-history text-muted"
+            style={{ fontSize: "4rem" }}
+          ></i>
           <p className="text-muted mt-3">No workouts logged yet</p>
-          <p className="text-muted small">Start your first workout to see it here!</p>
+          <p className="text-muted small">
+            Start your first workout to see it here!
+          </p>
         </div>
       ) : (
         <div className="list-group">
@@ -109,7 +157,7 @@ function History() {
                   <h3 className="h6 mb-1">{workout.name}</h3>
                   <p className="text-muted small mb-0">
                     <i className="bi bi-calendar me-1"></i>
-                    {new Date(workout.date).toLocaleDateString('en-GB')}
+                    {new Date(workout.date).toLocaleDateString("en-GB")}
                   </p>
                 </div>
                 <div className="text-end">
@@ -122,7 +170,7 @@ function History() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default History
+export default History;
