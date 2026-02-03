@@ -3,11 +3,13 @@ import {
   getWorkouts,
   deleteWorkout as deleteWorkoutFromDb,
 } from "../lib/database";
+import Toast from "../components/Toast";
 
 function History() {
   const [workouts, setWorkouts] = useState([]);
   const [selectedWorkout, setSelectedWorkout] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     loadWorkouts();
@@ -31,15 +33,17 @@ function History() {
   };
 
   const deleteWorkout = async (id) => {
-    if (window.confirm("Are you sure you want to delete this workout?")) {
-      try {
-        await deleteWorkoutFromDb(id);
-        await loadWorkouts();
-        setSelectedWorkout(null);
-      } catch (error) {
-        console.error("Failed to delete workout:", error);
-        alert("Failed to delete workout. Please try again.");
-      }
+    try {
+      await deleteWorkoutFromDb(id);
+      await loadWorkouts();
+      setSelectedWorkout(null);
+      setToast({ message: "Workout deleted successfully", type: "success" });
+    } catch (error) {
+      console.error("Failed to delete workout:", error);
+      setToast({
+        message: "Failed to delete workout. Please try again.",
+        type: "error",
+      });
     }
   };
 
@@ -59,6 +63,14 @@ function History() {
   if (selectedWorkout) {
     return (
       <div className="container mt-4">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+
         <button
           className="btn btn-link text-decoration-none mb-3 p-0"
           onClick={() => setSelectedWorkout(null)}
@@ -131,6 +143,14 @@ function History() {
 
   return (
     <div className="container mt-4">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <h2 className="h5 mb-4">Workout History</h2>
 
       {workouts.length === 0 ? (
