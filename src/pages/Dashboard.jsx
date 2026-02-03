@@ -136,20 +136,30 @@ function Dashboard() {
               to="/workout?day=1"
               className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
             >
-              <span>
-                <i className="bi bi-play-circle me-2"></i>
-                Start Day 1 Workout
-              </span>
+              <div className="text-start">
+                <div>
+                  <i className="bi bi-play-circle me-2"></i>
+                  Start Day 1 Workout
+                </div>
+                <div className="small opacity-75 mt-1">
+                  Chest • Shoulders • Arms
+                </div>
+              </div>
               <i className="bi bi-chevron-right"></i>
             </Link>
             <Link
               to="/workout?day=2"
               className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
             >
-              <span>
-                <i className="bi bi-play-circle me-2"></i>
-                Start Day 2 Workout
-              </span>
+              <div className="text-start">
+                <div>
+                  <i className="bi bi-play-circle me-2"></i>
+                  Start Day 2 Workout
+                </div>
+                <div className="small opacity-75 mt-1">
+                  Legs • Glutes • Core
+                </div>
+              </div>
               <i className="bi bi-chevron-right"></i>
             </Link>
             <Link

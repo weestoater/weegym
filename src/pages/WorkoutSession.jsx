@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { saveWorkout as saveWorkoutToDb } from "../lib/database";
+import Toast from "../components/Toast";
 
 // Sample programme data - will be moved to a data file later
 const PROGRAMME = {
   day1: {
     name: "Day 1",
+    description: "Upper Body - Push (Chest, Shoulders, Triceps)",
+    target: "Chest • Shoulders • Arms",
     exercises: [
       {
         id: "d1e1",
@@ -51,6 +54,8 @@ const PROGRAMME = {
   },
   day2: {
     name: "Day 2",
+    description: "Lower Body & Core (Legs, Glutes, Abs)",
+    target: "Legs • Glutes • Core",
     exercises: [
       {
         id: "d2e1",
@@ -111,6 +116,7 @@ function WorkoutSession() {
   const [workoutLog, setWorkoutLog] = useState([]);
   const [completedExercises, setCompletedExercises] = useState([]);
   const [startTime] = useState(new Date());
+  const [toast, setToast] = useState(null);
   const [settings, setSettings] = useState({
     defaultRestTime: 90,
     shortRestTime: 60,
@@ -178,10 +184,21 @@ function WorkoutSession() {
 
     return (
       <div className="container mt-4">
-        <h2 className="h5 mb-4">
-          <i className="bi bi-list-check me-2"></i>
-          {workout.name} - Choose Exercise
-        </h2>
+        {/* Workout Info Banner */}
+        <div className="card mb-4 border-primary">
+          <div className="card-body">
+            <h2 className="h5 mb-1">
+              <i className="bi bi-list-check me-2"></i>
+              {workout.name}
+            </h2>
+            <p className="text-muted small mb-0">
+              <i className="bi bi-bullseye me-1"></i>
+              {workout.target}
+            </p>
+          </div>
+        </div>
+
+        <h3 className="h6 text-muted mb-3">CHOOSE NEXT EXERCISE</h3>
 
         <div className="alert alert-info mb-4">
           <i className="bi bi-info-circle me-2"></i>
@@ -291,7 +308,7 @@ function WorkoutSession() {
 
   const handleLogSet = () => {
     if (!weight || !reps) {
-      alert("Please enter weight and reps");
+      setToast({ message: "Please enter weight and reps", type: "warning" });
       return;
     }
 
@@ -341,7 +358,7 @@ function WorkoutSession() {
 
     try {
       await saveWorkoutToDb(workoutData);
-      alert("Workout saved! Great job! 💪");
+      setToast({ message: "Workout saved! Great job! 💪", type: "success" });
       navigate("/");
     } catch (error) {
       console.error("Failed to save workout:", error);
@@ -349,7 +366,10 @@ function WorkoutSession() {
       const workouts = JSON.parse(localStorage.getItem("workouts") || "[]");
       workouts.push({ id: Date.now(), ...workoutData });
       localStorage.setItem("workouts", JSON.stringify(workouts));
-      alert("Workout saved locally! Great job! 💪");
+      setToast({
+        message: "Workout saved locally! Great job! 💪",
+        type: "success",
+      });
       navigate("/");
     }
   };
@@ -361,6 +381,14 @@ function WorkoutSession() {
 
   return (
     <div className="container mt-4">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       {/* Header with back button */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <button

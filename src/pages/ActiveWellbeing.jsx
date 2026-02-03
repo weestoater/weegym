@@ -4,6 +4,7 @@ import {
   saveActiveWellbeingSession,
   deleteActiveWellbeingSession,
 } from "../lib/database";
+import Toast from "../components/Toast";
 
 function ActiveWellbeing() {
   const availableModes = ["Cardio", "Strength", "Stamina"];
@@ -33,6 +34,7 @@ function ActiveWellbeing() {
   const [filterMachine, setFilterMachine] = useState("all");
   const [filterMode, setFilterMode] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     loadSessions();
@@ -58,7 +60,7 @@ function ActiveWellbeing() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMachine || !selectedMode || !score || !date) {
-      alert("Please fill in all fields");
+      setToast({ message: "Please fill in all fields", type: "warning" });
       return;
     }
 
@@ -73,22 +75,27 @@ function ActiveWellbeing() {
       await saveActiveWellbeingSession(sessionData);
       await loadSessions();
       setScore("");
-      alert("Session logged successfully!");
+      setToast({ message: "Session logged successfully!", type: "success" });
     } catch (error) {
       console.error("Failed to save session:", error);
-      alert("Failed to save session. Please try again.");
+      setToast({
+        message: "Failed to save session. Please try again.",
+        type: "error",
+      });
     }
   };
 
   const deleteSession = async (id) => {
-    if (confirm("Are you sure you want to delete this session?")) {
-      try {
-        await deleteActiveWellbeingSession(id);
-        await loadSessions();
-      } catch (error) {
-        console.error("Failed to delete session:", error);
-        alert("Failed to delete session. Please try again.");
-      }
+    try {
+      await deleteActiveWellbeingSession(id);
+      await loadSessions();
+      setToast({ message: "Session deleted successfully", type: "success" });
+    } catch (error) {
+      console.error("Failed to delete session:", error);
+      setToast({
+        message: "Failed to delete session. Please try again.",
+        type: "error",
+      });
     }
   };
 
@@ -170,6 +177,14 @@ function ActiveWellbeing() {
 
   return (
     <div className="container mt-4">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <h2 className="mb-4">
         <i className="bi bi-activity me-2"></i>
         Active Wellbeing
