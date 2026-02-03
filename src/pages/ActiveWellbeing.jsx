@@ -1,15 +1,23 @@
 import { useState, useEffect } from "react";
 
 function ActiveWellbeing() {
-  const machines = [
-    { name: "Cross cycle", modes: ["Cardio", "Strength", "Stamina"] },
-    { name: "Chest & Legs", modes: ["Cardio", "Strength", "Stamina"] },
-    { name: "Seated Climber", modes: ["Cardio", "Strength", "Stamina"] },
-    { name: "Tricep dip & leg curl", modes: ["Cardio", "Strength", "Stamina"] },
-    { name: "AB pullover", modes: ["Cardio", "Strength", "Stamina"] },
-    { name: "Flys & Thighs", modes: ["Cardio", "Strength", "Stamina"] },
-    { name: "Side bend stepper", modes: ["Cardio", "Strength", "Stamina"] },
+  const availableModes = ["Cardio", "Strength", "Stamina"];
+
+  const machineNames = [
+    "Cross cycle",
+    "Chest & Legs",
+    "Seated Climber",
+    "Tricep dip & leg curl",
+    "AB pullover",
+    "Flys & Thighs",
+    "Side bend stepper",
   ];
+
+  // Build machines array with shared modes
+  const machines = machineNames.map((name) => ({
+    name,
+    modes: availableModes,
+  }));
 
   const [activeView, setActiveView] = useState("log"); // 'log' or 'history'
   const [selectedMachine, setSelectedMachine] = useState("");

@@ -101,13 +101,14 @@ function WorkoutSession() {
   const day = searchParams.get("day") || "1";
 
   const [workout, setWorkout] = useState(null);
-  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(null);
   const [currentSet, setCurrentSet] = useState(1);
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
   const [isResting, setIsResting] = useState(false);
   const [restTimeLeft, setRestTimeLeft] = useState(0);
   const [workoutLog, setWorkoutLog] = useState([]);
+  const [completedExercises, setCompletedExercises] = useState([]);
   const [startTime] = useState(new Date());
   const [settings, setSettings] = useState({
     defaultRestTime: 90,
@@ -168,9 +169,124 @@ function WorkoutSession() {
 
   if (!workout) return null;
 
+  // If no exercise selected, show exercise selection screen
+  if (currentExerciseIndex === null) {
+    const availableExercises = workout.exercises.filter(
+      (_, index) => !completedExercises.includes(index),
+    );
+
+    return (
+      <div className="container mt-4">
+        <h2 className="h5 mb-4">
+          <i className="bi bi-list-check me-2"></i>
+          {workout.name} - Choose Exercise
+        </h2>
+
+        <div className="alert alert-info mb-4">
+          <i className="bi bi-info-circle me-2"></i>
+          Select which exercise you want to do next. This lets you work around
+          busy equipment.
+        </div>
+
+        <div className="mb-3">
+          <div className="d-flex justify-content-between text-muted small mb-2">
+            <span>
+              {completedExercises.length} of {workout.exercises.length}{" "}
+              exercises completed
+            </span>
+          </div>
+          <div className="progress" style={{ height: "8px" }}>
+            <div
+              className="progress-bar"
+              role="progressbar"
+              style={{
+                width: `${(completedExercises.length / workout.exercises.length) * 100}%`,
+              }}
+            ></div>
+          </div>
+        </div>
+
+        {availableExercises.length === 0 ? (
+          <div className="card">
+            <div className="card-body text-center py-5">
+              <i className="bi bi-check-circle text-success fs-1 mb-3"></i>
+              <h3>All exercises completed!</h3>
+              <button
+                className="btn btn-success btn-lg mt-3"
+                onClick={saveWorkout}
+              >
+                <i className="bi bi-check-circle me-2"></i>
+                Complete Workout
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="list-group">
+            {workout.exercises.map((exercise, index) => {
+              const isCompleted = completedExercises.includes(index);
+              const setsCompleted = workoutLog.filter(
+                (log) => log.exerciseId === exercise.id,
+              ).length;
+
+              return (
+                <button
+                  key={exercise.id}
+                  className={`list-group-item list-group-item-action ${isCompleted ? "list-group-item-success" : ""}`}
+                  onClick={() => {
+                    if (!isCompleted) {
+                      setCurrentExerciseIndex(index);
+                      setCurrentSet(1);
+                    }
+                  }}
+                  disabled={isCompleted}
+                >
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h5 className="mb-1">
+                        {isCompleted && (
+                          <i className="bi bi-check-circle-fill text-success me-2"></i>
+                        )}
+                        {exercise.name}
+                      </h5>
+                      <small className="text-muted">
+                        {exercise.sets} sets × {exercise.reps} reps
+                        <span className="ms-2">
+                          <i className="bi bi-circle-fill me-1"></i>
+                          {exercise.type === "M" ? "Machine" : "Free Weights"}
+                        </span>
+                      </small>
+                    </div>
+                    <div className="text-end">
+                      {isCompleted ? (
+                        <span className="badge bg-success">Complete</span>
+                      ) : setsCompleted > 0 ? (
+                        <span className="badge bg-warning text-dark">
+                          {setsCompleted}/{exercise.sets} sets
+                        </span>
+                      ) : (
+                        <i className="bi bi-chevron-right"></i>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const currentExercise = workout.exercises[currentExerciseIndex];
   const isLastSet = currentSet === currentExercise.sets;
-  const isLastExercise = currentExerciseIndex === workout.exercises.length - 1;
+  const isLastExercise =
+    completedExercises.length === workout.exercises.length - 1;
+
+  const handleBackToSelection = () => {
+    setCurrentExerciseIndex(null);
+    setIsResting(false);
+    setRestTimeLeft(0);
+  };
 
   const handleLogSet = () => {
     if (!weight || !reps) {
@@ -191,12 +307,13 @@ function WorkoutSession() {
     // Move to next set or exercise
     if (isLastSet) {
       if (isLastExercise) {
-        // Workout complete
-        saveWorkout();
+        // All exercises completed - but mark this one complete first
+        setCompletedExercises([...completedExercises, currentExerciseIndex]);
+        setCurrentExerciseIndex(null);
       } else {
-        // Next exercise
-        setCurrentExerciseIndex((prev) => prev + 1);
-        setCurrentSet(1);
+        // Exercise complete - go back to selection screen
+        setCompletedExercises([...completedExercises, currentExerciseIndex]);
+        setCurrentExerciseIndex(null);
         setWeight("");
         setReps("");
       }
@@ -237,11 +354,23 @@ function WorkoutSession() {
 
   return (
     <div className="container mt-4">
+      {/* Header with back button */}
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <button
+          className="btn btn-outline-secondary btn-sm"
+          onClick={handleBackToSelection}
+        >
+          <i className="bi bi-arrow-left me-2"></i>
+          Choose Different Exercise
+        </button>
+      </div>
+
       {/* Progress Bar */}
       <div className="mb-4">
         <div className="d-flex justify-content-between text-muted small mb-2">
           <span>
-            Exercise {currentExerciseIndex + 1} of {workout.exercises.length}
+            {completedExercises.length + 1} of {workout.exercises.length}{" "}
+            exercises
           </span>
           <span>
             Set {currentSet} of {currentExercise.sets}
@@ -251,16 +380,16 @@ function WorkoutSession() {
           <div
             className="progress-bar"
             role="progressbar"
-            aria-label="Set progress"
+            aria-label="Workout progress"
             aria-valuenow={Math.round(
-              ((currentExerciseIndex * currentExercise.sets + currentSet) /
+              ((completedExercises.length * 3 + currentSet) /
                 (workout.exercises.length * 3)) *
                 100,
             )}
             aria-valuemin="0"
             aria-valuemax="100"
             style={{
-              width: `${((currentExerciseIndex * currentExercise.sets + currentSet) / (workout.exercises.length * 3)) * 100}%`,
+              width: `${((completedExercises.length * 3 + currentSet) / (workout.exercises.length * 3)) * 100}%`,
             }}
           ></div>
         </div>

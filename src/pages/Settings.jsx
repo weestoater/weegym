@@ -13,7 +13,6 @@ function Settings() {
       defaultRestTime: 90,
       shortRestTime: 60,
       longRestTime: 120,
-      theme: "united",
     };
   });
 
@@ -22,8 +21,6 @@ function Settings() {
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
-      // Reload page to apply theme change
-      window.location.reload();
     }, 1500);
   };
 
@@ -32,14 +29,12 @@ function Settings() {
       defaultRestTime: 90,
       shortRestTime: 60,
       longRestTime: 120,
-      theme: "united",
     };
     setSettings(defaultSettings);
     localStorage.setItem("gymSettings", JSON.stringify(defaultSettings));
     setSaved(true);
     setTimeout(() => {
       setSaved(false);
-      window.location.reload();
     }, 1500);
   };
 
@@ -47,35 +42,6 @@ function Settings() {
     <div className="container mt-4">
       <h2 className="h5 mb-4">Settings</h2>
 
-      {/* Theme Section */}
-      <div className="card mb-4">
-        <div className="card-header">
-          <h3 className="h6 mb-0">
-            <i className="bi bi-palette me-2"></i>
-            Theme
-          </h3>
-        </div>
-        <div className="card-body">
-          <p className="text-muted small mb-3">
-            Currently using the United theme.
-          </p>
-          <div className="text-center py-3">
-            <i className="bi bi-ubuntu fs-1 text-primary"></i>
-            <div className="mt-2">
-              <strong>United Theme</strong>
-              <div className="small text-muted">
-                Light theme with purple accents
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 
-    <div className="container mt-4">
-      <h2 className="h5 mb-4">Settings</h2>
-
-      {/* Rest Times Section */}
       <div className="card mb-4">
         <div className="card-header">
           <h3 className="h6 mb-0">
@@ -264,6 +230,7 @@ function Settings() {
               className="btn btn-outline-primary"
               onClick={() =>
                 setSettings({
+                  ...settings,
                   shortRestTime: 45,
                   defaultRestTime: 60,
                   longRestTime: 90,
@@ -277,6 +244,7 @@ function Settings() {
               className="btn btn-outline-primary"
               onClick={() =>
                 setSettings({
+                  ...settings,
                   shortRestTime: 60,
                   defaultRestTime: 90,
                   longRestTime: 120,
@@ -290,6 +258,7 @@ function Settings() {
               className="btn btn-outline-primary"
               onClick={() =>
                 setSettings({
+                  ...settings,
                   shortRestTime: 90,
                   defaultRestTime: 120,
                   longRestTime: 180,
