@@ -404,59 +404,90 @@ function ActiveWellbeing() {
             </div>
           ) : (
             <div className="row g-3">
-              {machines.map((machine) => {
-                const hasSessions = sessions.some(
-                  (s) => s.machine === machine.name,
-                );
-                if (!hasSessions) return null;
+              {[...new Set(sessions.map((session) => session.machine))]
+                .sort((a, b) => a.localeCompare(b))
+                .map((machine, index) => {
+                  const machineSessions = sessions.filter(
+                    (s) => s.machine === machine,
+                  );
+                  const totalSessions = machineSessions.length;
+                  const bestScore = Math.max(
+                    ...machineSessions.map((s) => s.score),
+                  );
+                  const latestSession = machineSessions.sort(
+                    (a, b) => new Date(b.date) - new Date(a.date),
+                  )[0];
+                  const avgScore = Math.round(
+                    machineSessions.reduce((sum, s) => sum + s.score, 0) /
+                      machineSessions.length,
+                  );
+                  const modes = [
+                    ...new Set(machineSessions.map((s) => s.mode)),
+                  ];
 
-                return (
-                  <div key={machine.name} className="col-12">
-                    <div className="card">
-                      <div className="card-header">
-                        <h6 className="mb-0">{machine.name}</h6>
-                      </div>
-                      <div className="card-body">
-                        <div className="row g-2">
-                          {machine.modes.map((mode) => {
-                            const best = getBestScore(machine.name, mode);
-                            const avg = getAverageScore(machine.name, mode);
-                            const latest = getLatestScore(machine.name, mode);
+                  return (
+                    <div key={index} className="col-12">
+                      <div className="card">
+                        <div className="card-body">
+                          <div className="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                              <h4 className="h6 mb-1">
+                                <i className="bi bi-activity text-primary me-2"></i>
+                                {machine}
+                              </h4>
+                              <p className="text-muted small mb-0">
+                                {modes.join(", ")}
+                              </p>
+                            </div>
+                            <span className="badge bg-success">
+                              {totalSessions} sessions
+                            </span>
+                          </div>
 
-                            if (best === null) return null;
-
-                            return (
-                              <div key={mode} className="col-4">
-                                <div
-                                  className={`text-center p-2 rounded bg-${getModeColor(mode)} bg-opacity-10`}
-                                >
-                                  <div
-                                    className={`text-${getModeColor(mode)} mb-1`}
-                                  >
-                                    <i
-                                      className={`${getModeIcon(mode)} fs-5`}
-                                    ></i>
-                                  </div>
-                                  <div className="small fw-bold">{mode}</div>
-                                  <div className="small text-muted">
-                                    Best: {best}
-                                  </div>
-                                  <div className="small text-muted">
-                                    Avg: {avg}
-                                  </div>
-                                  <div className="small text-muted">
-                                    Last: {latest}
-                                  </div>
-                                </div>
+                          <div className="row g-2 text-center">
+                            <div className="col-4">
+                              <div className="p-2 bg-light rounded">
+                                <p className="text-muted small mb-0">
+                                  Best Score
+                                </p>
+                                <p className="h5 mb-0 text-primary">
+                                  {bestScore}
+                                </p>
                               </div>
-                            );
-                          })}
+                            </div>
+                            <div className="col-4">
+                              <div className="p-2 bg-light rounded">
+                                <p className="text-muted small mb-0">Average</p>
+                                <p className="h5 mb-0">{avgScore}</p>
+                              </div>
+                            </div>
+                            <div className="col-4">
+                              <div className="p-2 bg-light rounded">
+                                <p className="text-muted small mb-0">Last</p>
+                                <p className="h5 mb-0">{latestSession.score}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="mt-2">
+                            <p className="text-muted small mb-0">
+                              <i className="bi bi-calendar me-1"></i>
+                              Last used:{" "}
+                              {new Date(latestSession.date).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                },
+                              )}
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           )}
         </div>

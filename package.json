@@ -1,11 +1,12 @@
 {
   "name": "weegym",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run version:bump && vite build",
+    "version:bump": "npm version patch --no-git-tag-version",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",

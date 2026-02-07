@@ -52,6 +52,8 @@ function NavigationBar() {
 
 function App() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const appVersion =
+    typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "1.0.0";
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -60,9 +62,26 @@ function App() {
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
+    // Check for version updates every 5 minutes
+    const checkForUpdates = () => {
+      // Force reload from server if service worker updates
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistration().then((registration) => {
+          if (registration) {
+            registration.update();
+          }
+        });
+      }
+    };
+
+    // Check immediately and then every 5 minutes
+    checkForUpdates();
+    const intervalId = setInterval(checkForUpdates, 5 * 60 * 1000);
+
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -76,6 +95,12 @@ function App() {
               <h1 className="h4 mb-0">
                 <i className="bi bi-heart-pulse me-2"></i>
                 WeeGym Tracker
+                <small
+                  className="ms-2 opacity-50"
+                  style={{ fontSize: "0.6em" }}
+                >
+                  v{appVersion}
+                </small>
               </h1>
               {!isOnline && (
                 <span className="badge bg-warning text-dark">

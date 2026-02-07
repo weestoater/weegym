@@ -102,7 +102,8 @@ export async function getActiveWellbeingSessions() {
   const { data, error } = await supabase
     .from("active_wellbeing_sessions")
     .select("*")
-    .order("date", { ascending: false });
+    .order("date", { ascending: false })
+    .limit(1000);
 
   if (error) {
     console.error("Error fetching sessions:", error);

@@ -188,9 +188,9 @@ function Dashboard() {
           {lastWorkout && (
             <>
               <h3 className="h6 text-muted mt-4 mb-3">LAST WORKOUT</h3>
-              <div className="card">
+              <div className="card mb-3">
                 <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
                     <div>
                       <h4 className="h6 mb-1">{lastWorkout.name}</h4>
                       <p className="text-muted small mb-0">
@@ -205,6 +205,43 @@ function Dashboard() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Display all exercises/machines worked on */}
+                  {lastWorkout.exercises &&
+                    lastWorkout.exercises.length > 0 && (
+                      <div className="mt-3 pt-3 border-top">
+                        <p className="text-muted small mb-2">
+                          <strong>Machines & Exercises:</strong>
+                        </p>
+                        <div className="row g-2">
+                          {[
+                            ...new Set(
+                              lastWorkout.exercises.map(
+                                (ex) => ex.exerciseName,
+                              ),
+                            ),
+                          ].map((exerciseName, index) => {
+                            const exerciseSets = lastWorkout.exercises.filter(
+                              (ex) => ex.exerciseName === exerciseName,
+                            );
+                            const totalSets = exerciseSets.length;
+                            return (
+                              <div key={index} className="col-12">
+                                <div className="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                  <span className="small">
+                                    <i className="bi bi-check-circle-fill text-success me-2"></i>
+                                    {exerciseName}
+                                  </span>
+                                  <span className="badge bg-secondary">
+                                    {totalSets} sets
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             </>
