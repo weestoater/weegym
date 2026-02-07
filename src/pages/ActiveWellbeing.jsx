@@ -10,13 +10,17 @@ function ActiveWellbeing() {
   const availableModes = ["Cardio", "Strength", "Stamina"];
 
   const machineNames = [
-    "Cross cycle",
     "Chest & Legs",
+    "Cross cycle",
     "Seated Climber",
-    "Tricep dip & leg curl",
-    "AB pullover",
+    "Tricep Dip & Leg Curl",
     "Flys & Thighs",
-    "Side bend stepper",
+    "Rotary Torso",
+    "Tummy Crunch",
+    "Side Bend Stepper",
+    "AB Pullover",
+    "Side Flexor",
+    "Hipster",
   ];
 
   // Build machines array with shared modes
