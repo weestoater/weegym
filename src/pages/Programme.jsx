@@ -1,7 +1,7 @@
 function Programme() {
   const programmeData = {
     client: {
-      name: "Ian Burret",
+      name: "Ian Burrett",
       instructor: "Adam",
       date: "31/01/26",
       review: "Intro",

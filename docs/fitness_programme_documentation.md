@@ -2,7 +2,7 @@
 
 ## Client Information
 
-- **Name:** Ian Burret
+- **Name:** Ian Burrett
 - **Instructor:** Adam
 - **Date:** 31/01/26
 - **Review:** Intro
@@ -87,4 +87,4 @@ _[Specific cardio exercises to be documented based on programme]_
 
 ---
 
-_This document is based on the fitness programme created for Ian Burret by instructor Adam._
+_This document is based on the fitness programme created for Ian Burrett by instructor Adam._
