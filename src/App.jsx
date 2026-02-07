@@ -19,7 +19,7 @@ function NavigationBar() {
   const navItems = [
     { path: "/", icon: "bi-house-door", label: "Home" },
     { path: "/workout", icon: "bi-play-circle", label: "Workout" },
-    { path: "/wellbeing", icon: "bi-activity", label: "Wellbeing" },
+    { path: "/wellbeing", icon: "bi-activity", label: "AW" },
     { path: "/history", icon: "bi-clock-history", label: "History" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
