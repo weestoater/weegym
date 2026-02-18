@@ -49,7 +49,7 @@ function Programme() {
       ],
     },
     day2: {
-      name: "Day 2 - Lower Body",
+      name: "Day 2 - Mixed Areas",
       description: "Legs, Shoulders & Core Strength",
       target: "Legs • Shoulders • Core",
       exercises: [
