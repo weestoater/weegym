@@ -15,6 +15,8 @@ import Programme from "./pages/Programme";
 import ActiveWellbeing from "./pages/ActiveWellbeing";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import UserProfileManager from "./pages/UserProfileManager";
+import AddUser from "./pages/AddUser";
 
 function NavigationBar() {
   const location = useLocation();
@@ -199,6 +201,22 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile-manager"
+            element={
+              <ProtectedRoute>
+                <UserProfileManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/add-user"
+            element={
+              <ProtectedRoute>
+                <AddUser />
               </ProtectedRoute>
             }
           />

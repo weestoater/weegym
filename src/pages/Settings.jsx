@@ -123,13 +123,22 @@ function Settings() {
               <p className="text-muted small mb-0">{user?.email}</p>
             </div>
           </div>
-          <button
-            className="btn btn-outline-danger w-100"
-            onClick={handleLogout}
-          >
-            <i className="bi bi-box-arrow-right me-2"></i>
-            Sign Out
-          </button>
+          <div className="d-flex justify-content-between align-items-center gap-2">
+            <button
+              className="btn btn-sm btn-primary"
+              onClick={() => navigate("/profile-manager")}
+            >
+              <i className="bi bi-person-gear me-1"></i>
+              Manage Profile
+            </button>
+            <button
+              className="btn btn-sm btn-outline-danger"
+              onClick={handleLogout}
+            >
+              <i className="bi bi-box-arrow-right me-1"></i>
+              Sign Out
+            </button>
+          </div>
         </div>
       </div>
 

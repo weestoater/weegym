@@ -34,3 +34,16 @@ sw.js
 sw.js.map
 workbox-*.js
 workbox-*.js.map
+
+# Supabase sensitive SQL scripts (contain user IDs, emails, admin setup)
+supabase-config/*-admin-*.sql
+supabase-config/*FIX*.sql
+supabase-config/MAKE_*.sql
+supabase-config/SHOW_*.sql
+supabase-config/CHECK_*.sql
+supabase-config/CREATE_*.sql
+supabase-config/debug-*.sql
+supabase-config/quick-*.sql
+supabase-config/manual-*.sql
+supabase-config/schema-multi-user.sql
+supabase-config/backups/

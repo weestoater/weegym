@@ -318,6 +318,10 @@ function WorkoutSession() {
             <div
               className="progress-bar"
               role="progressbar"
+              aria-label="Workout progress"
+              aria-valuenow={completedExercises.length}
+              aria-valuemin="0"
+              aria-valuemax={workout.exercises.length}
               style={{
                 width: `${(completedExercises.length / workout.exercises.length) * 100}%`,
               }}

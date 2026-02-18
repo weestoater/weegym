@@ -383,6 +383,7 @@ function ActiveWellbeing() {
                     <button
                       className="btn btn-sm btn-outline-danger"
                       onClick={() => deleteSession(session.id)}
+                      aria-label="Delete session"
                     >
                       <i className="bi bi-trash"></i>
                     </button>
