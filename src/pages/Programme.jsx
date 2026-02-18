@@ -50,8 +50,8 @@ function Programme() {
     },
     day2: {
       name: "Day 2 - Lower Body",
-      description: "Legs, Glutes & Core Strength",
-      target: "Legs • Glutes • Core",
+      description: "Legs, Shoulders & Core Strength",
+      target: "Legs • Shoulders • Core",
       exercises: [
         {
           name: "Seated Row",
