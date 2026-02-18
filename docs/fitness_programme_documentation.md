@@ -65,13 +65,31 @@ End every workout with a cool-down to:
 
 ## Training Programme
 
-### Day 1 (M = machine, F = free-weights)
+### Day 1 - Upper Body (M = machine, F = free-weights)
 
-_[Specific exercises to be documented based on programme]_
+**Push Focus: Chest, Shoulders, Triceps**  
+**Target:** Chest • Shoulders • Arms
 
-### Day 2 (M = machine, F = free-weights)
+| Exercise                   | Type | Sets | Reps  | Rest |
+| -------------------------- | ---- | ---- | ----- | ---- |
+| Chest Press                | M    | 3    | 6-8   | 90s  |
+| Lat Pulldown               | M    | 3    | 8-10  | 90s  |
+| Leg Extension              | M    | 3    | 10-12 | 90s  |
+| Alternating Lateral Raised | F    | 2    | 10-12 | 60s  |
+| Tricep Pushdown (Rope)     | M    | 2    | 10-12 | 60s  |
 
-_[Specific exercises to be documented based on programme]_
+### Day 2 - Lower Body (M = machine, F = free-weights)
+
+**Legs, Glutes & Core Strength**  
+**Target:** Legs • Glutes • Core
+
+| Exercise                           | Type | Sets | Reps  | Rest |
+| ---------------------------------- | ---- | ---- | ----- | ---- |
+| Seated Row                         | M    | 3    | 6-8   | 90s  |
+| Leg Curl                           | M    | 3    | 10-12 | 90s  |
+| Shoulder Press                     | M    | 3    | 8-10  | 90s  |
+| Dumbell Hammer Curl                | F    | 2    | 10-12 | 60s  |
+| Overhead Tricep Extensions (V-Bar) | M    | 2    | 10-12 | 60s  |
 
 ### Cardio Options (Any Day)
 

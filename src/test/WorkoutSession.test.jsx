@@ -61,7 +61,7 @@ describe("WorkoutSession Component", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Leg Press")).toBeInTheDocument();
+      expect(screen.getByText("Seated Row")).toBeInTheDocument();
     });
   });
 

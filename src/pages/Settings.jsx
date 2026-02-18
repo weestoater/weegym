@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSettings } from "../hooks/useSettings";
 import { defaultSettingsService } from "../services/settingsService";
+import { useAuth } from "../contexts/AuthContext";
 
 /**
  * Settings Page - Refactored for Testability
@@ -14,6 +16,8 @@ import { defaultSettingsService } from "../services/settingsService";
  */
 function Settings() {
   const [saved, setSaved] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   // Inject database service through custom hook
   const {
@@ -76,6 +80,15 @@ function Settings() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mt-4">
@@ -92,6 +105,33 @@ function Settings() {
   return (
     <div className="container mt-4">
       <h2 className="mb-4">Settings</h2>
+
+      {/* Account Card */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <h3 className="h6 mb-0">
+            <i className="bi bi-person-circle me-2"></i>
+            Account
+          </h3>
+        </div>
+        <div className="card-body">
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <p className="mb-1">
+                <strong>{user?.user_metadata?.name || "User"}</strong>
+              </p>
+              <p className="text-muted small mb-0">{user?.email}</p>
+            </div>
+          </div>
+          <button
+            className="btn btn-outline-danger w-100"
+            onClick={handleLogout}
+          >
+            <i className="bi bi-box-arrow-right me-2"></i>
+            Sign Out
+          </button>
+        </div>
+      </div>
 
       {/* Error Alert */}
       {error && (

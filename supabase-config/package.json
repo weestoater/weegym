@@ -1,0 +1,59 @@
+{
+  "name": "@weegym/supabase-config",
+  "version": "1.0.0",
+  "description": "Portable Supabase configuration and database operations for WeeGym",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./config": "./config.js",
+    "./database": "./database.js",
+    "./auth": "./auth.js",
+    "./schema": "./schema.sql",
+    "./migrate": "./migrate-data.js"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "config.js",
+    "database.js",
+    "auth.js",
+    "schema.sql",
+    "migrate-data.js",
+    "types.d.ts",
+    ".env.example",
+    "README.md",
+    "MIGRATION_GUIDE.md",
+    "MIGRATION_CHECKLIST.md",
+    "EXAMPLES.md"
+  ],
+  "scripts": {
+    "test": "echo \"No tests specified yet\""
+  },
+  "keywords": [
+    "supabase",
+    "weegym",
+    "fitness",
+    "database",
+    "workout",
+    "portable"
+  ],
+  "author": "WeeGym Development Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "@supabase/supabase-js": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/weestoater/weegym.git",
+    "directory": "supabase-config"
+  },
+  "bugs": {
+    "url": "https://github.com/weestoater/weegym/issues"
+  },
+  "homepage": "https://github.com/weestoater/weegym/tree/main/supabase-config#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
