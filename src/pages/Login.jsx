@@ -31,6 +31,8 @@ function Login() {
     try {
       if (isLogin) {
         await signIn(email, password);
+        // Small delay to ensure state is updated
+        await new Promise((resolve) => setTimeout(resolve, 100));
         navigate("/");
       } else {
         await signUp(email, password, name);
@@ -44,8 +46,22 @@ function Login() {
       }
     } catch (error) {
       console.error("Auth error:", error);
+
+      // Provide more specific error messages
+      let errorMessage = "Authentication failed. Please try again.";
+
+      if (error.message?.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message?.includes("Email not confirmed")) {
+        errorMessage = "Please verify your email before signing in.";
+      } else if (error.message?.includes("User already registered")) {
+        errorMessage = "An account with this email already exists.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
       setToast({
-        message: error.message || "Authentication failed. Please try again.",
+        message: errorMessage,
         type: "error",
       });
     } finally {

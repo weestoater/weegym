@@ -7,25 +7,39 @@ import { supabase } from "./supabaseClient";
 
 // Save a workout
 export async function saveWorkout(workoutData) {
-  const { data, error } = await supabase
-    .from("workouts")
-    .insert([
-      {
-        date: workoutData.date,
-        name: workoutData.name,
-        duration: workoutData.duration,
-        exercises: workoutData.exercises,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-      },
-    ])
-    .select();
+  try {
+    // Get the user first
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  if (error) {
-    console.error("Error saving workout:", error);
-    throw error;
+    if (userError || !userData?.user) {
+      console.error("User not authenticated:", userError);
+      throw new Error("You must be logged in to save workouts");
+    }
+
+    const { data, error } = await supabase
+      .from("workouts")
+      .insert([
+        {
+          date: workoutData.date,
+          name: workoutData.name,
+          duration: workoutData.duration,
+          exercises: workoutData.exercises,
+          user_id: userData.user.id,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Error saving workout to database:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      throw error;
+    }
+
+    return data[0];
+  } catch (err) {
+    console.error("Failed to save workout:", err);
+    throw err;
   }
-
-  return data[0];
 }
 
 // Get all workouts for the current user
@@ -60,6 +74,27 @@ export async function getWorkoutsByDateRange(startDate, endDate) {
   return data;
 }
 
+// Update a workout
+export async function updateWorkout(id, updates) {
+  try {
+    const { data, error } = await supabase
+      .from("workouts")
+      .update(updates)
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("Error updating workout:", error);
+      throw error;
+    }
+
+    return data[0];
+  } catch (err) {
+    console.error("Failed to update workout:", err);
+    throw err;
+  }
+}
+
 // Delete a workout
 export async function deleteWorkout(id) {
   const { error } = await supabase.from("workouts").delete().eq("id", id);
@@ -76,25 +111,38 @@ export async function deleteWorkout(id) {
 
 // Save an active wellbeing session
 export async function saveActiveWellbeingSession(sessionData) {
-  const { data, error } = await supabase
-    .from("active_wellbeing_sessions")
-    .insert([
-      {
-        machine: sessionData.machine,
-        mode: sessionData.mode,
-        score: sessionData.score,
-        date: sessionData.date,
-        user_id: (await supabase.auth.getUser()).data.user?.id,
-      },
-    ])
-    .select();
+  try {
+    // Get the user first
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  if (error) {
-    console.error("Error saving session:", error);
-    throw error;
+    if (userError || !userData?.user) {
+      console.error("User not authenticated:", userError);
+      throw new Error("You must be logged in to save sessions");
+    }
+
+    const { data, error } = await supabase
+      .from("active_wellbeing_sessions")
+      .insert([
+        {
+          machine: sessionData.machine,
+          mode: sessionData.mode,
+          score: sessionData.score,
+          date: sessionData.date,
+          user_id: userData.user.id,
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Error saving session:", error);
+      throw error;
+    }
+
+    return data[0];
+  } catch (err) {
+    console.error("Failed to save session:", err);
+    throw err;
   }
-
-  return data[0];
 }
 
 // Get all active wellbeing sessions
@@ -132,46 +180,64 @@ export async function deleteActiveWellbeingSession(id) {
 
 // Get user settings
 export async function getUserSettings() {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) return null;
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from("user_settings")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
+    if (userError || !userData?.user) {
+      console.error("User not authenticated:", userError);
+      return null;
+    }
 
-  if (error && error.code !== "PGRST116") {
-    // PGRST116 is "not found" - expected for first time users
-    console.error("Error fetching settings:", error);
-    throw error;
+    const { data, error } = await supabase
+      .from("user_settings")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 is "not found" - expected for first time users
+      console.error("Error fetching settings:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (err) {
+    console.error("Failed to get user settings:", err);
+    return null;
   }
-
-  return data;
 }
 
 // Save user settings
 export async function saveUserSettings(settings) {
-  const user = (await supabase.auth.getUser()).data.user;
-  if (!user) throw new Error("User not authenticated");
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from("user_settings")
-    .upsert([
-      {
-        user_id: user.id,
-        default_rest_time: settings.defaultRestTime,
-        short_rest_time: settings.shortRestTime,
-        long_rest_time: settings.longRestTime,
-        updated_at: new Date().toISOString(),
-      },
-    ])
-    .select();
+    if (userError || !userData?.user) {
+      console.error("User not authenticated:", userError);
+      throw new Error("You must be logged in to save settings");
+    }
 
-  if (error) {
-    console.error("Error saving settings:", error);
-    throw error;
+    const { data, error } = await supabase
+      .from("user_settings")
+      .upsert([
+        {
+          user_id: userData.user.id,
+          default_rest_time: settings.defaultRestTime,
+          short_rest_time: settings.shortRestTime,
+          long_rest_time: settings.longRestTime,
+          updated_at: new Date().toISOString(),
+        },
+      ])
+      .select();
+
+    if (error) {
+      console.error("Error saving settings:", error);
+      throw error;
+    }
+
+    return data[0];
+  } catch (err) {
+    console.error("Failed to save user settings:", err);
+    throw err;
   }
-
-  return data[0];
 }

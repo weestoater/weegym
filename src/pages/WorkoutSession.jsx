@@ -117,6 +117,7 @@ function WorkoutSession() {
   const [completedExercises, setCompletedExercises] = useState([]);
   const [startTime] = useState(new Date());
   const [toast, setToast] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [settings, setSettings] = useState({
     defaultRestTime: 90,
     shortRestTime: 60,
@@ -173,6 +174,106 @@ function WorkoutSession() {
     }
     return () => clearInterval(interval);
   }, [isResting, restTimeLeft]);
+
+  // Function to save workout
+  const saveWorkout = async () => {
+    if (isSaving) return; // Prevent double-clicks
+
+    setIsSaving(true);
+    const endTime = new Date();
+    const duration = Math.round((endTime - startTime) / 1000 / 60); // minutes
+
+    const workoutData = {
+      date: startTime.toISOString(),
+      name: workout.name,
+      duration,
+      exercises: workoutLog,
+    };
+
+    try {
+      console.log("Saving workout:", workoutData);
+      await saveWorkoutToDb(workoutData);
+      console.log("Workout saved successfully!");
+      setToast({ message: "Workout saved! Great job! 💪", type: "success" });
+      setTimeout(() => navigate("/"), 1500);
+    } catch (error) {
+      console.error("Failed to save workout:", error);
+
+      // Fallback to localStorage if Supabase fails
+      try {
+        const workouts = JSON.parse(localStorage.getItem("workouts") || "[]");
+        workouts.push({ id: Date.now(), ...workoutData });
+        localStorage.setItem("workouts", JSON.stringify(workouts));
+        setToast({
+          message: "Workout saved locally! Great job! 💪",
+          type: "success",
+        });
+        setTimeout(() => navigate("/"), 1500);
+      } catch (localError) {
+        console.error("Failed to save to localStorage:", localError);
+        setToast({
+          message: "Failed to save workout. Please try again.",
+          type: "error",
+        });
+        setIsSaving(false);
+      }
+    }
+  };
+
+  const handleBackToSelection = () => {
+    setCurrentExerciseIndex(null);
+    setIsResting(false);
+    setRestTimeLeft(0);
+  };
+
+  const handleLogSet = () => {
+    if (!weight || !reps) {
+      setToast({ message: "Please enter weight and reps", type: "warning" });
+      return;
+    }
+
+    // Log the set
+    const setLog = {
+      exerciseId: workout?.exercises[currentExerciseIndex]?.id,
+      exerciseName: workout?.exercises[currentExerciseIndex]?.name,
+      set: currentSet,
+      weight: parseFloat(weight),
+      reps: parseInt(reps),
+    };
+    setWorkoutLog([...workoutLog, setLog]);
+
+    const currentExercise = workout.exercises[currentExerciseIndex];
+    const isLastSet = currentSet === currentExercise.sets;
+    const isLastExercise =
+      completedExercises.length === workout.exercises.length - 1;
+
+    // Move to next set or exercise
+    if (isLastSet) {
+      if (isLastExercise) {
+        // All exercises completed - but mark this one complete first
+        setCompletedExercises([...completedExercises, currentExerciseIndex]);
+        setCurrentExerciseIndex(null);
+      } else {
+        // Exercise complete - go back to selection screen
+        setCompletedExercises([...completedExercises, currentExerciseIndex]);
+        setCurrentExerciseIndex(null);
+        setWeight("");
+        setReps("");
+      }
+    } else {
+      // Next set - start rest timer
+      setCurrentSet((prev) => prev + 1);
+      setIsResting(true);
+      setRestTimeLeft(currentExercise.restSeconds);
+      setWeight("");
+      setReps("");
+    }
+  };
+
+  const skipRest = () => {
+    setIsResting(false);
+    setRestTimeLeft(0);
+  };
 
   if (!workout) return null;
 
@@ -232,9 +333,23 @@ function WorkoutSession() {
               <button
                 className="btn btn-success btn-lg mt-3"
                 onClick={saveWorkout}
+                disabled={isSaving}
               >
-                <i className="bi bi-check-circle me-2"></i>
-                Complete Workout
+                {isSaving ? (
+                  <>
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-check-circle me-2"></i>
+                    Complete Workout
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -299,85 +414,6 @@ function WorkoutSession() {
   const isLastSet = currentSet === currentExercise.sets;
   const isLastExercise =
     completedExercises.length === workout.exercises.length - 1;
-
-  const handleBackToSelection = () => {
-    setCurrentExerciseIndex(null);
-    setIsResting(false);
-    setRestTimeLeft(0);
-  };
-
-  const handleLogSet = () => {
-    if (!weight || !reps) {
-      setToast({ message: "Please enter weight and reps", type: "warning" });
-      return;
-    }
-
-    // Log the set
-    const setLog = {
-      exerciseId: currentExercise.id,
-      exerciseName: currentExercise.name,
-      set: currentSet,
-      weight: parseFloat(weight),
-      reps: parseInt(reps),
-    };
-    setWorkoutLog([...workoutLog, setLog]);
-
-    // Move to next set or exercise
-    if (isLastSet) {
-      if (isLastExercise) {
-        // All exercises completed - but mark this one complete first
-        setCompletedExercises([...completedExercises, currentExerciseIndex]);
-        setCurrentExerciseIndex(null);
-      } else {
-        // Exercise complete - go back to selection screen
-        setCompletedExercises([...completedExercises, currentExerciseIndex]);
-        setCurrentExerciseIndex(null);
-        setWeight("");
-        setReps("");
-      }
-    } else {
-      // Next set - start rest timer
-      setCurrentSet((prev) => prev + 1);
-      setIsResting(true);
-      setRestTimeLeft(currentExercise.restSeconds);
-      setWeight("");
-      setReps("");
-    }
-  };
-
-  const saveWorkout = async () => {
-    const endTime = new Date();
-    const duration = Math.round((endTime - startTime) / 1000 / 60); // minutes
-
-    const workoutData = {
-      date: startTime.toISOString(),
-      name: workout.name,
-      duration,
-      exercises: workoutLog,
-    };
-
-    try {
-      await saveWorkoutToDb(workoutData);
-      setToast({ message: "Workout saved! Great job! 💪", type: "success" });
-      navigate("/");
-    } catch (error) {
-      console.error("Failed to save workout:", error);
-      // Fallback to localStorage if Supabase fails
-      const workouts = JSON.parse(localStorage.getItem("workouts") || "[]");
-      workouts.push({ id: Date.now(), ...workoutData });
-      localStorage.setItem("workouts", JSON.stringify(workouts));
-      setToast({
-        message: "Workout saved locally! Great job! 💪",
-        type: "success",
-      });
-      navigate("/");
-    }
-  };
-
-  const skipRest = () => {
-    setIsResting(false);
-    setRestTimeLeft(0);
-  };
 
   return (
     <div className="container mt-4">

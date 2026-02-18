@@ -45,6 +45,12 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (error) throw error;
+
+    // Update user state immediately after signup
+    if (data?.user) {
+      setUser(data.user);
+    }
+
     return data;
   };
 
@@ -55,6 +61,12 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (error) throw error;
+
+    // Update user state immediately to prevent race condition
+    if (data?.user) {
+      setUser(data.user);
+    }
+
     return data;
   };
 
