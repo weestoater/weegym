@@ -78,10 +78,10 @@ End every workout with a cool-down to:
 | Alternating Lateral Raised | F    | 2    | 10-12 | 60s  |
 | Tricep Pushdown (Rope)     | M    | 2    | 10-12 | 60s  |
 
-### Day 2 - Lower Body (M = machine, F = free-weights)
+### Day 2 - Mixed Areas (M = machine, F = free-weights)
 
-**Legs, Glutes & Core Strength**  
-**Target:** Legs • Glutes • Core
+**Legs, Shoulders & Core Strength**  
+**Target:** Legs • Shoulders • Core
 
 | Exercise                           | Type | Sets | Reps  | Rest |
 | ---------------------------------- | ---- | ---- | ----- | ---- |

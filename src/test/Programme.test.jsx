@@ -22,7 +22,7 @@ describe("Programme Component", () => {
     );
 
     expect(screen.getByText(/Day 1 - Upper Body/i)).toBeInTheDocument();
-    expect(screen.getByText(/Day 2 - Lower Body/i)).toBeInTheDocument();
+    expect(screen.getByText(/Day 2 - Mixed Areas/i)).toBeInTheDocument();
   });
 
   it("shows key concepts", () => {

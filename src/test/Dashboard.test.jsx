@@ -82,7 +82,7 @@ describe("Dashboard Component", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Chest • Shoulders • Arms/i)).toBeInTheDocument();
-      expect(screen.getByText(/Legs • Glutes • Core/i)).toBeInTheDocument();
+      expect(screen.getByText(/Legs • Shoulders • Core/i)).toBeInTheDocument();
     });
   });
 });

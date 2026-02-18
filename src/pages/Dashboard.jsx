@@ -157,7 +157,7 @@ function Dashboard() {
                   Start Day 2 Workout
                 </div>
                 <div className="small opacity-75 mt-1">
-                  Legs • Glutes • Core
+                  Legs • Shoulders • Core
                 </div>
               </div>
               <i className="bi bi-chevron-right"></i>

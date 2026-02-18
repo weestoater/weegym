@@ -53,9 +53,9 @@ const PROGRAMME = {
     ],
   },
   day2: {
-    name: "Day 2 - Lower Body",
-    description: "Legs, Glutes & Core Strength",
-    target: "Legs • Glutes • Core",
+    name: "Day 2 - Mixed Areas",
+    description: "Legs, Shoulders & Core Strength",
+    target: "Legs • Shoulders • Core",
     exercises: [
       {
         id: "d2e1",
