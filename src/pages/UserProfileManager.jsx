@@ -34,6 +34,7 @@ function UserProfileManager() {
     programmeEndDate: "",
     fitnessGoal: "",
     experienceLevel: "Beginner",
+    userMode: "programme",
     notes: "",
   });
 
@@ -65,13 +66,13 @@ function UserProfileManager() {
     try {
       setLoading(true);
       console.log("Loading user data...");
-      
+
       const profileData = await getUserProfile();
       console.log("Profile data loaded:", profileData);
-      
+
       const programmesData = await getAllUserProgrammes();
       console.log("Programmes data loaded:", programmesData);
-      
+
       const adminStatus = await isAdmin();
       console.log("Admin status loaded:", adminStatus);
 
@@ -88,10 +89,13 @@ function UserProfileManager() {
           programmeEndDate: profileData.programme_end_date || "",
           fitnessGoal: profileData.fitness_goal || "",
           experienceLevel: profileData.experience_level || "Beginner",
+          userMode: profileData.user_mode || "programme",
           notes: profileData.notes || "",
         });
       } else {
-        console.log("No profile found - user needs to create or migrate profile");
+        console.log(
+          "No profile found - user needs to create or migrate profile",
+        );
       }
     } catch (err) {
       console.error("Failed to load user data:", err);
@@ -475,6 +479,32 @@ function UserProfileManager() {
                     <option value="Intermediate">Intermediate</option>
                     <option value="Advanced">Advanced</option>
                   </select>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">User Mode *</label>
+                  <select
+                    className="form-select"
+                    value={profileForm.userMode}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        userMode: e.target.value,
+                      })
+                    }
+                    required
+                  >
+                    <option value="programme">
+                      Programme Mode - Full workout programme with machines
+                    </option>
+                    <option value="wellbeing_only">
+                      Wellbeing Only - Just track wellbeing activities
+                    </option>
+                  </select>
+                  <div className="form-text">
+                    Choose whether you want a structured programme or just track
+                    wellbeing activities
+                  </div>
                 </div>
 
                 <div className="col-12">

@@ -5,11 +5,19 @@ import {
   updateUserProfileById,
   getUserProgrammesById,
 } from "../services/userProfileService";
+import { supabase } from "../lib/supabaseClient";
 
 function EditUser({ user, onBack, onSave }) {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [programmes, setProgrammes] = useState([]);
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
   const [profileForm, setProfileForm] = useState({
     displayName: "",
     instructorName: "",
@@ -18,6 +26,7 @@ function EditUser({ user, onBack, onSave }) {
     programmeEndDate: "",
     fitnessGoal: "",
     experienceLevel: "Beginner",
+    userMode: "programme",
     notes: "",
     isActive: true,
   });
@@ -40,6 +49,7 @@ function EditUser({ user, onBack, onSave }) {
             programmeEndDate: profileData.programme_end_date || "",
             fitnessGoal: profileData.fitness_goal || "",
             experienceLevel: profileData.experience_level || "Beginner",
+            userMode: profileData.user_mode || "programme",
             notes: profileData.notes || "",
             isActive: profileData.is_active !== false,
           });
@@ -77,6 +87,117 @@ function EditUser({ user, onBack, onSave }) {
     setProfileForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handlePasswordReset = async () => {
+    if (!confirm(`Send password reset email to ${user.email}?`)) {
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+      setPasswordError("");
+      setPasswordSuccess("");
+
+      // Note: For password reset to work, Supabase email must be configured
+      // In development, you may need to configure SMTP settings in Supabase Dashboard
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/login`,
+      });
+
+      if (error) {
+        console.error("Password reset error:", error);
+        throw error;
+      }
+
+      setPasswordSuccess(
+        `Password reset email sent to ${user.email}. The user will receive an email with a link to reset their password. They should check their spam folder if they don't see it.`,
+      );
+    } catch (err) {
+      console.error("Failed to send password reset email:", err);
+
+      let errorMsg = err.message || "Failed to send password reset email";
+
+      // Provide helpful error messages
+      if (err.message?.includes("Email rate limit")) {
+        errorMsg =
+          "Too many reset attempts. Please wait a few minutes and try again.";
+      } else if (
+        err.message?.includes("not found") ||
+        err.message?.includes("User not found")
+      ) {
+        errorMsg = "User email not found in authentication system.";
+      } else if (
+        err.message?.includes("SMTP") ||
+        err.message?.includes("email")
+      ) {
+        errorMsg =
+          "Email service may not be configured. Check Supabase email settings in Dashboard > Authentication > Email Templates.";
+      }
+
+      setPasswordError(errorMsg);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    // Validate passwords
+    if (!passwordForm.newPassword) {
+      setPasswordError("Please enter a new password");
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters");
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to change the password for ${user.display_name}?`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+
+      // Note: Direct password change requires Supabase Admin API with service role key
+      // This is a client-side limitation - the admin API is not available here
+      // For production, create a Supabase Edge Function to handle this securely
+
+      // For now, fall back to sending a password reset email
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin}/login`,
+      });
+
+      if (error) {
+        console.error("Password reset error:", error);
+        throw error;
+      }
+
+      setPasswordError(""); // Clear any previous errors
+      setPasswordSuccess(
+        `Password reset email sent to ${user.email}. The user will receive an email with a link to create their new password. \n\nNote: To enable instant password changes without email, set up a Supabase Edge Function (see documentation).`,
+      );
+      setPasswordForm({ newPassword: "", confirmPassword: "" });
+    } catch (err) {
+      console.error("Failed to send password reset email:", err);
+      setPasswordError(err.message || "Failed to send password reset email");
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-5">
@@ -110,9 +231,7 @@ function EditUser({ user, onBack, onSave }) {
             <strong>User ID:</strong>{" "}
             <small className="font-monospace">{user.user_id}</small>
           </div>
-          {user.is_admin && (
-            <span className="badge bg-danger">Admin User</span>
-          )}
+          {user.is_admin && <span className="badge bg-danger">Admin User</span>}
         </div>
       </div>
 
@@ -240,6 +359,30 @@ function EditUser({ user, onBack, onSave }) {
             </div>
 
             <div className="mb-3">
+              <label htmlFor="userMode" className="form-label">
+                User Mode <span className="text-danger">*</span>
+              </label>
+              <select
+                className="form-select"
+                id="userMode"
+                value={profileForm.userMode}
+                onChange={(e) => handleChange("userMode", e.target.value)}
+                required
+              >
+                <option value="programme">
+                  Programme Mode - Full workout programme with machines
+                </option>
+                <option value="wellbeing_only">
+                  Wellbeing Only - Just track wellbeing activities
+                </option>
+              </select>
+              <div className="form-text">
+                Choose whether this user wants a structured programme or just
+                track wellbeing activities
+              </div>
+            </div>
+
+            <div className="mb-3">
               <label htmlFor="notes" className="form-label">
                 Notes
               </label>
@@ -297,6 +440,129 @@ function EditUser({ user, onBack, onSave }) {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      {/* Password Change Section */}
+      <div className="card mb-4">
+        <div className="card-header bg-warning bg-opacity-10">
+          <h4 className="h6 mb-0">
+            <i className="bi bi-shield-lock me-2"></i>
+            Password Management
+          </h4>
+        </div>
+        <div className="card-body">
+          {passwordSuccess && (
+            <div className="alert alert-success" role="alert">
+              <i className="bi bi-check-circle me-2"></i>
+              {passwordSuccess}
+            </div>
+          )}
+
+          {passwordError && (
+            <div className="alert alert-danger" role="alert">
+              <i className="bi bi-exclamation-triangle me-2"></i>
+              {passwordError}
+            </div>
+          )}
+
+          {/* Password Reset Email Option */}
+          <div className="mb-4">
+            <h5 className="h6 mb-2">Send Password Reset Email</h5>
+            <p className="text-muted small mb-3">
+              Send a password reset link to {user.email}. The user will receive
+              an email with instructions to create a new password.
+            </p>
+            <button
+              type="button"
+              className="btn btn-outline-primary"
+              onClick={handlePasswordReset}
+              disabled={changingPassword}
+            >
+              {changingPassword ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2"></span>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <i className="bi bi-envelope me-2"></i>
+                  Send Reset Email
+                </>
+              )}
+            </button>
+          </div>
+
+          <hr />
+
+          {/* Direct Password Change Option */}
+          <div>
+            <h5 className="h6 mb-2">Change Password Directly</h5>
+            <p className="text-muted small mb-3">
+              Set a new password for this user. Currently, this will send a
+              password reset email. For instant password changes, you need to
+              set up a Supabase Edge Function (see documentation).
+            </p>
+            <form onSubmit={handlePasswordChange}>
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="newPassword" className="form-label">
+                    New Password <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    id="newPassword"
+                    value={passwordForm.newPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        newPassword: e.target.value,
+                      })
+                    }
+                    placeholder="Minimum 6 characters"
+                    disabled={changingPassword}
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label htmlFor="confirmPassword" className="form-label">
+                    Confirm Password <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    id="confirmPassword"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) =>
+                      setPasswordForm({
+                        ...passwordForm,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    placeholder="Re-enter password"
+                    disabled={changingPassword}
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="btn btn-warning"
+                disabled={changingPassword}
+              >
+                {changingPassword ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-key me-2"></i>
+                    Set Password (Sends Reset Email)
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 

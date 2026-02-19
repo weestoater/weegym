@@ -17,6 +17,7 @@ function AddUser() {
     programmeStartDate: new Date().toISOString().split("T")[0],
     programmePhase: "Foundation",
     experienceLevel: "Beginner",
+    userMode: "programme",
     fitnessGoal: "",
     notes: "",
     createStarterProgramme: true,
@@ -97,9 +98,10 @@ function AddUser() {
             email: formData.email, // Cache email for display
             display_name: formData.displayName,
             instructor_name: formData.instructorName,
-            programme_start_date: formData.programmeStartDate,
+            programme_start_date: formData.programmeStartDate || null,
             programme_phase: formData.programmePhase,
             experience_level: formData.experienceLevel,
+            user_mode: formData.userMode,
             fitness_goal: formData.fitnessGoal,
             notes: formData.notes,
             is_active: true,
@@ -133,6 +135,7 @@ function AddUser() {
         programmeStartDate: new Date().toISOString().split("T")[0],
         programmePhase: "Foundation",
         experienceLevel: "Beginner",
+        userMode: "programme",
         fitnessGoal: "",
         notes: "",
         createStarterProgramme: true,
@@ -359,6 +362,30 @@ function AddUser() {
                         <option value="Intermediate">Intermediate</option>
                         <option value="Advanced">Advanced</option>
                       </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <label className="form-label">
+                      User Mode <span className="text-danger">*</span>
+                    </label>
+                    <select
+                      className="form-select"
+                      value={formData.userMode}
+                      onChange={(e) => handleChange("userMode", e.target.value)}
+                      disabled={loading}
+                      required
+                    >
+                      <option value="programme">
+                        Programme Mode - Full workout programme with machines
+                      </option>
+                      <option value="wellbeing_only">
+                        Wellbeing Only - Just track wellbeing activities
+                      </option>
+                    </select>
+                    <div className="form-text">
+                      Choose whether this user wants a structured programme or
+                      just track wellbeing activities
                     </div>
                   </div>
 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getWorkouts, getActiveWellbeingSessions } from "../lib/database";
+import { getUserProfile } from "../services/userProfileService";
 
 function Dashboard() {
+  const [userProfile, setUserProfile] = useState(null);
   const [lastWorkout, setLastWorkout] = useState(null);
   const [streak, setStreak] = useState(0);
   const [wellbeingSessions, setWellbeingSessions] = useState(0);
@@ -16,6 +18,10 @@ function Dashboard() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+
+      // Load user profile
+      const profile = await getUserProfile();
+      setUserProfile(profile);
 
       // Load workouts from Supabase
       const workouts = await getWorkouts();
@@ -62,6 +68,10 @@ function Dashboard() {
     }
   };
 
+  const userMode = userProfile?.user_mode || "programme";
+  const displayName = userProfile?.display_name || "there";
+  const isProgrammeMode = userMode === "programme";
+
   return (
     <div className="container mt-4">
       {loading ? (
@@ -75,117 +85,215 @@ function Dashboard() {
           {/* Welcome Section */}
           <div className="card mb-4 bg-primary text-white">
             <div className="card-body">
-              <h2 className="h5 mb-1">Welcome back, Ian!</h2>
-              <p className="mb-0 opacity-75">Ready to crush your workout?</p>
+              <h2 className="h5 mb-1">Welcome back, {displayName}!</h2>
+              <p className="mb-0 opacity-75">
+                {isProgrammeMode
+                  ? "Ready to crush your workout?"
+                  : "Ready to log your wellbeing activity?"}
+              </p>
             </div>
           </div>
 
-          {/* Stats Row */}
-          <div className="row g-3 mb-4">
-            <div className="col-6">
-              <div className="card text-center">
-                <div className="card-body">
-                  <i className="bi bi-fire text-danger fs-1"></i>
-                  <h3 className="h2 mb-0">{streak}</h3>
-                  <p className="text-muted small mb-0">Workouts</p>
+          {/* Stats Row - Different for each mode */}
+          {isProgrammeMode ? (
+            // Programme Mode: Show workouts and wellbeing stats
+            <div className="row g-3 mb-4">
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-fire text-danger fs-1"></i>
+                    <h3 className="h2 mb-0">{streak}</h3>
+                    <p className="text-muted small mb-0">Workouts</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-calendar-check text-success fs-1"></i>
+                    <h3 className="h2 mb-0">
+                      {lastWorkout
+                        ? new Date(lastWorkout.date).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                            },
+                          )
+                        : "--"}
+                    </h3>
+                    <p className="text-muted small mb-0">Last Workout</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-activity text-primary fs-1"></i>
+                    <h3 className="h2 mb-0">{wellbeingSessions}</h3>
+                    <p className="text-muted small mb-0">Wellbeing</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-trophy text-warning fs-1"></i>
+                    <h3 className="h2 mb-0">
+                      {lastWellbeing ? lastWellbeing.score : "--"}
+                    </h3>
+                    <p className="text-muted small mb-0">Last Score</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="col-6">
-              <div className="card text-center">
-                <div className="card-body">
-                  <i className="bi bi-calendar-check text-success fs-1"></i>
-                  <h3 className="h2 mb-0">
-                    {lastWorkout
-                      ? new Date(lastWorkout.date).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                        })
-                      : "--"}
-                  </h3>
-                  <p className="text-muted small mb-0">Last Workout</p>
+          ) : (
+            // Wellbeing Only Mode: Focus on wellbeing stats
+            <div className="row g-3 mb-4">
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-activity text-primary fs-1"></i>
+                    <h3 className="h2 mb-0">{wellbeingSessions}</h3>
+                    <p className="text-muted small mb-0">Total Sessions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-trophy text-warning fs-1"></i>
+                    <h3 className="h2 mb-0">
+                      {lastWellbeing ? lastWellbeing.score : "--"}
+                    </h3>
+                    <p className="text-muted small mb-0">Last Score</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-calendar-check text-success fs-1"></i>
+                    <h3 className="h2 mb-0">
+                      {lastWellbeing
+                        ? new Date(lastWellbeing.date).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                            },
+                          )
+                        : "--"}
+                    </h3>
+                    <p className="text-muted small mb-0">Last Session</p>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6">
+                <div className="card text-center">
+                  <div className="card-body">
+                    <i className="bi bi-star text-info fs-1"></i>
+                    <h3 className="h2 mb-0">
+                      {lastWellbeing ? lastWellbeing.machine : "--"}
+                    </h3>
+                    <p className="text-muted small mb-0">Last Machine</p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="col-6">
-              <div className="card text-center">
-                <div className="card-body">
-                  <i className="bi bi-activity text-primary fs-1"></i>
-                  <h3 className="h2 mb-0">{wellbeingSessions}</h3>
-                  <p className="text-muted small mb-0">Wellbeing</p>
-                </div>
-              </div>
-            </div>
-            <div className="col-6">
-              <div className="card text-center">
-                <div className="card-body">
-                  <i className="bi bi-trophy text-warning fs-1"></i>
-                  <h3 className="h2 mb-0">
-                    {lastWellbeing ? lastWellbeing.score : "--"}
-                  </h3>
-                  <p className="text-muted small mb-0">Last Score</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Different for each mode */}
           <h3 className="h6 text-muted mb-3">QUICK ACTIONS</h3>
           <div className="d-grid gap-3">
-            <Link
-              to="/workout?day=1"
-              className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
-            >
-              <div className="text-start">
-                <div>
-                  <i className="bi bi-play-circle me-2"></i>
-                  Start Day 1 Workout
-                </div>
-                <div className="small opacity-75 mt-1">
-                  Chest • Shoulders • Arms
-                </div>
-              </div>
-              <i className="bi bi-chevron-right"></i>
-            </Link>
-            <Link
-              to="/workout?day=2"
-              className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
-            >
-              <div className="text-start">
-                <div>
-                  <i className="bi bi-play-circle me-2"></i>
-                  Start Day 2 Workout
-                </div>
-                <div className="small opacity-75 mt-1">
-                  Legs • Shoulders • Core
-                </div>
-              </div>
-              <i className="bi bi-chevron-right"></i>
-            </Link>
-            <Link
-              to="/wellbeing"
-              className="btn btn-success btn-lg btn-touch d-flex align-items-center justify-content-between"
-            >
-              <span>
-                <i className="bi bi-activity me-2"></i>
-                Log Active Wellbeing
-              </span>
-              <i className="bi bi-chevron-right"></i>
-            </Link>
-            <Link
-              to="/programme"
-              className="btn btn-outline-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
-            >
-              <span>
-                <i className="bi bi-journal-text me-2"></i>
-                View Programme
-              </span>
-              <i className="bi bi-chevron-right"></i>
-            </Link>
+            {isProgrammeMode ? (
+              // Programme Mode: Show workout and wellbeing actions
+              <>
+                <Link
+                  to="/workout?day=1"
+                  className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
+                >
+                  <div className="text-start">
+                    <div>
+                      <i className="bi bi-play-circle me-2"></i>
+                      Start Day 1 Workout
+                    </div>
+                    <div className="small opacity-75 mt-1">
+                      Chest • Shoulders • Arms
+                    </div>
+                  </div>
+                  <i className="bi bi-chevron-right"></i>
+                </Link>
+                <Link
+                  to="/workout?day=2"
+                  className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
+                >
+                  <div className="text-start">
+                    <div>
+                      <i className="bi bi-play-circle me-2"></i>
+                      Start Day 2 Workout
+                    </div>
+                    <div className="small opacity-75 mt-1">
+                      Legs • Shoulders • Core
+                    </div>
+                  </div>
+                  <i className="bi bi-chevron-right"></i>
+                </Link>
+                <Link
+                  to="/wellbeing"
+                  className="btn btn-success btn-lg btn-touch d-flex align-items-center justify-content-between"
+                >
+                  <span>
+                    <i className="bi bi-activity me-2"></i>
+                    Log Active Wellbeing
+                  </span>
+                  <i className="bi bi-chevron-right"></i>
+                </Link>
+                <Link
+                  to="/programme"
+                  className="btn btn-outline-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
+                >
+                  <span>
+                    <i className="bi bi-journal-text me-2"></i>
+                    View Programme
+                  </span>
+                  <i className="bi bi-chevron-right"></i>
+                </Link>
+              </>
+            ) : (
+              // Wellbeing Only Mode: Focus on wellbeing actions
+              <>
+                <Link
+                  to="/wellbeing"
+                  className="btn btn-success btn-lg btn-touch d-flex align-items-center justify-content-between"
+                >
+                  <div className="text-start">
+                    <div>
+                      <i className="bi bi-activity me-2"></i>
+                      Log Wellbeing Session
+                    </div>
+                    <div className="small opacity-75 mt-1">
+                      Track your machine activities
+                    </div>
+                  </div>
+                  <i className="bi bi-chevron-right"></i>
+                </Link>
+                <Link
+                  to="/history"
+                  className="btn btn-outline-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
+                >
+                  <span>
+                    <i className="bi bi-clock-history me-2"></i>
+                    View History
+                  </span>
+                  <i className="bi bi-chevron-right"></i>
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Last Workout Summary */}
-          {lastWorkout && (
+          {/* Last Workout Summary - Only for Programme Mode */}
+          {isProgrammeMode && lastWorkout && (
             <>
               <h3 className="h6 text-muted mt-4 mb-3">LAST WORKOUT</h3>
               <div className="card mb-3">
@@ -247,11 +355,47 @@ function Dashboard() {
             </>
           )}
 
-          {/* Tips */}
+          {/* Last Wellbeing Summary - Only for Wellbeing Only Mode */}
+          {!isProgrammeMode && lastWellbeing && (
+            <>
+              <h3 className="h6 text-muted mt-4 mb-3">
+                LAST WELLBEING SESSION
+              </h3>
+              <div className="card mb-3">
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                      <h4 className="h6 mb-1">{lastWellbeing.machine}</h4>
+                      <p className="text-muted small mb-0">
+                        <i className="bi bi-calendar me-1"></i>
+                        {new Date(lastWellbeing.date).toLocaleDateString(
+                          "en-GB",
+                        )}
+                      </p>
+                    </div>
+                    <div className="text-end">
+                      <p className="mb-0 text-muted small">Score</p>
+                      <p className="h6 mb-0">{lastWellbeing.score}</p>
+                    </div>
+                  </div>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <span className="small text-muted">Mode:</span>
+                    <span className="badge bg-primary">
+                      {lastWellbeing.mode}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Tips - Different for each mode */}
           <div className="alert alert-info mt-4" role="alert">
             <i className="bi bi-lightbulb me-2"></i>
-            <strong>Tip:</strong> Remember to maintain 2 seconds up, 2 seconds
-            down tempo for maximum muscle growth.
+            <strong>Tip:</strong>{" "}
+            {isProgrammeMode
+              ? "Remember to maintain 2 seconds up, 2 seconds down tempo for maximum muscle growth."
+              : "Consistency is key! Try to log your wellbeing activities regularly to track your progress."}
           </div>
         </>
       )}
