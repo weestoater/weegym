@@ -63,12 +63,13 @@ export async function saveUserProfile(profileData) {
           email: userData.user.email, // Cache email for display
           display_name: profileData.displayName,
           instructor_name: profileData.instructorName,
-          programme_start_date: profileData.programmeStartDate,
+          programme_start_date: profileData.programmeStartDate || null,
           programme_phase: profileData.programmePhase,
-          programme_end_date: profileData.programmeEndDate,
+          programme_end_date: profileData.programmeEndDate || null,
           fitness_goal: profileData.fitnessGoal,
           experience_level: profileData.experienceLevel,
           notes: profileData.notes,
+          user_mode: profileData.userMode || "programme",
           is_active:
             profileData.isActive !== undefined ? profileData.isActive : true,
           updated_at: new Date().toISOString(),
@@ -366,7 +367,10 @@ export async function getAllUserProgrammes() {
             exercises,
           };
         } catch (err) {
-          console.error(`Failed to get exercises for programme ${programme.id}:`, err);
+          console.error(
+            `Failed to get exercises for programme ${programme.id}:`,
+            err,
+          );
           return {
             ...programme,
             exercises: [],
@@ -617,12 +621,13 @@ export async function updateUserProfileById(userId, profileData) {
       .update({
         display_name: profileData.displayName,
         instructor_name: profileData.instructorName,
-        programme_start_date: profileData.programmeStartDate,
+        programme_start_date: profileData.programmeStartDate || null,
         programme_phase: profileData.programmePhase,
-        programme_end_date: profileData.programmeEndDate,
+        programme_end_date: profileData.programmeEndDate || null,
         fitness_goal: profileData.fitnessGoal,
         experience_level: profileData.experienceLevel,
         notes: profileData.notes,
+        user_mode: profileData.userMode,
         is_active:
           profileData.isActive !== undefined ? profileData.isActive : true,
         updated_at: new Date().toISOString(),

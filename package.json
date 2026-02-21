@@ -1,7 +1,7 @@
 {
   "name": "weegym",
   "private": true,
-  "version": "1.2.1",
+  "version": "1.2.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,12 +14,18 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "security:scan": "git diff --cached | grep -E \"(password|secret|api_key|private_key|token|credential).*=.*['\\\"]\" || echo '✅ No secrets found in staged files'",
+    "security:console": "git grep -n \"console\\.log\" src/ || echo '✅ No console.log found'",
+    "security:audit": "npm audit",
+    "security:check": "npm run security:scan && npm run security:console && npm run security:audit",
+    "precommit": "npm run security:check"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.93.3",
     "bootstrap": "^5.3.2",
     "bootstrap-icons": "^1.11.3",
+    "html5-qrcode": "^2.3.8",
     "prop-types": "^15.8.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

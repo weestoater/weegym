@@ -13,6 +13,7 @@ import WorkoutSession from "./pages/WorkoutSession";
 import History from "./pages/History";
 import Programme from "./pages/Programme";
 import ActiveWellbeing from "./pages/ActiveWellbeing";
+import CalorieTracker from "./pages/CalorieTracker";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import UserProfileManager from "./pages/UserProfileManager";
@@ -31,6 +32,7 @@ function NavigationBar() {
     { path: "/", icon: "bi-house-door", label: "Home" },
     { path: "/workout", icon: "bi-play-circle", label: "Workout" },
     { path: "/wellbeing", icon: "bi-activity", label: "AW" },
+    { path: "/calories", icon: "bi-graph-up", label: "Calories" },
     { path: "/history", icon: "bi-clock-history", label: "History" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
@@ -177,6 +179,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <ActiveWellbeing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/calories"
+            element={
+              <ProtectedRoute>
+                <CalorieTracker />
               </ProtectedRoute>
             }
           />
