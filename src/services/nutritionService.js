@@ -44,12 +44,27 @@ export async function searchByName(query, page = 1, pageSize = 20) {
     const response = await fetch(
       `${OPEN_FOOD_FACTS_API}/cgi/search.pl?search_terms=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}&json=true`,
     );
+
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
     const data = await response.json();
 
+    // Handle case where no products are found or data structure is unexpected
+    if (!data || !Array.isArray(data.products)) {
+      return {
+        count: 0,
+        page: page,
+        pageSize: pageSize,
+        products: [],
+      };
+    }
+
     return {
-      count: data.count,
-      page: data.page,
-      pageSize: data.page_size,
+      count: data.count || 0,
+      page: data.page || page,
+      pageSize: data.page_size || pageSize,
       products: data.products.map(parseProductData),
     };
   } catch (error) {
@@ -161,6 +176,9 @@ export function calculateDailyTotals(foodLogs) {
           (parseFloat(log.carbohydrates) || 0) * quantity,
         fat: totals.fat + (parseFloat(log.fat) || 0) * quantity,
         fiber: totals.fiber + (parseFloat(log.fiber) || 0) * quantity,
+        slimmingWorldSyns:
+          totals.slimmingWorldSyns +
+          (parseFloat(log.slimming_world_syns) || 0) * quantity,
         items: totals.items + 1,
       };
     },
@@ -170,6 +188,7 @@ export function calculateDailyTotals(foodLogs) {
       carbohydrates: 0,
       fat: 0,
       fiber: 0,
+      slimmingWorldSyns: 0,
       items: 0,
     },
   );

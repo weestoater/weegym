@@ -24,6 +24,7 @@ function CalorieTracker() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [lastSearchQuery, setLastSearchQuery] = useState(""); // Track last searched term
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [tableNotFound, setTableNotFound] = useState(false);
 
@@ -83,6 +84,7 @@ function CalorieTracker() {
         carbohydrates: 0,
         fat: 0,
         fiber: 0,
+        slimmingWorldSyns: 0,
         items: 0,
       });
     }
@@ -109,11 +111,15 @@ function CalorieTracker() {
 
     try {
       setSearching(true);
+      setSearchResults([]); // Clear previous results
       const results = await searchByName(searchQuery);
       setSearchResults(results.products || []);
+      setLastSearchQuery(searchQuery); // Track what we just searched for
     } catch (error) {
       console.error("Error searching products:", error);
-      alert("Search failed. Please try again.");
+      alert(
+        `Search failed: ${error.message}. Please check your internet connection and try again.`,
+      );
     } finally {
       setSearching(false);
     }
@@ -144,6 +150,7 @@ function CalorieTracker() {
           fiber: foodData.fiber || 0,
           sodium: foodData.sodium || 0,
           sugar: foodData.sugar || 0,
+          slimming_world_syns: foodData.slimmingWorldSyns || 0,
           quantity: foodData.quantity || 1,
           meal_type: foodData.mealType || "snack",
           notes: foodData.notes || null,
@@ -299,6 +306,17 @@ function CalorieTracker() {
                 <small>Fat</small>
               </div>
             </div>
+            {dailyTotals.slimmingWorldSyns > 0 && (
+              <div className="row text-center mt-3 pt-3 border-top border-white">
+                <div className="col-12">
+                  <div className="fs-4 fw-bold">
+                    <i className="bi bi-star-fill me-2"></i>
+                    {formatNumber(dailyTotals.slimmingWorldSyns)} Syns
+                  </div>
+                  <small>Slimming World</small>
+                </div>
+              </div>
+            )}
             <div className="text-center mt-2">
               <small>{dailyTotals.items} items logged today</small>
             </div>
@@ -328,6 +346,7 @@ function CalorieTracker() {
                   setShowSearch(false);
                   setSearchResults([]);
                   setSearchQuery("");
+                  setLastSearchQuery("");
                 }}
                 aria-label="Close search"
               >
@@ -347,7 +366,7 @@ function CalorieTracker() {
                 <button
                   className="btn btn-primary"
                   type="submit"
-                  disabled={searching}
+                  disabled={searching || !searchQuery.trim()}
                 >
                   {searching ? (
                     <span className="spinner-border spinner-border-sm" />
@@ -358,7 +377,7 @@ function CalorieTracker() {
               </div>
             </form>
 
-            {searchResults.length > 0 && (
+            {searchResults.length > 0 ? (
               <div className="list-group">
                 {searchResults.map((product, index) => (
                   <button
@@ -394,6 +413,26 @@ function CalorieTracker() {
                   </button>
                 ))}
               </div>
+            ) : (
+              !searching &&
+              lastSearchQuery &&
+              searchQuery === lastSearchQuery && (
+                <div className="alert alert-info">
+                  <i className="bi bi-info-circle me-2"></i>
+                  No results found for "{lastSearchQuery}". Try different
+                  keywords or{" "}
+                  <button
+                    className="btn btn-link p-0"
+                    onClick={() => {
+                      setShowSearch(false);
+                      setShowManual(true);
+                    }}
+                  >
+                    use manual entry
+                  </button>
+                  .
+                </div>
+              )
             )}
           </div>
         </div>
@@ -488,6 +527,16 @@ function CalorieTracker() {
                       <small className="text-muted">
                         {log.serving_size} × {log.quantity} ={" "}
                         {Math.round(log.calories * log.quantity)} cal
+                        {log.slimming_world_syns > 0 && (
+                          <>
+                            {" • "}
+                            <i className="bi bi-star-fill text-warning"></i>{" "}
+                            {formatNumber(
+                              log.slimming_world_syns * log.quantity,
+                            )}{" "}
+                            syns
+                          </>
+                        )}
                       </small>
                       {log.meal_type && (
                         <span className="badge bg-secondary ms-2">
@@ -533,6 +582,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
     fiber: initialData?.fiber || "",
     sugar: initialData?.sugar || "",
     sodium: initialData?.sodium || "",
+    slimmingWorldSyns: initialData?.slimmingWorldSyns || "",
     quantity: 1,
     mealType: "snack",
     notes: "",
@@ -655,6 +705,26 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
             min="0"
             step="0.1"
           />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-6 mb-3">
+          <label className="form-label">
+            <i className="bi bi-star-fill text-warning me-1"></i>
+            Slimming World Syns
+          </label>
+          <input
+            type="number"
+            className="form-control"
+            name="slimmingWorldSyns"
+            value={formData.slimmingWorldSyns}
+            onChange={handleChange}
+            min="0"
+            step="0.5"
+            placeholder="Optional"
+          />
+          <small className="text-muted">For Slimming World tracking</small>
         </div>
       </div>
 

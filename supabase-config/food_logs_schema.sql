@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS food_logs (
   fiber DECIMAL(10, 2),
   sodium DECIMAL(10, 2),
   sugar DECIMAL(10, 2),
+  slimming_world_syns DECIMAL(10, 2), -- Slimming World Syns value
   quantity DECIMAL(10, 2) DEFAULT 1,
   meal_type TEXT CHECK (meal_type IN ('breakfast', 'lunch', 'dinner', 'snack')),
   notes TEXT,
@@ -74,7 +75,8 @@ SELECT
   SUM(protein * quantity) as total_protein,
   SUM(carbohydrates * quantity) as total_carbs,
   SUM(fat * quantity) as total_fat,
-  SUM(fiber * quantity) as total_fiber
+  SUM(fiber * quantity) as total_fiber,
+  SUM(slimming_world_syns * quantity) as total_syns
 FROM food_logs
 GROUP BY user_id, date
 ORDER BY date DESC;

@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import { Html5QrcodeScanner } from "html5-qrcode";
 
 /**
  * BarcodeScanner Component
@@ -12,70 +13,70 @@ import PropTypes from "prop-types";
  */
 function BarcodeScanner({ onScan, onClose }) {
   const [error, setError] = useState(null);
-  const [hasLibrary, setHasLibrary] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const scannerRef = useRef(null);
-  const readerRef = useRef(null);
-
-  const initScanner = useCallback(
-    (Html5QrcodeScanner) => {
-      if (!scannerRef.current) return;
-
-      const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-        disableFlip: false,
-        supportedScanTypes: [0, 1, 2, 3, 4, 5, 6, 7, 8], // All barcode types
-      };
-
-      const scanner = new Html5QrcodeScanner("barcode-reader", config, false);
-
-      scanner.render(
-        (decodedText) => {
-          // Success callback
-          console.log("Barcode scanned:", decodedText);
-          if (onScan) {
-            onScan(decodedText);
-          }
-          // Clear scanner after successful scan
-          scanner.clear().catch(console.error);
-        },
-        () => {
-          // Error callback (fires continuously while scanning)
-          // We don't want to show these as they're just "no barcode found" messages
-        },
-      );
-
-      readerRef.current = scanner;
-    },
-    [onScan],
-  );
 
   useEffect(() => {
-    // Check if html5-qrcode library is available
-    const checkLibrary = async () => {
+    let scanner = null;
+
+    const initializeScanner = () => {
       try {
-        const { Html5QrcodeScanner } = await import("html5-qrcode");
-        setHasLibrary(true);
-        initScanner(Html5QrcodeScanner);
-      } catch (err) {
-        console.error("html5-qrcode library not found:", err);
-        setError(
-          "Barcode scanner library not installed. Please install html5-qrcode package.",
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          aspectRatio: 1.0,
+          disableFlip: false,
+          supportedScanTypes: [0, 1, 2, 3, 4, 5, 6, 7, 8], // All barcode types
+        };
+
+        scanner = new Html5QrcodeScanner("barcode-reader", config, false);
+
+        scanner.render(
+          (decodedText) => {
+            // Success callback
+            console.log("Barcode scanned:", decodedText);
+            if (onScan) {
+              onScan(decodedText);
+            }
+            // Clear scanner after successful scan
+            if (scanner) {
+              scanner.clear().catch(console.error);
+            }
+          },
+          () => {
+            // Error callback (fires continuously while scanning)
+            // We don't want to show these as they're just "no barcode found" messages
+          },
         );
-        setHasLibrary(false);
+
+        scannerRef.current = scanner;
+        setIsScanning(true);
+      } catch (err) {
+        console.error("Failed to initialize barcode scanner:", err);
+        setError(
+          err.name === "NotAllowedError" || err.name === "PermissionDeniedError"
+            ? "Camera permission denied. Please allow camera access in your browser settings."
+            : err.name === "NotFoundError"
+              ? "No camera found on this device."
+              : "Failed to initialize camera. Please check your browser permissions and ensure you're using HTTPS.",
+        );
       }
     };
 
-    checkLibrary();
+    // Initialize scanner after a short delay to ensure DOM is ready
+    const timeoutId = setTimeout(initializeScanner, 100);
 
     return () => {
+      clearTimeout(timeoutId);
       // Cleanup scanner on unmount
-      if (readerRef.current) {
-        readerRef.current.clear().catch(console.error);
+      if (scannerRef.current) {
+        scannerRef.current
+          .clear()
+          .catch((err) => console.error("Error clearing scanner:", err));
       }
     };
-  }, [initScanner]);
+  }, [onScan]);
 
   const handleManualInput = () => {
     const barcode = prompt("Enter barcode manually:");
@@ -93,6 +94,17 @@ function BarcodeScanner({ onScan, onClose }) {
             Scanner Not Available
           </h5>
           <p className="text-muted mb-3">{error}</p>
+
+          <div className="alert alert-info small mb-3">
+            <strong>Quick Fixes:</strong>
+            <ul className="mb-0 mt-2">
+              <li>Check browser permissions (click 🔒 in address bar)</li>
+              <li>Ensure you're on HTTPS (secure connection)</li>
+              <li>Refresh the page after granting permissions</li>
+              <li>Try a different browser if issues persist</li>
+            </ul>
+          </div>
+
           <div className="d-grid gap-2">
             <button className="btn btn-primary" onClick={handleManualInput}>
               <i className="bi bi-keyboard me-2"></i>
@@ -124,9 +136,9 @@ function BarcodeScanner({ onScan, onClose }) {
           </button>
         </div>
 
-        <div id="barcode-reader" ref={scannerRef} className="mb-3"></div>
+        <div id="barcode-reader" className="mb-3"></div>
 
-        {hasLibrary && (
+        {isScanning && (
           <div className="d-grid gap-2">
             <button
               className="btn btn-outline-primary"
@@ -142,6 +154,56 @@ function BarcodeScanner({ onScan, onClose }) {
           <i className="bi bi-info-circle me-2"></i>
           Position the barcode within the frame. The scanner will automatically
           detect it.
+        </div>
+
+        <div className="mt-3">
+          <button
+            className="btn btn-link btn-sm p-0 text-decoration-none"
+            onClick={() => setShowHelp(!showHelp)}
+          >
+            <i
+              className={`bi bi-${showHelp ? "chevron-up" : "chevron-down"} me-1`}
+            ></i>
+            {showHelp ? "Hide" : "Need help with camera permissions?"}
+          </button>
+
+          {showHelp && (
+            <div className="alert alert-secondary mt-2 small">
+              <strong>Camera Not Working?</strong>
+              <hr className="my-2" />
+              <p className="mb-2">
+                <strong>On iPhone/iPad:</strong>
+              </p>
+              <ul className="mb-2">
+                <li>Settings → Safari → Camera → Allow</li>
+                <li>
+                  Or tap "aA" in Safari address bar → Website Settings → Camera
+                  → Allow
+                </li>
+              </ul>
+              <p className="mb-2">
+                <strong>On Android:</strong>
+              </p>
+              <ul className="mb-2">
+                <li>Tap 🔒 next to URL → Permissions → Camera → Allow</li>
+                <li>
+                  Or Settings → Apps → Browser → Permissions → Camera → Allow
+                </li>
+              </ul>
+              <p className="mb-2">
+                <strong>On Desktop:</strong>
+              </p>
+              <ul className="mb-0">
+                <li>Click 🔒 or camera icon in address bar</li>
+                <li>Select "Allow" for camera access</li>
+              </ul>
+              <hr className="my-2" />
+              <small className="text-muted">
+                ⚠️ Camera requires HTTPS connection. Reload page after changing
+                permissions.
+              </small>
+            </div>
+          )}
         </div>
       </div>
     </div>
