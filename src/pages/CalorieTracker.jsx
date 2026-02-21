@@ -648,7 +648,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
       </div>
 
       <div className="row">
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Serving Size</label>
           <input
             type="text"
@@ -659,7 +659,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
             placeholder="e.g., 100g, 1 cup"
           />
         </div>
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Quantity</label>
           <input
             type="number"
@@ -674,7 +674,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
       </div>
 
       <div className="row">
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Calories (kcal)</label>
           <input
             type="number"
@@ -686,7 +686,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
             step="0.1"
           />
         </div>
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Protein (g)</label>
           <input
             type="number"
@@ -701,7 +701,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
       </div>
 
       <div className="row">
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Carbohydrates (g)</label>
           <input
             type="number"
@@ -713,7 +713,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
             step="0.1"
           />
         </div>
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Fat (g)</label>
           <input
             type="number"
@@ -728,7 +728,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
       </div>
 
       <div className="row">
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Sugar (g)</label>
           <input
             type="number"
@@ -741,7 +741,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
             placeholder="For Syns calculation"
           />
         </div>
-        <div className="col-md-6 mb-3">
+        <div className="col-6 mb-3">
           <label className="form-label">Fiber (g)</label>
           <input
             type="number"
@@ -756,7 +756,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
       </div>
 
       <div className="row">
-        <div className="col-md-6 mb-3">
+        <div className="col-12 mb-3">
           <label className="form-label">
             <i className="bi bi-star-fill text-warning me-1"></i>
             Slimming World Syns
