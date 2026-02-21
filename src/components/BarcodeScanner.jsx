@@ -18,6 +18,8 @@ function BarcodeScanner({ onScan, onClose }) {
   const [showHelp, setShowHelp] = useState(false);
   const [cameras, setCameras] = useState([]);
   const [selectedCamera, setSelectedCamera] = useState(null);
+  const [scanSuccess, setScanSuccess] = useState(false);
+  const [scanAttempts, setScanAttempts] = useState(0);
   const scannerRef = useRef(null);
   const mountedRef = useRef(true);
 
@@ -79,8 +81,14 @@ function BarcodeScanner({ onScan, onClose }) {
           (decodedText) => {
             // Success callback
             console.log("Barcode scanned:", decodedText);
+            if (mountedRef.current) {
+              setScanSuccess(true);
+            }
             if (onScan && mountedRef.current) {
-              onScan(decodedText);
+              // Small delay to show success feedback
+              setTimeout(() => {
+                onScan(decodedText);
+              }, 500);
             }
             // Stop scanner after successful scan
             if (
@@ -90,9 +98,12 @@ function BarcodeScanner({ onScan, onClose }) {
               html5QrCode.stop().catch(console.error);
             }
           },
-          () => {
+          (errorMessage) => {
             // Error callback (fires continuously while scanning)
-            // We don't want to show these as they're just "no barcode found" messages
+            // Increment scan attempts to show activity
+            if (mountedRef.current) {
+              setScanAttempts((prev) => prev + 1);
+            }
           },
         );
 
@@ -245,6 +256,29 @@ function BarcodeScanner({ onScan, onClose }) {
             <i className="bi bi-info-circle me-2"></i>
             <strong>First time?</strong> Safari will ask for camera permission.
             Tap "Allow" when prompted.
+          </div>
+        )}
+
+        {scanSuccess && (
+          <div className="alert alert-success mb-3">
+            <i className="bi bi-check-circle-fill me-2"></i>
+            <strong>Barcode detected!</strong> Loading product info...
+          </div>
+        )}
+
+        {isScanning && !scanSuccess && (
+          <div className="alert alert-info mb-3 d-flex align-items-center">
+            <div
+              className="spinner-border spinner-border-sm me-2"
+              role="status"
+            >
+              <span className="visually-hidden">Scanning...</span>
+            </div>
+            <span>
+              <strong>Scanning active...</strong> Position barcode in frame
+              {scanAttempts > 20 &&
+                " (Try moving closer or adjusting lighting)"}
+            </span>
           </div>
         )}
 

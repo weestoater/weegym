@@ -594,6 +594,25 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const calculateSyns = () => {
+    const calories = parseFloat(formData.calories) || 0;
+    const fat = parseFloat(formData.fat) || 0;
+    const sugar = parseFloat(formData.sugar) || 0;
+    const protein = parseFloat(formData.protein) || 0;
+
+    // Slimming World Syns formula (approximation)
+    // Syns = (Calories ÷ 20) + (Fat ÷ 4) + (Sugar ÷ 5) - (Protein ÷ 10)
+    const syns = Math.max(
+      0,
+      calories / 20 + fat / 4 + sugar / 5 - protein / 10,
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      slimmingWorldSyns: syns.toFixed(1),
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.productName.trim()) {
@@ -710,21 +729,61 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
 
       <div className="row">
         <div className="col-md-6 mb-3">
+          <label className="form-label">Sugar (g)</label>
+          <input
+            type="number"
+            className="form-control"
+            name="sugar"
+            value={formData.sugar}
+            onChange={handleChange}
+            min="0"
+            step="0.1"
+            placeholder="For Syns calculation"
+          />
+        </div>
+        <div className="col-md-6 mb-3">
+          <label className="form-label">Fiber (g)</label>
+          <input
+            type="number"
+            className="form-control"
+            name="fiber"
+            value={formData.fiber}
+            onChange={handleChange}
+            min="0"
+            step="0.1"
+          />
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-md-6 mb-3">
           <label className="form-label">
             <i className="bi bi-star-fill text-warning me-1"></i>
             Slimming World Syns
           </label>
-          <input
-            type="number"
-            className="form-control"
-            name="slimmingWorldSyns"
-            value={formData.slimmingWorldSyns}
-            onChange={handleChange}
-            min="0"
-            step="0.5"
-            placeholder="Optional"
-          />
-          <small className="text-muted">For Slimming World tracking</small>
+          <div className="input-group">
+            <input
+              type="number"
+              className="form-control"
+              name="slimmingWorldSyns"
+              value={formData.slimmingWorldSyns}
+              onChange={handleChange}
+              min="0"
+              step="0.5"
+              placeholder="Optional"
+            />
+            <button
+              type="button"
+              className="btn btn-outline-secondary"
+              onClick={calculateSyns}
+              title="Auto-calculate Syns from nutrition data"
+            >
+              <i className="bi bi-calculator"></i>
+            </button>
+          </div>
+          <small className="text-muted">
+            Click calculator to auto-calculate from nutrition info
+          </small>
         </div>
       </div>
 
