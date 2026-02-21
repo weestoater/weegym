@@ -537,6 +537,7 @@ function CalorieTracker() {
                 setShowManual(false);
                 setSelectedProduct(null);
               }}
+              userProfile={userProfile}
             />
           </div>
         </div>
