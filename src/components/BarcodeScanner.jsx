@@ -73,8 +73,8 @@ function BarcodeScanner({ onScan, onClose }) {
         scannerRef.current = html5QrCode;
 
         const config = {
-          fps: 10, // Same FPS for all devices
-          qrbox: 250, // Standard scan box size
+          fps: 10,
+          qrbox: isIOS ? { width: 200, height: 150 } : 250, // Smaller box for iOS to fit viewport
           aspectRatio: 1.0,
           disableFlip: false,
         };
@@ -323,12 +323,16 @@ function BarcodeScanner({ onScan, onClose }) {
         <div
           style={{
             position: "relative",
-            maxHeight: "300px",
+            maxHeight: isIOS ? "auto" : "300px",
+            minHeight: isIOS ? "250px" : "auto",
             overflow: "hidden",
             marginBottom: "1rem",
           }}
         >
-          <div id="barcode-reader"></div>
+          <div
+            id="barcode-reader"
+            style={{ width: "100%", minHeight: "inherit" }}
+          ></div>
 
           {/* Animated scanning line */}
           {isScanning && !scanSuccess && (
@@ -363,11 +367,11 @@ function BarcodeScanner({ onScan, onClose }) {
         <style>{`
           @keyframes scanLine {
             0%, 100% {
-              transform: translateY(-120px);
+              transform: translateY(${isIOS ? "-100px" : "-120px"});
               opacity: 0.3;
             }
             50% {
-              transform: translateY(120px);
+              transform: translateY(${isIOS ? "100px" : "120px"});
               opacity: 1;
             }
           }
