@@ -1,31 +1,29 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
+import Quagga from "@ericblade/quagga2";
 
 /**
  * BarcodeScanner Component
  *
  * Provides barcode scanning functionality using the device camera.
- * Uses html5-qrcode library for barcode detection.
- * Optimized for iOS Safari compatibility.
+ * Uses Quagga2 library for reliable barcode detection.
+ * Optimized for iOS Safari compatibility with EAN/UPC barcodes.
  *
- * Note: Requires 'html5-qrcode' package to be installed:
- * npm install html5-qrcode
+ * Note: Requires '@ericblade/quagga2' package to be installed:
+ * npm install @ericblade/quagga2 --legacy-peer-deps
  */
 function BarcodeScanner({ onScan, onClose }) {
   const [error, setError] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [cameras, setCameras] = useState([]);
-  const [selectedCamera, setSelectedCamera] = useState(null);
   const [scanSuccess, setScanSuccess] = useState(false);
   const [scanAttempts, setScanAttempts] = useState(0);
   const [lastScanTime, setLastScanTime] = useState(Date.now());
-  const [scanRate, setScanRate] = useState(0);
-  const [, setRenderTick] = useState(0);
+  const [lastDetection, setLastDetection] = useState(null);
   const scannerRef = useRef(null);
   const mountedRef = useRef(true);
   const scanStartTimeRef = useRef(Date.now());
+  const detectedCodes = useRef(new Map()); // Track detected codes with confidence
 
   // Detect if running on iOS
   const isIOS =
@@ -33,154 +31,170 @@ function BarcodeScanner({ onScan, onClose }) {
 
   useEffect(() => {
     mountedRef.current = true;
-    let html5QrCode = null;
 
-    const getCameras = async () => {
+    const initializeScanner = () => {
       try {
-        const devices = await Html5Qrcode.getCameras();
-        if (!mountedRef.current) return;
+        Quagga.init(
+          {
+            inputStream: {
+              name: "Live",
+              type: "LiveStream",
+              target: scannerRef.current,
+              constraints: {
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 },
+                facingMode: "environment", // Use back camera
+                aspectRatio: { min: 1, max: 2 },
+              },
+            },
+            locator: {
+              patchSize: isIOS ? "medium" : "large",
+              halfSample: isIOS, // Better performance on iOS
+            },
+            numOfWorkers: navigator.hardwareConcurrency || 4,
+            decoder: {
+              readers: [
+                "ean_reader", // EAN-13, EAN-8 (most food products in Europe)
+                "ean_8_reader",
+                "upc_reader", // UPC-A, UPC-E (most food products in USA)
+                "upc_e_reader",
+                "code_128_reader", // Some packaged goods
+                "code_39_reader",
+              ],
+              debug: {
+                drawBoundingBox: true,
+                showFrequency: false,
+                drawScanline: true,
+                showPattern: false,
+              },
+            },
+            locate: true,
+            frequency: 10, // Scan attempts per second
+          },
+          (err) => {
+            if (err) {
+              console.error("Quagga initialization failed:", err);
+              if (mountedRef.current) {
+                let errorMessage = "Failed to initialize camera.";
 
-        setCameras(devices);
+                if (
+                  err.name === "NotAllowedError" ||
+                  err.name === "PermissionDeniedError"
+                ) {
+                  errorMessage = isIOS
+                    ? "Camera permission denied. Tap 'aA' in Safari address bar, then Website Settings → Camera → Allow. Refresh page after enabling."
+                    : "Camera permission denied. Please allow camera access in your browser settings.";
+                } else if (
+                  err.name === "NotFoundError" ||
+                  err.message?.includes("no device")
+                ) {
+                  errorMessage = "No camera found on this device.";
+                } else if (err.name === "NotReadableError") {
+                  errorMessage =
+                    "Camera is already in use by another application. Close other apps and try again.";
+                } else if (isIOS && err.message?.includes("constraints")) {
+                  errorMessage =
+                    "Camera configuration not supported. Ensure Safari has camera permission.";
+                }
 
-        // On iOS, prefer back camera (environment facing)
-        const backCamera = devices.find(
-          (device) =>
-            device.label.toLowerCase().includes("back") ||
-            device.label.toLowerCase().includes("environment"),
+                setError(errorMessage);
+              }
+              return;
+            }
+
+            if (mountedRef.current) {
+              Quagga.start();
+              setIsScanning(true);
+            }
+          },
         );
 
-        setSelectedCamera(backCamera?.id || devices[0]?.id);
-      } catch (err) {
-        console.error("Error getting cameras:", err);
-        if (mountedRef.current) {
-          setError("Unable to access camera. Please check permissions.");
-        }
-      }
-    };
+        // Handle detected barcodes
+        Quagga.onDetected((result) => {
+          if (!mountedRef.current) return;
 
-    const initializeScanner = async () => {
-      if (!selectedCamera) {
-        await getCameras();
-        return;
-      }
+          const code = result.codeResult.code;
+          const confidence =
+            result.codeResult.decodedCodes.reduce(
+              (sum, code) => sum + (code.error || 0),
+              0,
+            ) / result.codeResult.decodedCodes.length;
 
-      try {
-        html5QrCode = new Html5Qrcode("barcode-reader", {
-          formatsToSupport: [0, 1, 2, 3, 4, 5, 6, 7, 8], // All barcode types
-          verbose: false,
+          // Track attempts
+          setScanAttempts((prev) => prev + 1);
+          setLastScanTime(Date.now());
+
+          // Only accept high-confidence reads (lower error is better)
+          if (confidence < 0.1) {
+            // Track this code
+            const count = (detectedCodes.current.get(code) || 0) + 1;
+            detectedCodes.current.set(code, count);
+
+            // Show feedback
+            setLastDetection({ code, confidence: (1 - confidence) * 100 });
+
+            // If we've seen this code 2+ times, it's likely correct
+            if (count >= 2) {
+              console.log(
+                "Barcode detected:",
+                code,
+                "confidence:",
+                (1 - confidence) * 100,
+              );
+              if (mountedRef.current) {
+                setScanSuccess(true);
+                Quagga.stop();
+
+                // Small delay to show success feedback
+                setTimeout(() => {
+                  if (mountedRef.current) {
+                    onScan(code);
+                  }
+                }, 500);
+              }
+            }
+          }
         });
 
-        scannerRef.current = html5QrCode;
+        // Track processing attempts
+        Quagga.onProcessed((result) => {
+          if (!mountedRef.current) return;
 
-        const config = {
-          fps: 10,
-          qrbox: isIOS ? { width: 200, height: 150 } : 250, // Smaller box for iOS to fit viewport
-          aspectRatio: 1.0,
-          disableFlip: false,
-        };
-
-        await html5QrCode.start(
-          selectedCamera,
-          config,
-          (decodedText) => {
-            // Success callback
-            console.log("Barcode scanned:", decodedText);
-            if (mountedRef.current) {
-              setScanSuccess(true);
-            }
-            if (onScan && mountedRef.current) {
-              // Small delay to show success feedback
-              setTimeout(() => {
-                onScan(decodedText);
-              }, 500);
-            }
-            // Stop scanner after successful scan
-            if (
-              html5QrCode &&
-              html5QrCode.getState() === Html5QrcodeScannerState.SCANNING
-            ) {
-              html5QrCode.stop().catch(console.error);
-            }
-          },
-          (errorMessage) => {
-            // Error callback (fires continuously while scanning)
-            // Increment scan attempts to show activity
-            if (mountedRef.current) {
-              setScanAttempts((prev) => prev + 1);
-              const now = Date.now();
-              const elapsed = (now - scanStartTimeRef.current) / 1000;
-              if (elapsed > 0) {
-                setScanRate(Math.round(scanAttempts / elapsed));
-              }
-              setLastScanTime(now);
-            }
-          },
-        );
-
-        if (mountedRef.current) {
-          setIsScanning(true);
-        }
-      } catch (err) {
-        console.error("Failed to initialize barcode scanner:", err);
-        if (mountedRef.current) {
-          let errorMessage = "Failed to initialize camera.";
-
-          if (
-            err.name === "NotAllowedError" ||
-            err.name === "PermissionDeniedError"
-          ) {
-            errorMessage = isIOS
-              ? "Camera permission denied. Tap 'aA' in Safari address bar, then Website Settings → Camera → Allow. Refresh page after enabling."
-              : "Camera permission denied. Please allow camera access in your browser settings.";
-          } else if (err.name === "NotFoundError") {
-            errorMessage = "No camera found on this device.";
-          } else if (err.name === "NotReadableError") {
-            errorMessage =
-              "Camera is already in use by another application. Close other apps and try again.";
-          } else if (err.name === "OverconstrainedError") {
-            errorMessage =
-              "Camera doesn't meet requirements. Try using the back camera.";
-          } else if (isIOS) {
-            errorMessage =
-              "Camera failed to start. Ensure Safari has camera permission: Settings → Safari → Camera → Allow. Then refresh this page.";
+          const now = Date.now();
+          const elapsed = (now - scanStartTimeRef.current) / 1000;
+          if (elapsed > 1) {
+            // Update after first second
+            setScanAttempts((prev) => {
+              const newCount = prev + 1;
+              return newCount;
+            });
+            setLastScanTime(now);
           }
-
-          setError(errorMessage);
+        });
+      } catch (err) {
+        console.error("Scanner initialization error:", err);
+        if (mountedRef.current) {
+          setError("Failed to start scanner: " + err.message);
         }
       }
     };
 
-    // iOS needs a longer delay for camera initialization
-    const timeoutId = setTimeout(initializeScanner, isIOS ? 300 : 100);
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(initializeScanner, 100);
 
     return () => {
       mountedRef.current = false;
       clearTimeout(timeoutId);
 
-      // Cleanup scanner on unmount
-      if (html5QrCode) {
-        try {
-          if (html5QrCode.getState() === Html5QrcodeScannerState.SCANNING) {
-            html5QrCode.stop().catch(console.error);
-          }
-        } catch (e) {
-          console.error("Error during cleanup:", e);
-        }
+      try {
+        Quagga.stop();
+        Quagga.offDetected();
+        Quagga.offProcessed();
+      } catch (e) {
+        console.error("Error during cleanup:", e);
       }
     };
-  }, [onScan, selectedCamera, isIOS]);
-
-  // Force re-render every second to update activity indicator
-  useEffect(() => {
-    if (!isScanning || scanSuccess) return;
-
-    const intervalId = setInterval(() => {
-      // Trigger re-render to update activity status
-      setRenderTick((prev) => prev + 1);
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, [isScanning, scanSuccess]);
+  }, [onScan, isIOS]);
 
   const handleManualInput = () => {
     const barcode = prompt("Enter barcode manually:");
@@ -235,18 +249,6 @@ function BarcodeScanner({ onScan, onClose }) {
               <i className="bi bi-keyboard me-2"></i>
               Enter Barcode Manually
             </button>
-            {cameras.length > 1 && (
-              <button
-                className="btn btn-outline-secondary"
-                onClick={() => {
-                  setError(null);
-                  setSelectedCamera(cameras[1]?.id || cameras[0]?.id);
-                }}
-              >
-                <i className="bi bi-arrow-repeat me-2"></i>
-                Try Different Camera
-              </button>
-            )}
             <button className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
@@ -256,12 +258,19 @@ function BarcodeScanner({ onScan, onClose }) {
     );
   }
 
+  const scanRate =
+    scanAttempts > 0
+      ? Math.round(
+          scanAttempts / ((Date.now() - scanStartTimeRef.current) / 1000),
+        )
+      : 0;
+
   return (
     <div className="card">
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h5 className="card-title mb-0">
-            <i className="bi bi-camera me-2"></i>
+            <i className="bi bi-upc-scan me-2"></i>
             Scan Barcode
           </h5>
           <button
@@ -309,81 +318,38 @@ function BarcodeScanner({ onScan, onClose }) {
                 <div className="text-muted">{scanRate}/sec</div>
               </div>
             </div>
-            {scanAttempts > 30 && (
+
+            {lastDetection && (
+              <div className="alert alert-success small mb-2 py-2">
+                <i className="bi bi-bullseye me-2"></i>
+                <strong>Possible match:</strong> {lastDetection.code} (
+                {lastDetection.confidence.toFixed(0)}% confidence)
+              </div>
+            )}
+
+            {scanAttempts > 30 && !lastDetection && (
               <div className="alert alert-warning small mb-2 py-2">
                 <i className="bi bi-lightbulb me-2"></i>
-                <strong>Tips:</strong> Ensure barcode is flat, well-lit, and
-                fills most of the frame. Try moving{" "}
-                {scanAttempts > 60 ? "much " : ""}closer.
+                <strong>Tips:</strong> Hold barcode flat and steady. Ensure good
+                lighting. Move {scanAttempts > 60 ? "much " : ""}closer or
+                further away.
               </div>
             )}
           </div>
         )}
 
         <div
+          ref={scannerRef}
           style={{
             position: "relative",
-            maxHeight: isIOS ? "auto" : "300px",
-            minHeight: isIOS ? "250px" : "auto",
+            width: "100%",
+            minHeight: "250px",
+            maxHeight: "400px",
             overflow: "hidden",
             marginBottom: "1rem",
+            backgroundColor: "#000",
           }}
-        >
-          <div
-            id="barcode-reader"
-            style={{ width: "100%", minHeight: "inherit" }}
-          ></div>
-
-          {/* Animated scanning line */}
-          {isScanning && !scanSuccess && (
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                pointerEvents: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: "80%",
-                  height: "2px",
-                  background:
-                    "linear-gradient(90deg, transparent, #0dcaf0, transparent)",
-                  boxShadow: "0 0 10px #0dcaf0",
-                  animation: "scanLine 2s ease-in-out infinite",
-                }}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* CSS Animation */}
-        <style>{`
-          @keyframes scanLine {
-            0%, 100% {
-              transform: translateY(${isIOS ? "-100px" : "-120px"});
-              opacity: 0.3;
-            }
-            50% {
-              transform: translateY(${isIOS ? "100px" : "120px"});
-              opacity: 1;
-            }
-          }
-          @keyframes pulse {
-            0%, 100% {
-              opacity: 1;
-            }
-            50% {
-              opacity: 0.3;
-            }
-          }
-        `}</style>
+        />
 
         {isScanning && (
           <div className="d-grid gap-2 mb-3">
@@ -403,7 +369,7 @@ function BarcodeScanner({ onScan, onClose }) {
               ) : (
                 <span className="text-warning">
                   <i className="bi bi-exclamation-circle me-1"></i>
-                  Waiting for barcode... Try moving it into view
+                  Waiting for barcode... Position barcode in green box
                 </span>
               )}
             </div>
@@ -415,29 +381,14 @@ function BarcodeScanner({ onScan, onClose }) {
               <i className="bi bi-keyboard me-2"></i>
               Enter Manually Instead
             </button>
-            {cameras.length > 1 && (
-              <button
-                className="btn btn-outline-secondary btn-sm"
-                onClick={() => {
-                  // Switch to the other camera
-                  const currentIndex = cameras.findIndex(
-                    (c) => c.id === selectedCamera,
-                  );
-                  const nextIndex = (currentIndex + 1) % cameras.length;
-                  setSelectedCamera(cameras[nextIndex].id);
-                }}
-              >
-                <i className="bi bi-arrow-repeat me-2"></i>
-                Switch Camera
-              </button>
-            )}
           </div>
         )}
 
         <div className="alert alert-info mt-3 small">
           <i className="bi bi-info-circle me-2"></i>
-          Position the barcode within the frame. Hold steady for automatic
-          detection.
+          <strong>Quagga2 Scanner:</strong> Position the barcode within the
+          frame. The scanner will automatically detect EAN/UPC barcodes (most
+          food products).
         </div>
 
         <div className="mt-3">
