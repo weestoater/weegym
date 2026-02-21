@@ -20,8 +20,12 @@ function BarcodeScanner({ onScan, onClose }) {
   const [selectedCamera, setSelectedCamera] = useState(null);
   const [scanSuccess, setScanSuccess] = useState(false);
   const [scanAttempts, setScanAttempts] = useState(0);
+  const [lastScanTime, setLastScanTime] = useState(Date.now());
+  const [scanRate, setScanRate] = useState(0);
+  const [, setRenderTick] = useState(0);
   const scannerRef = useRef(null);
   const mountedRef = useRef(true);
+  const scanStartTimeRef = useRef(Date.now());
 
   // Detect if running on iOS
   const isIOS =
@@ -103,6 +107,12 @@ function BarcodeScanner({ onScan, onClose }) {
             // Increment scan attempts to show activity
             if (mountedRef.current) {
               setScanAttempts((prev) => prev + 1);
+              const now = Date.now();
+              const elapsed = (now - scanStartTimeRef.current) / 1000;
+              if (elapsed > 0) {
+                setScanRate(Math.round(scanAttempts / elapsed));
+              }
+              setLastScanTime(now);
             }
           },
         );
@@ -159,6 +169,18 @@ function BarcodeScanner({ onScan, onClose }) {
       }
     };
   }, [onScan, selectedCamera, isIOS]);
+
+  // Force re-render every second to update activity indicator
+  useEffect(() => {
+    if (!isScanning || scanSuccess) return;
+
+    const intervalId = setInterval(() => {
+      // Trigger re-render to update activity status
+      setRenderTick((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [isScanning, scanSuccess]);
 
   const handleManualInput = () => {
     const barcode = prompt("Enter barcode manually:");
@@ -267,29 +289,121 @@ function BarcodeScanner({ onScan, onClose }) {
         )}
 
         {isScanning && !scanSuccess && (
-          <div className="alert alert-info mb-3 d-flex align-items-center">
-            <div
-              className="spinner-border spinner-border-sm me-2"
-              role="status"
-            >
-              <span className="visually-hidden">Scanning...</span>
+          <div className="mb-3">
+            <div className="alert alert-info mb-2 d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center">
+                <div
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                >
+                  <span className="visually-hidden">Scanning...</span>
+                </div>
+                <span>
+                  <strong>Scanning active</strong>
+                </span>
+              </div>
+              <div className="text-end small">
+                <div>
+                  <strong>{scanAttempts}</strong> scans
+                </div>
+                <div className="text-muted">{scanRate}/sec</div>
+              </div>
             </div>
-            <span>
-              <strong>Scanning active...</strong> Position barcode in frame
-              {scanAttempts > 20 &&
-                " (Try moving closer or adjusting lighting)"}
-            </span>
+            {scanAttempts > 30 && (
+              <div className="alert alert-warning small mb-2 py-2">
+                <i className="bi bi-lightbulb me-2"></i>
+                <strong>Tips:</strong> Ensure barcode is flat, well-lit, and
+                fills most of the frame. Try moving{" "}
+                {scanAttempts > 60 ? "much " : ""}closer.
+              </div>
+            )}
           </div>
         )}
 
         <div
-          id="barcode-reader"
-          className="mb-3"
-          style={{ maxHeight: "300px", overflow: "hidden" }}
-        ></div>
+          style={{
+            position: "relative",
+            maxHeight: "300px",
+            overflow: "hidden",
+            marginBottom: "1rem",
+          }}
+        >
+          <div id="barcode-reader"></div>
+
+          {/* Animated scanning line */}
+          {isScanning && !scanSuccess && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                pointerEvents: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "80%",
+                  height: "2px",
+                  background:
+                    "linear-gradient(90deg, transparent, #0dcaf0, transparent)",
+                  boxShadow: "0 0 10px #0dcaf0",
+                  animation: "scanLine 2s ease-in-out infinite",
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* CSS Animation */}
+        <style>{`
+          @keyframes scanLine {
+            0%, 100% {
+              transform: translateY(-120px);
+              opacity: 0.3;
+            }
+            50% {
+              transform: translateY(120px);
+              opacity: 1;
+            }
+          }
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.3;
+            }
+          }
+        `}</style>
 
         {isScanning && (
           <div className="d-grid gap-2 mb-3">
+            {/* Activity Indicator */}
+            <div className="small text-center mb-2">
+              {Date.now() - lastScanTime < 2000 ? (
+                <span className="text-success">
+                  <i
+                    className="bi bi-circle-fill me-1"
+                    style={{
+                      fontSize: "0.5rem",
+                      animation: "pulse 1s ease-in-out infinite",
+                    }}
+                  ></i>
+                  Camera Active
+                </span>
+              ) : (
+                <span className="text-warning">
+                  <i className="bi bi-exclamation-circle me-1"></i>
+                  Waiting for barcode... Try moving it into view
+                </span>
+              )}
+            </div>
+
             <button
               className="btn btn-outline-primary"
               onClick={handleManualInput}
