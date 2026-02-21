@@ -67,8 +67,8 @@ function BarcodeScanner({ onScan, onClose }) {
         scannerRef.current = html5QrCode;
 
         const config = {
-          fps: isIOS ? 5 : 10, // Lower FPS for iOS for better performance
-          qrbox: isIOS ? 200 : 250, // Smaller box for iOS
+          fps: 10, // Same FPS for all devices
+          qrbox: 250, // Standard scan box size
           aspectRatio: 1.0,
           disableFlip: false,
         };
@@ -248,7 +248,11 @@ function BarcodeScanner({ onScan, onClose }) {
           </div>
         )}
 
-        <div id="barcode-reader" className="mb-3"></div>
+        <div
+          id="barcode-reader"
+          className="mb-3"
+          style={{ maxHeight: "300px", overflow: "hidden" }}
+        ></div>
 
         {isScanning && (
           <div className="d-grid gap-2 mb-3">

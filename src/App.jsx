@@ -53,8 +53,10 @@ function NavigationBar() {
               }`}
               style={{ flex: 1 }}
             >
-              <i className={`${item.icon} fs-4 d-block`}></i>
-              <small>{item.label}</small>
+              <i className={`${item.icon} fs-6 d-block`}></i>
+              <small className="d-block" style={{ fontSize: "0.7rem" }}>
+                {item.label}
+              </small>
             </Link>
           ))}
         </div>

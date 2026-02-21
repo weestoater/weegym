@@ -261,20 +261,6 @@ function CalorieTracker() {
         </div>
       )}
 
-      {/* Date Selector */}
-      <div className="card mb-3">
-        <div className="card-body">
-          <label className="form-label fw-bold">Date</label>
-          <input
-            type="date"
-            className="form-control"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            max={new Date().toISOString().split("T")[0]}
-          />
-        </div>
-      </div>
-
       {/* Daily Summary */}
       {dailyTotals && (
         <div className="card mb-3 bg-primary text-white">
@@ -323,6 +309,52 @@ function CalorieTracker() {
           </div>
         </div>
       )}
+
+      {/* Add Food Buttons */}
+      {!showScanner && !showSearch && !showManual && (
+        <div className="card mb-3">
+          <div className="card-body">
+            <h5 className="card-title mb-3">Add Food</h5>
+            <div className="d-grid gap-2">
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowScanner(true)}
+              >
+                <i className="bi bi-upc-scan me-2"></i>
+                Scan Barcode
+              </button>
+              <button
+                className="btn btn-outline-primary"
+                onClick={() => setShowSearch(true)}
+              >
+                <i className="bi bi-search me-2"></i>
+                Search Food Database
+              </button>
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => setShowManual(true)}
+              >
+                <i className="bi bi-pencil me-2"></i>
+                Manual Entry
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Date Selector */}
+      <div className="card mb-3">
+        <div className="card-body">
+          <label className="form-label fw-bold">Date</label>
+          <input
+            type="date"
+            className="form-control"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            max={new Date().toISOString().split("T")[0]}
+          />
+        </div>
+      </div>
 
       {/* Scanner Modal */}
       {showScanner && (
@@ -466,38 +498,6 @@ function CalorieTracker() {
                 setSelectedProduct(null);
               }}
             />
-          </div>
-        </div>
-      )}
-
-      {/* Add Food Buttons */}
-      {!showScanner && !showSearch && !showManual && (
-        <div className="card mb-3">
-          <div className="card-body">
-            <h5 className="card-title mb-3">Add Food</h5>
-            <div className="d-grid gap-2">
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowScanner(true)}
-              >
-                <i className="bi bi-upc-scan me-2"></i>
-                Scan Barcode
-              </button>
-              <button
-                className="btn btn-outline-primary"
-                onClick={() => setShowSearch(true)}
-              >
-                <i className="bi bi-search me-2"></i>
-                Search Food Database
-              </button>
-              <button
-                className="btn btn-outline-secondary"
-                onClick={() => setShowManual(true)}
-              >
-                <i className="bi bi-pencil me-2"></i>
-                Manual Entry
-              </button>
-            </div>
           </div>
         </div>
       )}
