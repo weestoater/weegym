@@ -47,3 +47,8 @@ supabase-config/quick-*.sql
 supabase-config/manual-*.sql
 supabase-config/schema-multi-user.sql
 supabase-config/backups/
+
+# Test coverage
+coverage/
+coverage_*.txt
+*_coverage*.txt
