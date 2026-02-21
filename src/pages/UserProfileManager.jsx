@@ -36,6 +36,8 @@ function UserProfileManager() {
     experienceLevel: "Beginner",
     userMode: "programme",
     notes: "",
+    onSlimmingWorld: false,
+    slimmingWorldDailySyns: 15,
   });
 
   // New programme form state
@@ -91,6 +93,8 @@ function UserProfileManager() {
           experienceLevel: profileData.experience_level || "Beginner",
           userMode: profileData.user_mode || "programme",
           notes: profileData.notes || "",
+          onSlimmingWorld: profileData.on_slimming_world || false,
+          slimmingWorldDailySyns: profileData.slimming_world_daily_syns || 15,
         });
       } else {
         console.log(
@@ -534,6 +538,62 @@ function UserProfileManager() {
                     }
                     placeholder="Any injuries, preferences, or special considerations"
                   />
+                </div>
+
+                <div className="col-12">
+                  <hr className="my-3" />
+                  <h5 className="mb-3">
+                    <i className="bi bi-star-fill text-warning me-2"></i>
+                    Slimming World Settings
+                  </h5>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="form-check form-switch">
+                    <input
+                      className="form-check-input"
+                      type="checkbox"
+                      id="onSlimmingWorld"
+                      checked={profileForm.onSlimmingWorld}
+                      onChange={(e) =>
+                        setProfileForm({
+                          ...profileForm,
+                          onSlimmingWorld: e.target.checked,
+                        })
+                      }
+                    />
+                    <label
+                      className="form-check-label"
+                      htmlFor="onSlimmingWorld"
+                    >
+                      I'm following Slimming World
+                    </label>
+                  </div>
+                  <div className="form-text">
+                    Enable to automatically calculate Syns when adding food
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label">Daily Syns Allowance</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={profileForm.slimmingWorldDailySyns}
+                    onChange={(e) =>
+                      setProfileForm({
+                        ...profileForm,
+                        slimmingWorldDailySyns: parseInt(e.target.value) || 15,
+                      })
+                    }
+                    min="5"
+                    max="30"
+                    disabled={!profileForm.onSlimmingWorld}
+                  />
+                  <div className="form-text">
+                    Typically 5-15 Syns per day (disabled if not on Slimming
+                    World)
+                  </div>
                 </div>
               </div>
 

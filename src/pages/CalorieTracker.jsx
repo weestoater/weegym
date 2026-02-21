@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 import BarcodeScanner from "../components/BarcodeScanner";
+import { getUserProfile } from "../services/userProfileService";
 import {
   searchByBarcode,
   searchByName,
@@ -27,6 +28,7 @@ function CalorieTracker() {
   const [lastSearchQuery, setLastSearchQuery] = useState(""); // Track last searched term
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [tableNotFound, setTableNotFound] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
 
   const loadFoodLogs = useCallback(async () => {
     if (!user) {
@@ -64,6 +66,20 @@ function CalorieTracker() {
       setLoading(false);
     }
   }, [user, selectedDate]);
+
+  // Load user profile for Slimming World settings
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      try {
+        const profile = await getUserProfile();
+        setUserProfile(profile);
+      } catch (error) {
+        console.error("Error loading user profile:", error);
+      }
+    };
+    loadProfile();
+  }, [user]);
 
   useEffect(() => {
     loadFoodLogs();
@@ -298,8 +314,32 @@ function CalorieTracker() {
                   <div className="fs-4 fw-bold">
                     <i className="bi bi-star-fill me-2"></i>
                     {formatNumber(dailyTotals.slimmingWorldSyns)} Syns
+                    {userProfile?.on_slimming_world &&
+                      userProfile?.slimming_world_daily_syns && (
+                        <span className="ms-2" style={{ fontSize: "0.8rem" }}>
+                          / {userProfile.slimming_world_daily_syns} daily
+                        </span>
+                      )}
                   </div>
-                  <small>Slimming World</small>
+                  <small>
+                    Slimming World
+                    {userProfile?.on_slimming_world &&
+                      userProfile?.slimming_world_daily_syns && (
+                        <span
+                          className={`ms-2 badge ${
+                            dailyTotals.slimmingWorldSyns <=
+                            userProfile.slimming_world_daily_syns
+                              ? "bg-success"
+                              : "bg-warning text-dark"
+                          }`}
+                        >
+                          {dailyTotals.slimmingWorldSyns <=
+                          userProfile.slimming_world_daily_syns
+                            ? `${formatNumber(userProfile.slimming_world_daily_syns - dailyTotals.slimmingWorldSyns)} remaining`
+                            : `${formatNumber(dailyTotals.slimmingWorldSyns - userProfile.slimming_world_daily_syns)} over`}
+                        </span>
+                      )}
+                  </small>
                 </div>
               </div>
             )}
@@ -569,7 +609,7 @@ function CalorieTracker() {
 }
 
 // Food Entry Form Component
-function FoodEntryForm({ initialData, onSubmit, onCancel }) {
+function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
   const [formData, setFormData] = useState({
     productName: initialData?.productName || "",
     brand: initialData?.brand || "",
@@ -588,6 +628,34 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
     notes: "",
     rawData: initialData?.rawData || null,
   });
+
+  // Auto-calculate Syns when nutrition values change if user is on Slimming World
+  useEffect(() => {
+    if (userProfile?.on_slimming_world) {
+      const calories = parseFloat(formData.calories) || 0;
+      const fat = parseFloat(formData.fat) || 0;
+      const sugar = parseFloat(formData.sugar) || 0;
+      const protein = parseFloat(formData.protein) || 0;
+
+      // Only auto-calculate if we have at least calories
+      if (calories > 0) {
+        const syns = Math.max(
+          0,
+          calories / 20 + fat / 4 + sugar / 5 - protein / 10,
+        );
+        setFormData((prev) => ({
+          ...prev,
+          slimmingWorldSyns: syns.toFixed(1),
+        }));
+      }
+    }
+  }, [
+    formData.calories,
+    formData.fat,
+    formData.sugar,
+    formData.protein,
+    userProfile,
+  ]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -777,12 +845,15 @@ function FoodEntryForm({ initialData, onSubmit, onCancel }) {
               className="btn btn-outline-secondary"
               onClick={calculateSyns}
               title="Auto-calculate Syns from nutrition data"
+              disabled={userProfile?.on_slimming_world}
             >
               <i className="bi bi-calculator"></i>
             </button>
           </div>
           <small className="text-muted">
-            Click calculator to auto-calculate from nutrition info
+            {userProfile?.on_slimming_world
+              ? "✓ Auto-calculating Syns from nutrition info"
+              : "Click calculator to calculate Syns from nutrition info"}
           </small>
         </div>
       </div>
@@ -830,6 +901,7 @@ FoodEntryForm.propTypes = {
   initialData: PropTypes.object,
   onSubmit: PropTypes.func.isRequired,
   onCancel: PropTypes.func.isRequired,
+  userProfile: PropTypes.object,
 };
 
 export default CalorieTracker;

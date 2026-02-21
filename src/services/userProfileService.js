@@ -57,24 +57,29 @@ export async function saveUserProfile(profileData) {
 
     const { data, error } = await supabase
       .from("user_profiles")
-      .upsert([
-        {
-          user_id: userData.user.id,
-          email: userData.user.email, // Cache email for display
-          display_name: profileData.displayName,
-          instructor_name: profileData.instructorName,
-          programme_start_date: profileData.programmeStartDate || null,
-          programme_phase: profileData.programmePhase,
-          programme_end_date: profileData.programmeEndDate || null,
-          fitness_goal: profileData.fitnessGoal,
-          experience_level: profileData.experienceLevel,
-          notes: profileData.notes,
-          user_mode: profileData.userMode || "programme",
-          is_active:
-            profileData.isActive !== undefined ? profileData.isActive : true,
-          updated_at: new Date().toISOString(),
-        },
-      ])
+      .upsert(
+        [
+          {
+            user_id: userData.user.id,
+            email: userData.user.email, // Cache email for display
+            display_name: profileData.displayName,
+            instructor_name: profileData.instructorName,
+            programme_start_date: profileData.programmeStartDate || null,
+            programme_phase: profileData.programmePhase,
+            programme_end_date: profileData.programmeEndDate || null,
+            fitness_goal: profileData.fitnessGoal,
+            experience_level: profileData.experienceLevel,
+            notes: profileData.notes,
+            user_mode: profileData.userMode || "programme",
+            is_active:
+              profileData.isActive !== undefined ? profileData.isActive : true,
+            on_slimming_world: profileData.onSlimmingWorld || false,
+            slimming_world_daily_syns: profileData.slimmingWorldDailySyns || 15,
+            updated_at: new Date().toISOString(),
+          },
+        ],
+        { onConflict: "user_id" },
+      )
       .select()
       .single();
 
