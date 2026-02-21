@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 
 /**
  * BarcodeScanner Component
  *
  * Provides barcode scanning functionality using the device camera.
  * Uses html5-qrcode library for barcode detection.
+ * Optimized for iOS Safari compatibility.
  *
  * Note: Requires 'html5-qrcode' package to be installed:
  * npm install html5-qrcode
@@ -15,33 +16,78 @@ function BarcodeScanner({ onScan, onClose }) {
   const [error, setError] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
+  const [cameras, setCameras] = useState([]);
+  const [selectedCamera, setSelectedCamera] = useState(null);
   const scannerRef = useRef(null);
+  const mountedRef = useRef(true);
+
+  // Detect if running on iOS
+  const isIOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
   useEffect(() => {
-    let scanner = null;
+    mountedRef.current = true;
+    let html5QrCode = null;
 
-    const initializeScanner = () => {
+    const getCameras = async () => {
       try {
+        const devices = await Html5Qrcode.getCameras();
+        if (!mountedRef.current) return;
+
+        setCameras(devices);
+
+        // On iOS, prefer back camera (environment facing)
+        const backCamera = devices.find(
+          (device) =>
+            device.label.toLowerCase().includes("back") ||
+            device.label.toLowerCase().includes("environment"),
+        );
+
+        setSelectedCamera(backCamera?.id || devices[0]?.id);
+      } catch (err) {
+        console.error("Error getting cameras:", err);
+        if (mountedRef.current) {
+          setError("Unable to access camera. Please check permissions.");
+        }
+      }
+    };
+
+    const initializeScanner = async () => {
+      if (!selectedCamera) {
+        await getCameras();
+        return;
+      }
+
+      try {
+        html5QrCode = new Html5Qrcode("barcode-reader", {
+          formatsToSupport: [0, 1, 2, 3, 4, 5, 6, 7, 8], // All barcode types
+          verbose: false,
+        });
+
+        scannerRef.current = html5QrCode;
+
         const config = {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
+          fps: isIOS ? 5 : 10, // Lower FPS for iOS for better performance
+          qrbox: isIOS ? 200 : 250, // Smaller box for iOS
           aspectRatio: 1.0,
           disableFlip: false,
-          supportedScanTypes: [0, 1, 2, 3, 4, 5, 6, 7, 8], // All barcode types
         };
 
-        scanner = new Html5QrcodeScanner("barcode-reader", config, false);
-
-        scanner.render(
+        await html5QrCode.start(
+          selectedCamera,
+          config,
           (decodedText) => {
             // Success callback
             console.log("Barcode scanned:", decodedText);
-            if (onScan) {
+            if (onScan && mountedRef.current) {
               onScan(decodedText);
             }
-            // Clear scanner after successful scan
-            if (scanner) {
-              scanner.clear().catch(console.error);
+            // Stop scanner after successful scan
+            if (
+              html5QrCode &&
+              html5QrCode.getState() === Html5QrcodeScannerState.SCANNING
+            ) {
+              html5QrCode.stop().catch(console.error);
             }
           },
           () => {
@@ -50,33 +96,58 @@ function BarcodeScanner({ onScan, onClose }) {
           },
         );
 
-        scannerRef.current = scanner;
-        setIsScanning(true);
+        if (mountedRef.current) {
+          setIsScanning(true);
+        }
       } catch (err) {
         console.error("Failed to initialize barcode scanner:", err);
-        setError(
-          err.name === "NotAllowedError" || err.name === "PermissionDeniedError"
-            ? "Camera permission denied. Please allow camera access in your browser settings."
-            : err.name === "NotFoundError"
-              ? "No camera found on this device."
-              : "Failed to initialize camera. Please check your browser permissions and ensure you're using HTTPS.",
-        );
+        if (mountedRef.current) {
+          let errorMessage = "Failed to initialize camera.";
+
+          if (
+            err.name === "NotAllowedError" ||
+            err.name === "PermissionDeniedError"
+          ) {
+            errorMessage = isIOS
+              ? "Camera permission denied. Tap 'aA' in Safari address bar, then Website Settings → Camera → Allow. Refresh page after enabling."
+              : "Camera permission denied. Please allow camera access in your browser settings.";
+          } else if (err.name === "NotFoundError") {
+            errorMessage = "No camera found on this device.";
+          } else if (err.name === "NotReadableError") {
+            errorMessage =
+              "Camera is already in use by another application. Close other apps and try again.";
+          } else if (err.name === "OverconstrainedError") {
+            errorMessage =
+              "Camera doesn't meet requirements. Try using the back camera.";
+          } else if (isIOS) {
+            errorMessage =
+              "Camera failed to start. Ensure Safari has camera permission: Settings → Safari → Camera → Allow. Then refresh this page.";
+          }
+
+          setError(errorMessage);
+        }
       }
     };
 
-    // Initialize scanner after a short delay to ensure DOM is ready
-    const timeoutId = setTimeout(initializeScanner, 100);
+    // iOS needs a longer delay for camera initialization
+    const timeoutId = setTimeout(initializeScanner, isIOS ? 300 : 100);
 
     return () => {
+      mountedRef.current = false;
       clearTimeout(timeoutId);
+
       // Cleanup scanner on unmount
-      if (scannerRef.current) {
-        scannerRef.current
-          .clear()
-          .catch((err) => console.error("Error clearing scanner:", err));
+      if (html5QrCode) {
+        try {
+          if (html5QrCode.getState() === Html5QrcodeScannerState.SCANNING) {
+            html5QrCode.stop().catch(console.error);
+          }
+        } catch (e) {
+          console.error("Error during cleanup:", e);
+        }
       }
     };
-  }, [onScan]);
+  }, [onScan, selectedCamera, isIOS]);
 
   const handleManualInput = () => {
     const barcode = prompt("Enter barcode manually:");
@@ -95,13 +166,34 @@ function BarcodeScanner({ onScan, onClose }) {
           </h5>
           <p className="text-muted mb-3">{error}</p>
 
+          {isIOS && (
+            <div className="alert alert-warning small mb-3">
+              <strong>📱 iOS Safari Users:</strong>
+              <ol className="mb-0 mt-2 ps-3">
+                <li>
+                  Tap the <strong>"aA"</strong> button in Safari's address bar
+                </li>
+                <li>
+                  Tap <strong>"Website Settings"</strong>
+                </li>
+                <li>
+                  Change <strong>"Camera"</strong> to <strong>"Allow"</strong>
+                </li>
+                <li>Refresh this page (swipe down)</li>
+              </ol>
+              <small className="d-block mt-2">
+                Alternative: Settings app → Safari → Camera → Allow
+              </small>
+            </div>
+          )}
+
           <div className="alert alert-info small mb-3">
             <strong>Quick Fixes:</strong>
             <ul className="mb-0 mt-2">
-              <li>Check browser permissions (click 🔒 in address bar)</li>
+              <li>Check browser permissions (tap/click 🔒 in address bar)</li>
               <li>Ensure you're on HTTPS (secure connection)</li>
+              <li>Close other apps that might be using the camera</li>
               <li>Refresh the page after granting permissions</li>
-              <li>Try a different browser if issues persist</li>
             </ul>
           </div>
 
@@ -110,6 +202,18 @@ function BarcodeScanner({ onScan, onClose }) {
               <i className="bi bi-keyboard me-2"></i>
               Enter Barcode Manually
             </button>
+            {cameras.length > 1 && (
+              <button
+                className="btn btn-outline-secondary"
+                onClick={() => {
+                  setError(null);
+                  setSelectedCamera(cameras[1]?.id || cameras[0]?.id);
+                }}
+              >
+                <i className="bi bi-arrow-repeat me-2"></i>
+                Try Different Camera
+              </button>
+            )}
             <button className="btn btn-secondary" onClick={onClose}>
               Close
             </button>
@@ -136,10 +240,18 @@ function BarcodeScanner({ onScan, onClose }) {
           </button>
         </div>
 
+        {isIOS && !isScanning && (
+          <div className="alert alert-info small mb-3">
+            <i className="bi bi-info-circle me-2"></i>
+            <strong>First time?</strong> Safari will ask for camera permission.
+            Tap "Allow" when prompted.
+          </div>
+        )}
+
         <div id="barcode-reader" className="mb-3"></div>
 
         {isScanning && (
-          <div className="d-grid gap-2">
+          <div className="d-grid gap-2 mb-3">
             <button
               className="btn btn-outline-primary"
               onClick={handleManualInput}
@@ -147,13 +259,29 @@ function BarcodeScanner({ onScan, onClose }) {
               <i className="bi bi-keyboard me-2"></i>
               Enter Manually Instead
             </button>
+            {cameras.length > 1 && (
+              <button
+                className="btn btn-outline-secondary btn-sm"
+                onClick={() => {
+                  // Switch to the other camera
+                  const currentIndex = cameras.findIndex(
+                    (c) => c.id === selectedCamera,
+                  );
+                  const nextIndex = (currentIndex + 1) % cameras.length;
+                  setSelectedCamera(cameras[nextIndex].id);
+                }}
+              >
+                <i className="bi bi-arrow-repeat me-2"></i>
+                Switch Camera
+              </button>
+            )}
           </div>
         )}
 
         <div className="alert alert-info mt-3 small">
           <i className="bi bi-info-circle me-2"></i>
-          Position the barcode within the frame. The scanner will automatically
-          detect it.
+          Position the barcode within the frame. Hold steady for automatic
+          detection.
         </div>
 
         <div className="mt-3">
@@ -172,13 +300,18 @@ function BarcodeScanner({ onScan, onClose }) {
               <strong>Camera Not Working?</strong>
               <hr className="my-2" />
               <p className="mb-2">
-                <strong>On iPhone/iPad:</strong>
+                <strong>On iPhone/iPad (Safari):</strong>
               </p>
               <ul className="mb-2">
-                <li>Settings → Safari → Camera → Allow</li>
                 <li>
-                  Or tap "aA" in Safari address bar → Website Settings → Camera
-                  → Allow
+                  <strong>Quick fix:</strong> Tap "aA" in address bar → Website
+                  Settings → Camera → Allow
+                </li>
+                <li>
+                  <strong>Or:</strong> Settings app → Safari → Camera → Allow
+                </li>
+                <li>
+                  <strong>Then:</strong> Swipe down to refresh this page
                 </li>
               </ul>
               <p className="mb-2">
