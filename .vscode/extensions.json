@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-typescript-next",
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    "foxundermoon.shell-format",
+    "timonwong.shellcheck"
+  ]
+}

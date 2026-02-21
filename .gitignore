@@ -1,0 +1,54 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# PWA
+dev-dist
+sw.js
+sw.js.map
+workbox-*.js
+workbox-*.js.map
+
+# Supabase sensitive SQL scripts (contain user IDs, emails, admin setup)
+supabase-config/*-admin-*.sql
+supabase-config/*FIX*.sql
+supabase-config/MAKE_*.sql
+supabase-config/SHOW_*.sql
+supabase-config/CHECK_*.sql
+supabase-config/CREATE_*.sql
+supabase-config/debug-*.sql
+supabase-config/quick-*.sql
+supabase-config/manual-*.sql
+supabase-config/schema-multi-user.sql
+supabase-config/backups/
+
+# Test coverage
+coverage/
+coverage_*.txt
+*_coverage*.txt
