@@ -29,6 +29,17 @@ vi.mock("../lib/database", () => ({
   ),
 }));
 
+// Mock userProfileService
+vi.mock("../services/userProfileService", () => ({
+  getUserProfile: vi.fn(() =>
+    Promise.resolve({
+      display_name: "Ian",
+      user_mode: "programme",
+      on_slimming_world: false,
+    }),
+  ),
+}));
+
 describe("Dashboard Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();

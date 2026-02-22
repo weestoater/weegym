@@ -86,10 +86,6 @@ function CalorieTracker() {
   }, [loadFoodLogs]);
 
   useEffect(() => {
-    loadFoodLogs();
-  }, [loadFoodLogs]);
-
-  useEffect(() => {
     if (foodLogs.length > 0) {
       const totals = calculateDailyTotals(foodLogs);
       setDailyTotals(totals);
