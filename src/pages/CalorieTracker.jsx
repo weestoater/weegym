@@ -223,21 +223,18 @@ function CalorieTracker() {
     const syns = parseFloat(synsValue) || 0;
     if (syns < 4) {
       return {
-        color: "text-success",
+        badge: "badge bg-success",
         icon: "bi-check-circle-fill",
-        badge: "bg-success",
       };
     } else if (syns <= 9) {
       return {
-        color: "text-warning",
+        badge: "badge bg-warning text-dark",
         icon: "bi-question-circle-fill",
-        badge: "bg-warning text-dark",
       };
     } else {
       return {
-        color: "text-danger",
+        badge: "badge bg-danger",
         icon: "bi-exclamation-triangle-fill",
-        badge: "bg-danger",
       };
     }
   };
@@ -650,7 +647,7 @@ function CalorieTracker() {
                           {log.slimming_world_syns > 0 && (
                             <>
                               {" • "}
-                              <span className={synsIndicator.color}>
+                              <span className={synsIndicator.badge}>
                                 <i
                                   className={`bi ${synsIndicator.icon} me-1`}
                                 ></i>
@@ -710,6 +707,30 @@ function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
     notes: "",
     rawData: initialData?.rawData || null,
   });
+
+  // Get syns indicator (color and icon) based on value
+  const getSynsIndicator = (synsValue) => {
+    const syns = parseFloat(synsValue) || 0;
+    if (syns < 4) {
+      return {
+        badge: "badge bg-success",
+        icon: "bi-check-circle-fill",
+        label: "Low Syns - Great choice!",
+      };
+    } else if (syns <= 9) {
+      return {
+        badge: "badge bg-warning text-dark",
+        icon: "bi-question-circle-fill",
+        label: "Moderate Syns",
+      };
+    } else {
+      return {
+        badge: "badge bg-danger",
+        icon: "bi-exclamation-triangle-fill",
+        label: "High Syns - Be mindful",
+      };
+    }
+  };
 
   // Update form data when initialData changes (new product selected)
   useEffect(() => {
@@ -956,11 +977,25 @@ function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
               <i className="bi bi-calculator"></i>
             </button>
           </div>
-          <small className="text-muted">
-            {userProfile?.on_slimming_world
-              ? "✓ Auto-calculating Syns from nutrition info"
-              : "Click calculator to calculate Syns from nutrition info"}
-          </small>
+          <div className="mt-2 mb-3">
+            {formData.slimmingWorldSyns > 0 &&
+              (() => {
+                const indicator = getSynsIndicator(formData.slimmingWorldSyns);
+                return (
+                  <div className="mb-2">
+                    <span className={indicator.badge}>
+                      <i className={`bi ${indicator.icon} me-1`}></i>
+                      {indicator.label}
+                    </span>
+                  </div>
+                );
+              })()}
+            <small className="text-muted">
+              {userProfile?.on_slimming_world
+                ? "✓ Auto-calculating Syns from nutrition info"
+                : "Click calculator to calculate Syns from nutrition info"}
+            </small>
+          </div>
         </div>
       </div>
 
