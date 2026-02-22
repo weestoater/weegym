@@ -113,6 +113,11 @@ function CalorieTracker() {
       const product = await searchByBarcode(barcode);
       setSelectedProduct(product);
       setShowManual(true);
+      // Clear search state when barcode scanned (different entry method)
+      setShowSearch(false);
+      setSearchQuery("");
+      setLastSearchQuery("");
+      setSearchResults([]);
     } catch (error) {
       console.error("Error fetching product:", error);
       alert("Product not found. Please try manual entry or search by name.");
@@ -123,16 +128,22 @@ function CalorieTracker() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim()) return;
+    console.log("🔍 Search triggered with query:", searchQuery);
+    if (!searchQuery.trim()) {
+      console.log("❌ Search query is empty");
+      return;
+    }
 
     try {
       setSearching(true);
       setSearchResults([]); // Clear previous results
+      console.log("📡 Calling searchByName API...");
       const results = await searchByName(searchQuery);
+      console.log("✅ Search results received:", results);
       setSearchResults(results.products || []);
       setLastSearchQuery(searchQuery); // Track what we just searched for
     } catch (error) {
-      console.error("Error searching products:", error);
+      console.error("❌ Error searching products:", error);
       alert(
         `Search failed: ${error.message}. Please check your internet connection and try again.`,
       );
@@ -143,7 +154,7 @@ function CalorieTracker() {
 
   const handleProductSelect = (product) => {
     setSelectedProduct(product);
-    setShowSearch(false);
+    // Keep search panel open so user can clear search or select another item
     setShowManual(true);
   };
 
@@ -205,6 +216,30 @@ function CalorieTracker() {
 
   const formatNumber = (num) => {
     return parseFloat(num || 0).toFixed(1);
+  };
+
+  // Get syns indicator (color and icon) based on value
+  const getSynsIndicator = (synsValue) => {
+    const syns = parseFloat(synsValue) || 0;
+    if (syns < 4) {
+      return {
+        color: "text-success",
+        icon: "bi-check-circle-fill",
+        badge: "bg-success",
+      };
+    } else if (syns <= 9) {
+      return {
+        color: "text-warning",
+        icon: "bi-question-circle-fill",
+        badge: "bg-warning text-dark",
+      };
+    } else {
+      return {
+        color: "text-danger",
+        icon: "bi-exclamation-triangle-fill",
+        badge: "bg-danger",
+      };
+    }
   };
 
   // Always render something - never just show spinner indefinitely
@@ -419,6 +454,8 @@ function CalorieTracker() {
                   setSearchResults([]);
                   setSearchQuery("");
                   setLastSearchQuery("");
+                  setSelectedProduct(null);
+                  setShowManual(false);
                 }}
                 aria-label="Close search"
               >
@@ -426,8 +463,8 @@ function CalorieTracker() {
               </button>
             </div>
 
-            <form onSubmit={handleSearch} className="mb-3">
-              <div className="input-group">
+            <form onSubmit={handleSearch} className="mb-2">
+              <div className="input-group" style={{ maxWidth: "400px" }}>
                 <input
                   type="text"
                   className="form-control"
@@ -449,62 +486,100 @@ function CalorieTracker() {
               </div>
             </form>
 
-            {searchResults.length > 0 ? (
-              <div className="list-group">
-                {searchResults.map((product, index) => (
+            {searchQuery && (
+              <div className="d-flex justify-content-between mb-3">
+                <button
+                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setLastSearchQuery("");
+                    setSearchResults([]);
+                    setSelectedProduct(null);
+                    setShowManual(false);
+                  }}
+                >
+                  <i className="bi bi-x-circle me-1"></i>
+                  Clear search
+                </button>
+                {selectedProduct && (
                   <button
-                    key={index}
-                    className="list-group-item list-group-item-action"
-                    onClick={() => handleProductSelect(product)}
-                  >
-                    <div className="d-flex w-100 justify-content-between align-items-start">
-                      <div>
-                        <h6 className="mb-1">{product.productName}</h6>
-                        {product.brand && (
-                          <small className="text-muted d-block">
-                            {product.brand}
-                          </small>
-                        )}
-                        <small className="text-muted">
-                          {getNutritionalSummary(product)}
-                        </small>
-                      </div>
-                      {product.imageThumbnail && (
-                        <img
-                          src={product.imageThumbnail}
-                          alt={product.productName}
-                          style={{
-                            width: "50px",
-                            height: "50px",
-                            objectFit: "cover",
-                          }}
-                          className="rounded"
-                        />
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              !searching &&
-              lastSearchQuery &&
-              searchQuery === lastSearchQuery && (
-                <div className="alert alert-info">
-                  <i className="bi bi-info-circle me-2"></i>
-                  No results found for "{lastSearchQuery}". Try different
-                  keywords or{" "}
-                  <button
-                    className="btn btn-link p-0"
+                    className="btn btn-info btn-sm"
+                    type="button"
                     onClick={() => {
-                      setShowSearch(false);
-                      setShowManual(true);
+                      setSelectedProduct(null);
+                      setShowManual(false);
                     }}
                   >
-                    use manual entry
+                    <i className="bi bi-card-list me-1"></i>
+                    Show results
                   </button>
-                  .
-                </div>
-              )
+                )}
+              </div>
+            )}
+
+            {/* Only show search results if no product is currently selected */}
+            {!selectedProduct && (
+              <>
+                {searchResults.length > 0 ? (
+                  <div className="list-group">
+                    {searchResults.map((product, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        className="list-group-item list-group-item-action"
+                        onClick={() => handleProductSelect(product)}
+                      >
+                        <div className="d-flex w-100 justify-content-between align-items-start">
+                          <div>
+                            <h6 className="mb-1">{product.productName}</h6>
+                            {product.brand && (
+                              <small className="text-muted d-block">
+                                {product.brand}
+                              </small>
+                            )}
+                            <small className="text-muted">
+                              {getNutritionalSummary(product)}
+                            </small>
+                          </div>
+                          {product.imageThumbnail && (
+                            <img
+                              src={product.imageThumbnail}
+                              alt={product.productName}
+                              style={{
+                                width: "50px",
+                                height: "50px",
+                                objectFit: "cover",
+                              }}
+                              className="rounded"
+                            />
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  !searching &&
+                  lastSearchQuery &&
+                  searchQuery === lastSearchQuery && (
+                    <div className="alert alert-info">
+                      <i className="bi bi-info-circle me-2"></i>
+                      No results found for "{lastSearchQuery}". Try different
+                      keywords or{" "}
+                      <button
+                        className="btn btn-link p-0"
+                        onClick={() => {
+                          setShowSearch(false);
+                          setShowManual(true);
+                        }}
+                      >
+                        use manual entry
+                      </button>
+                      .
+                    </div>
+                  )
+                )}
+              </>
             )}
           </div>
         </div>
@@ -555,52 +630,58 @@ function CalorieTracker() {
             </div>
           ) : (
             <div className="list-group">
-              {foodLogs.map((log) => (
-                <div key={log.id} className="list-group-item">
-                  <div className="d-flex justify-content-between align-items-start">
-                    <div className="flex-grow-1">
-                      <h6 className="mb-1">{log.product_name}</h6>
-                      {log.brand && (
-                        <small className="text-muted d-block">
-                          {log.brand}
-                        </small>
-                      )}
-                      <small className="text-muted">
-                        {log.serving_size} × {log.quantity} ={" "}
-                        {Math.round(log.calories * log.quantity)} cal
-                        {log.slimming_world_syns > 0 && (
-                          <>
-                            {" • "}
-                            <i className="bi bi-star-fill text-warning"></i>{" "}
-                            {formatNumber(
-                              log.slimming_world_syns * log.quantity,
-                            )}{" "}
-                            syns
-                          </>
+              {foodLogs.map((log) => {
+                const synsValue = log.slimming_world_syns * log.quantity;
+                const synsIndicator = getSynsIndicator(synsValue);
+
+                return (
+                  <div key={log.id} className="list-group-item">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <div className="flex-grow-1">
+                        <h6 className="mb-1">{log.product_name}</h6>
+                        {log.brand && (
+                          <small className="text-muted d-block">
+                            {log.brand}
+                          </small>
                         )}
-                      </small>
-                      {log.meal_type && (
-                        <span className="badge bg-secondary ms-2">
-                          {log.meal_type}
-                        </span>
-                      )}
+                        <small className="text-muted">
+                          {log.serving_size} × {log.quantity} ={" "}
+                          {Math.round(log.calories * log.quantity)} cal
+                          {log.slimming_world_syns > 0 && (
+                            <>
+                              {" • "}
+                              <span className={synsIndicator.color}>
+                                <i
+                                  className={`bi ${synsIndicator.icon} me-1`}
+                                ></i>
+                                {formatNumber(synsValue)} syns
+                              </span>
+                            </>
+                          )}
+                        </small>
+                        {log.meal_type && (
+                          <span className="badge bg-secondary ms-2">
+                            {log.meal_type}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDeleteLog(log.id)}
+                        aria-label="Delete food entry"
+                      >
+                        <i className="bi bi-trash"></i>
+                      </button>
                     </div>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => handleDeleteLog(log.id)}
-                      aria-label="Delete food entry"
-                    >
-                      <i className="bi bi-trash"></i>
-                    </button>
+                    {log.notes && (
+                      <small className="text-muted d-block mt-2">
+                        <i className="bi bi-chat-left-text me-1"></i>
+                        {log.notes}
+                      </small>
+                    )}
                   </div>
-                  {log.notes && (
-                    <small className="text-muted d-block mt-2">
-                      <i className="bi bi-chat-left-text me-1"></i>
-                      {log.notes}
-                    </small>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -629,6 +710,30 @@ function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
     notes: "",
     rawData: initialData?.rawData || null,
   });
+
+  // Update form data when initialData changes (new product selected)
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        productName: initialData?.productName || "",
+        brand: initialData?.brand || "",
+        barcode: initialData?.barcode || "",
+        servingSize: initialData?.servingSize || "",
+        calories: initialData?.calories || "",
+        protein: initialData?.protein || "",
+        carbohydrates: initialData?.carbohydrates || "",
+        fat: initialData?.fat || "",
+        fiber: initialData?.fiber || "",
+        sugar: initialData?.sugar || "",
+        sodium: initialData?.sodium || "",
+        slimmingWorldSyns: initialData?.slimmingWorldSyns || "",
+        quantity: 1,
+        mealType: "snack",
+        notes: "",
+        rawData: initialData?.rawData || null,
+      });
+    }
+  }, [initialData]);
 
   // Auto-calculate Syns when nutrition values change if user is on Slimming World
   useEffect(() => {

@@ -5,9 +5,11 @@
  * for retrieving nutritional information about food products.
  *
  * API Documentation: https://wiki.openfoodfacts.org/API
+ *
+ * Note: Using UK-specific endpoint to limit searches to UK products
  */
 
-const OPEN_FOOD_FACTS_API = "https://world.openfoodfacts.org/api/v0";
+const OPEN_FOOD_FACTS_API = "https://uk.openfoodfacts.org/api/v0";
 
 /**
  * Search for a product by barcode
@@ -41,18 +43,30 @@ export async function searchByBarcode(barcode) {
  */
 export async function searchByName(query, page = 1, pageSize = 20) {
   try {
-    const response = await fetch(
-      `${OPEN_FOOD_FACTS_API}/cgi/search.pl?search_terms=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}&json=true`,
-    );
+    // Note: Search endpoint does NOT use /api/v0 prefix
+    // Using UK-specific endpoint to limit searches to UK products
+    const url = `https://uk.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}&json=true`;
+    console.log("📡 Fetching from URL:", url);
+
+    const response = await fetch(url);
+    console.log("📥 Response status:", response.status, response.statusText);
 
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
     }
 
     const data = await response.json();
+    console.log("📦 Raw API Response:", data);
+    console.log("📦 API Response keys:", Object.keys(data));
+    console.log("📦 API Response data:", {
+      count: data.count,
+      productsLength: data.products?.length,
+      hasProducts: Array.isArray(data.products),
+    });
 
     // Handle case where no products are found or data structure is unexpected
     if (!data || !Array.isArray(data.products)) {
+      console.log("⚠️ No products array in response");
       return {
         count: 0,
         page: page,
@@ -61,14 +75,32 @@ export async function searchByName(query, page = 1, pageSize = 20) {
       };
     }
 
+    console.log(`✅ Found ${data.products.length} products, parsing...`);
+
+    // Parse products with error handling for individual items
+    const parsedProducts = [];
+    for (let i = 0; i < data.products.length; i++) {
+      try {
+        const parsed = parseProductData(data.products[i]);
+        parsedProducts.push(parsed);
+      } catch (parseError) {
+        console.warn(`⚠️ Failed to parse product ${i}:`, parseError);
+        // Continue with next product
+      }
+    }
+
+    console.log(
+      `✅ Successfully parsed ${parsedProducts.length} of ${data.products.length} products`,
+    );
+
     return {
       count: data.count || 0,
       page: data.page || page,
       pageSize: data.page_size || pageSize,
-      products: data.products.map(parseProductData),
+      products: parsedProducts,
     };
   } catch (error) {
-    console.error("Error searching products:", error);
+    console.error("❌ Error searching products:", error);
     throw error;
   }
 }
@@ -79,59 +111,65 @@ export async function searchByName(query, page = 1, pageSize = 20) {
  * @returns {Object} Parsed product data
  */
 function parseProductData(product) {
-  // Get nutriments (per 100g by default)
-  const nutriments = product.nutriments || {};
+  try {
+    // Get nutriments (per 100g by default)
+    const nutriments = product.nutriments || {};
 
-  // Calculate serving size nutrients if serving size is available
-  const servingSize = product.serving_quantity || 100;
-  const servingUnit = product.serving_quantity_unit || "g";
-  const servingSizeText = `${servingSize}${servingUnit}`;
+    // Calculate serving size nutrients if serving size is available
+    const servingSize = product.serving_quantity || 100;
+    const servingUnit = product.serving_quantity_unit || "g";
+    const servingSizeText = `${servingSize}${servingUnit}`;
 
-  // Nutrient values per 100g
-  const per100g = {
-    calories: nutriments["energy-kcal_100g"] || nutriments["energy-kcal"] || 0,
-    protein: nutriments.proteins_100g || nutriments.proteins || 0,
-    carbohydrates:
-      nutriments.carbohydrates_100g || nutriments.carbohydrates || 0,
-    fat: nutriments.fat_100g || nutriments.fat || 0,
-    fiber: nutriments.fiber_100g || nutriments.fiber || 0,
-    sodium: nutriments.sodium_100g || nutriments.sodium || 0,
-    sugar: nutriments.sugars_100g || nutriments.sugars || 0,
-  };
+    // Nutrient values per 100g
+    const per100g = {
+      calories:
+        nutriments["energy-kcal_100g"] || nutriments["energy-kcal"] || 0,
+      protein: nutriments.proteins_100g || nutriments.proteins || 0,
+      carbohydrates:
+        nutriments.carbohydrates_100g || nutriments.carbohydrates || 0,
+      fat: nutriments.fat_100g || nutriments.fat || 0,
+      fiber: nutriments.fiber_100g || nutriments.fiber || 0,
+      sodium: nutriments.sodium_100g || nutriments.sodium || 0,
+      sugar: nutriments.sugars_100g || nutriments.sugars || 0,
+    };
 
-  // Calculate per serving (if serving size is provided)
-  const multiplier = servingSize / 100;
-  const perServing = {
-    calories: (per100g.calories * multiplier).toFixed(2),
-    protein: (per100g.protein * multiplier).toFixed(2),
-    carbohydrates: (per100g.carbohydrates * multiplier).toFixed(2),
-    fat: (per100g.fat * multiplier).toFixed(2),
-    fiber: (per100g.fiber * multiplier).toFixed(2),
-    sodium: (per100g.sodium * multiplier).toFixed(2),
-    sugar: (per100g.sugar * multiplier).toFixed(2),
-  };
+    // Calculate per serving (if serving size is provided)
+    const multiplier = servingSize / 100;
+    const perServing = {
+      calories: (per100g.calories * multiplier).toFixed(2),
+      protein: (per100g.protein * multiplier).toFixed(2),
+      carbohydrates: (per100g.carbohydrates * multiplier).toFixed(2),
+      fat: (per100g.fat * multiplier).toFixed(2),
+      fiber: (per100g.fiber * multiplier).toFixed(2),
+      sodium: (per100g.sodium * multiplier).toFixed(2),
+      sugar: (per100g.sugar * multiplier).toFixed(2),
+    };
 
-  return {
-    barcode: product.code || product._id,
-    productName: product.product_name || "Unknown Product",
-    brand: product.brands || "",
-    servingSize: servingSizeText,
-    imageUrl: product.image_url || product.image_front_url,
-    imageThumbnail: product.image_thumb_url || product.image_small_url,
-    categories: product.categories || "",
-    ingredients: product.ingredients_text || "",
+    return {
+      barcode: product.code || product._id,
+      productName: product.product_name || "Unknown Product",
+      brand: product.brands || "",
+      servingSize: servingSizeText,
+      imageUrl: product.image_url || product.image_front_url,
+      imageThumbnail: product.image_thumb_url || product.image_small_url,
+      categories: product.categories || "",
+      ingredients: product.ingredients_text || "",
 
-    // Nutritional values per serving
-    ...perServing,
+      // Nutritional values per serving
+      ...perServing,
 
-    // Additional data
-    nutriScore: product.nutriscore_grade,
-    novaGroup: product.nova_group,
-    ecoscore: product.ecoscore_grade,
+      // Additional data
+      nutriScore: product.nutriscore_grade,
+      novaGroup: product.nova_group,
+      ecoscore: product.ecoscore_grade,
 
-    // Store full data for reference
-    rawData: product,
-  };
+      // Store full data for reference
+      rawData: product,
+    };
+  } catch (error) {
+    console.error("❌ Error parsing product data:", error, product);
+    throw error;
+  }
 }
 
 /**
