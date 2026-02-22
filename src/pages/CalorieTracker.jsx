@@ -128,18 +128,18 @@ function CalorieTracker() {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    console.log("🔍 Search triggered with query:", searchQuery);
+    // console.log("🔍 Search triggered with query:", searchQuery);
     if (!searchQuery.trim()) {
-      console.log("❌ Search query is empty");
+      // console.log("❌ Search query is empty");
       return;
     }
 
     try {
       setSearching(true);
       setSearchResults([]); // Clear previous results
-      console.log("📡 Calling searchByName API...");
+      // console.log("📡 Calling searchByName API...");
       const results = await searchByName(searchQuery);
-      console.log("✅ Search results received:", results);
+      // console.log("✅ Search results received:", results);
       setSearchResults(results.products || []);
       setLastSearchQuery(searchQuery); // Track what we just searched for
     } catch (error) {

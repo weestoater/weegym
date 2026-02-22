@@ -46,27 +46,27 @@ export async function searchByName(query, page = 1, pageSize = 20) {
     // Note: Search endpoint does NOT use /api/v0 prefix
     // Using UK-specific endpoint to limit searches to UK products
     const url = `https://uk.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&page=${page}&page_size=${pageSize}&json=true`;
-    console.log("📡 Fetching from URL:", url);
+    // console.log("📡 Fetching from URL:", url);
 
     const response = await fetch(url);
-    console.log("📥 Response status:", response.status, response.statusText);
+    // console.log("📥 Response status:", response.status, response.statusText);
 
     if (!response.ok) {
       throw new Error(`API request failed with status ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("📦 Raw API Response:", data);
-    console.log("📦 API Response keys:", Object.keys(data));
-    console.log("📦 API Response data:", {
-      count: data.count,
-      productsLength: data.products?.length,
-      hasProducts: Array.isArray(data.products),
-    });
+    // console.log("📦 Raw API Response:", data);
+    // console.log("📦 API Response keys:", Object.keys(data));
+    // console.log("📦 API Response data:", {
+    //   count: data.count,
+    //   productsLength: data.products?.length,
+    //   hasProducts: Array.isArray(data.products),
+    // });
 
     // Handle case where no products are found or data structure is unexpected
     if (!data || !Array.isArray(data.products)) {
-      console.log("⚠️ No products array in response");
+      // console.log("⚠️ No products array in response");
       return {
         count: 0,
         page: page,
@@ -75,7 +75,7 @@ export async function searchByName(query, page = 1, pageSize = 20) {
       };
     }
 
-    console.log(`✅ Found ${data.products.length} products, parsing...`);
+    // console.log(`✅ Found ${data.products.length} products, parsing...`);
 
     // Parse products with error handling for individual items
     const parsedProducts = [];
@@ -84,14 +84,14 @@ export async function searchByName(query, page = 1, pageSize = 20) {
         const parsed = parseProductData(data.products[i]);
         parsedProducts.push(parsed);
       } catch (parseError) {
-        console.warn(`⚠️ Failed to parse product ${i}:`, parseError);
+        // console.warn(`⚠️ Failed to parse product ${i}:`, parseError);
         // Continue with next product
       }
     }
 
-    console.log(
-      `✅ Successfully parsed ${parsedProducts.length} of ${data.products.length} products`,
-    );
+    // console.log(
+    //   `✅ Successfully parsed ${parsedProducts.length} of ${data.products.length} products`,
+    // );
 
     return {
       count: data.count || 0,
