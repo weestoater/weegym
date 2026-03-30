@@ -68,12 +68,14 @@ End every workout with a cool-down to:
 ### Day 1 - Upper Body (M = machine, F = free-weights)
 
 **Push Focus: Chest, Shoulders, Triceps**  
-**Target:** Chest • Shoulders • Arms
+**Target:** Chest • Shoulders • Arms • Back
 
 | Exercise                   | Type | Sets | Reps  | Rest |
 | -------------------------- | ---- | ---- | ----- | ---- |
 | Chest Press                | M    | 3    | 6-8   | 90s  |
 | Lat Pulldown               | M    | 3    | 8-10  | 90s  |
+| Cable Row                  | M    | 3    | 8-10  | 90s  |
+| Face Pulls                 | M    | 3    | 12-15 | 60s  |
 | Leg Extension              | M    | 3    | 10-12 | 90s  |
 | Alternating Lateral Raised | F    | 2    | 10-12 | 60s  |
 | Tricep Pushdown (Rope)     | M    | 2    | 10-12 | 60s  |
@@ -81,11 +83,13 @@ End every workout with a cool-down to:
 ### Day 2 - Mixed Areas (M = machine, F = free-weights)
 
 **Legs, Shoulders & Core Strength**  
-**Target:** Legs • Shoulders • Core
+**Target:** Legs • Shoulders • Core • Back
 
 | Exercise                           | Type | Sets | Reps  | Rest |
 | ---------------------------------- | ---- | ---- | ----- | ---- |
 | Seated Row                         | M    | 3    | 6-8   | 90s  |
+| T-Bar Row                          | M    | 3    | 8-10  | 90s  |
+| Single-Arm Dumbbell Row            | F    | 3    | 10-12 | 60s  |
 | Leg Curl                           | M    | 3    | 10-12 | 90s  |
 | Shoulder Press                     | M    | 3    | 8-10  | 90s  |
 | Dumbell Hammer Curl                | F    | 2    | 10-12 | 60s  |

@@ -9,7 +9,7 @@ function Programme() {
     day1: {
       name: "Day 1 - Upper Body",
       description: "Push Focus: Chest, Shoulders, Triceps",
-      target: "Chest • Shoulders • Arms",
+      target: "Chest • Shoulders • Arms • Back",
       exercises: [
         {
           name: "Chest Press",
@@ -24,6 +24,20 @@ function Programme() {
           sets: 3,
           reps: "8-10",
           rest: "90s",
+        },
+        {
+          name: "Cable Row",
+          type: "Machine",
+          sets: 3,
+          reps: "8-10",
+          rest: "90s",
+        },
+        {
+          name: "Face Pulls",
+          type: "Machine",
+          sets: 3,
+          reps: "12-15",
+          rest: "60s",
         },
         {
           name: "Leg Extension",
@@ -51,7 +65,7 @@ function Programme() {
     day2: {
       name: "Day 2 - Mixed Areas",
       description: "Legs, Shoulders & Core Strength",
-      target: "Legs • Shoulders • Core",
+      target: "Legs • Shoulders • Core • Back",
       exercises: [
         {
           name: "Seated Row",
@@ -59,6 +73,20 @@ function Programme() {
           sets: 3,
           reps: "6-8",
           rest: "90s",
+        },
+        {
+          name: "T-Bar Row",
+          type: "Machine",
+          sets: 3,
+          reps: "8-10",
+          rest: "90s",
+        },
+        {
+          name: "Single-Arm Dumbbell Row",
+          type: "Free-weights",
+          sets: 3,
+          reps: "10-12",
+          rest: "60s",
         },
         {
           name: "Leg Curl",

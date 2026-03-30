@@ -8,7 +8,7 @@ const PROGRAMME = {
   day1: {
     name: "Day 1 - Upper Body",
     description: "Push Focus: Chest, Shoulders, Triceps",
-    target: "Chest • Shoulders • Arms",
+    target: "Chest • Shoulders • Arms • Back",
     exercises: [
       {
         id: "d1e1",
@@ -28,6 +28,22 @@ const PROGRAMME = {
       },
       {
         id: "d1e3",
+        name: "Cable Row",
+        type: "M",
+        sets: 3,
+        reps: "8-10",
+        restSeconds: 90,
+      },
+      {
+        id: "d1e4",
+        name: "Face Pulls",
+        type: "M",
+        sets: 3,
+        reps: "12-15",
+        restSeconds: 60,
+      },
+      {
+        id: "d1e5",
         name: "Leg Extension",
         type: "M",
         sets: 3,
@@ -35,7 +51,7 @@ const PROGRAMME = {
         restSeconds: 90,
       },
       {
-        id: "d1e4",
+        id: "d1e6",
         name: "Alternating Lateral Raised",
         type: "F",
         sets: 2,
@@ -43,7 +59,7 @@ const PROGRAMME = {
         restSeconds: 60,
       },
       {
-        id: "d1e5",
+        id: "d1e7",
         name: "Tricep Pushdown (Rope)",
         type: "M",
         sets: 2,
@@ -55,7 +71,7 @@ const PROGRAMME = {
   day2: {
     name: "Day 2 - Mixed Areas",
     description: "Legs, Shoulders & Core Strength",
-    target: "Legs • Shoulders • Core",
+    target: "Legs • Shoulders • Core • Back",
     exercises: [
       {
         id: "d2e1",
@@ -67,6 +83,22 @@ const PROGRAMME = {
       },
       {
         id: "d2e2",
+        name: "T-Bar Row",
+        type: "M",
+        sets: 3,
+        reps: "8-10",
+        restSeconds: 90,
+      },
+      {
+        id: "d2e3",
+        name: "Single-Arm Dumbbell Row",
+        type: "F",
+        sets: 3,
+        reps: "10-12",
+        restSeconds: 60,
+      },
+      {
+        id: "d2e4",
         name: "Leg Curl",
         type: "M",
         sets: 3,
@@ -74,7 +106,7 @@ const PROGRAMME = {
         restSeconds: 90,
       },
       {
-        id: "d2e3",
+        id: "d2e5",
         name: "Shoulder Press",
         type: "M",
         sets: 3,
@@ -82,7 +114,7 @@ const PROGRAMME = {
         restSeconds: 90,
       },
       {
-        id: "d2e4",
+        id: "d2e6",
         name: "Dumbell Hammer Curl",
         type: "F",
         sets: 2,
@@ -90,7 +122,7 @@ const PROGRAMME = {
         restSeconds: 60,
       },
       {
-        id: "d2e5",
+        id: "d2e7",
         name: "Overhead Tricep Extensions (V-Bar)",
         type: "M",
         sets: 2,
