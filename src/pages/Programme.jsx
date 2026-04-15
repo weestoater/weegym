@@ -17,6 +17,8 @@ function Programme() {
           sets: 3,
           reps: "6-8",
           rest: "90s",
+          demoUrl:
+            "https://exrx.net/WeightExercises/PectoralSternal/LVChestPress",
         },
         {
           name: "Lat Pulldown",
@@ -24,6 +26,8 @@ function Programme() {
           sets: 3,
           reps: "8-10",
           rest: "90s",
+          demoUrl:
+            "https://exrx.net/WeightExercises/LatissimusDorsi/LVFrontPulldown",
         },
         {
           name: "Cable Row",
@@ -31,6 +35,7 @@ function Programme() {
           sets: 3,
           reps: "8-10",
           rest: "90s",
+          demoUrl: "https://exrx.net/WeightExercises/BackGeneral/CBSeatedRow",
         },
         {
           name: "Face Pulls",
@@ -38,6 +43,8 @@ function Programme() {
           sets: 3,
           reps: "12-15",
           rest: "60s",
+          demoUrl:
+            "https://exrx.net/WeightExercises/DeltoidPosterior/CBStandingRearDeltRowRope",
         },
         {
           name: "Leg Extension",
@@ -45,6 +52,7 @@ function Programme() {
           sets: 3,
           reps: "10-12",
           rest: "90s",
+          demoUrl: "https://exrx.net/WeightExercises/Quadriceps/LVLegExtension",
         },
         {
           name: "Alternating Lateral Raised",
@@ -52,6 +60,8 @@ function Programme() {
           sets: 2,
           reps: "10-12",
           rest: "60s",
+          demoUrl:
+            "https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise",
         },
         {
           name: "Tricep Pushdown (Rope)",
@@ -59,6 +69,7 @@ function Programme() {
           sets: 2,
           reps: "10-12",
           rest: "60s",
+          demoUrl: "https://exrx.net/WeightExercises/Triceps/CBPushdown",
         },
       ],
     },
@@ -73,6 +84,7 @@ function Programme() {
           sets: 3,
           reps: "6-8",
           rest: "90s",
+          demoUrl: "https://exrx.net/WeightExercises/BackGeneral/LVSeatedRow",
         },
         {
           name: "T-Bar Row",
@@ -80,6 +92,7 @@ function Programme() {
           sets: 3,
           reps: "8-10",
           rest: "90s",
+          demoUrl: "https://exrx.net/WeightExercises/BackGeneral/LVTBarRow",
         },
         {
           name: "Single-Arm Dumbbell Row",
@@ -87,6 +100,7 @@ function Programme() {
           sets: 3,
           reps: "10-12",
           rest: "60s",
+          demoUrl: "https://exrx.net/WeightExercises/BackGeneral/DBBentOverRow",
         },
         {
           name: "Leg Curl",
@@ -94,6 +108,7 @@ function Programme() {
           sets: 3,
           reps: "10-12",
           rest: "90s",
+          demoUrl: "https://exrx.net/WeightExercises/Hamstrings/LVLyingLegCurl",
         },
         {
           name: "Shoulder Press",
@@ -101,6 +116,8 @@ function Programme() {
           sets: 3,
           reps: "8-10",
           rest: "90s",
+          demoUrl:
+            "https://exrx.net/WeightExercises/DeltoidAnterior/LVShoulderPress",
         },
         {
           name: "Dumbell Hammer Curl",
@@ -108,6 +125,8 @@ function Programme() {
           sets: 2,
           reps: "10-12",
           rest: "60s",
+          demoUrl:
+            "https://exrx.net/WeightExercises/Brachioradialis/DBHammerCurl",
         },
         {
           name: "Overhead Tricep Extensions (V-Bar)",
@@ -115,6 +134,7 @@ function Programme() {
           sets: 2,
           reps: "10-12",
           rest: "60s",
+          demoUrl: "https://exrx.net/WeightExercises/Triceps/CBTriExt",
         },
       ],
     },
@@ -184,6 +204,16 @@ function Programme() {
                   <span className="badge bg-secondary small">
                     {exercise.type}
                   </span>
+                  {exercise.demoUrl && (
+                    <a
+                      href={exercise.demoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="d-block mt-1 small text-primary"
+                    >
+                      <i className="bi bi-play-circle me-1"></i>Watch demo
+                    </a>
+                  )}
                 </div>
                 <div className="text-end">
                   <p className="mb-0 small">
@@ -212,6 +242,16 @@ function Programme() {
                   <span className="badge bg-secondary small">
                     {exercise.type}
                   </span>
+                  {exercise.demoUrl && (
+                    <a
+                      href={exercise.demoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="d-block mt-1 small text-primary"
+                    >
+                      <i className="bi bi-play-circle me-1"></i>Watch demo
+                    </a>
+                  )}
                 </div>
                 <div className="text-end">
                   <p className="mb-0 small">

@@ -17,6 +17,8 @@ const PROGRAMME = {
         sets: 3,
         reps: "6-8",
         restSeconds: 90,
+        demoUrl:
+          "https://exrx.net/WeightExercises/PectoralSternal/LVChestPress",
       },
       {
         id: "d1e2",
@@ -25,6 +27,8 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        demoUrl:
+          "https://exrx.net/WeightExercises/LatissimusDorsi/LVFrontPulldown",
       },
       {
         id: "d1e3",
@@ -33,6 +37,7 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        demoUrl: "https://exrx.net/WeightExercises/BackGeneral/CBSeatedRow",
       },
       {
         id: "d1e4",
@@ -41,6 +46,8 @@ const PROGRAMME = {
         sets: 3,
         reps: "12-15",
         restSeconds: 60,
+        demoUrl:
+          "https://exrx.net/WeightExercises/DeltoidPosterior/CBStandingRearDeltRowRope",
       },
       {
         id: "d1e5",
@@ -49,6 +56,7 @@ const PROGRAMME = {
         sets: 3,
         reps: "10-12",
         restSeconds: 90,
+        demoUrl: "https://exrx.net/WeightExercises/Quadriceps/LVLegExtension",
       },
       {
         id: "d1e6",
@@ -57,6 +65,8 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        demoUrl:
+          "https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise",
       },
       {
         id: "d1e7",
@@ -65,6 +75,7 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        demoUrl: "https://exrx.net/WeightExercises/Triceps/CBPushdown",
       },
     ],
   },
@@ -80,6 +91,7 @@ const PROGRAMME = {
         sets: 3,
         reps: "6-8",
         restSeconds: 90,
+        demoUrl: "https://exrx.net/WeightExercises/BackGeneral/LVSeatedRow",
       },
       {
         id: "d2e2",
@@ -88,6 +100,7 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        demoUrl: "https://exrx.net/WeightExercises/BackGeneral/LVTBarRow",
       },
       {
         id: "d2e3",
@@ -96,6 +109,7 @@ const PROGRAMME = {
         sets: 3,
         reps: "10-12",
         restSeconds: 60,
+        demoUrl: "https://exrx.net/WeightExercises/BackGeneral/DBBentOverRow",
       },
       {
         id: "d2e4",
@@ -104,6 +118,7 @@ const PROGRAMME = {
         sets: 3,
         reps: "10-12",
         restSeconds: 90,
+        demoUrl: "https://exrx.net/WeightExercises/Hamstrings/LVLyingLegCurl",
       },
       {
         id: "d2e5",
@@ -112,6 +127,8 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        demoUrl:
+          "https://exrx.net/WeightExercises/DeltoidAnterior/LVShoulderPress",
       },
       {
         id: "d2e6",
@@ -120,6 +137,8 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        demoUrl:
+          "https://exrx.net/WeightExercises/Brachioradialis/DBHammerCurl",
       },
       {
         id: "d2e7",
@@ -128,6 +147,7 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        demoUrl: "https://exrx.net/WeightExercises/Triceps/CBTriExt",
       },
     ],
   },
@@ -424,6 +444,17 @@ function WorkoutSession() {
                           {exercise.type === "M" ? "Machine" : "Free Weights"}
                         </span>
                       </small>
+                      {exercise.demoUrl && (
+                        <a
+                          href={exercise.demoUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="d-block mt-1 small text-primary"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <i className="bi bi-play-circle me-1"></i>Watch demo
+                        </a>
+                      )}
                     </div>
                     <div className="text-end">
                       {isCompleted ? (
@@ -524,6 +555,16 @@ function WorkoutSession() {
               <span className="badge bg-secondary">
                 {currentExercise.type === "M" ? "Machine" : "Free Weights"}
               </span>
+              {currentExercise.demoUrl && (
+                <a
+                  href={currentExercise.demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="d-block mt-2 small text-primary"
+                >
+                  <i className="bi bi-play-circle me-1"></i>Watch demo
+                </a>
+              )}
             </div>
             <span className="badge bg-primary fs-6">
               Set {currentSet}/{currentExercise.sets}
