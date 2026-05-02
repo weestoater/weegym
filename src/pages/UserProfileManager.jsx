@@ -37,7 +37,7 @@ function UserProfileManager() {
     userMode: "programme",
     notes: "",
     onSlimmingWorld: false,
-    slimmingWorldDailySyns: 15,
+    slimmingWorldDailySyns: 30,
   });
 
   // New programme form state

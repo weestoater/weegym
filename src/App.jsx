@@ -32,7 +32,7 @@ function NavigationBar() {
     { path: "/", icon: "bi-house-door", label: "Home" },
     { path: "/workout", icon: "bi-play-circle", label: "Workout" },
     { path: "/wellbeing", icon: "bi-activity", label: "AW" },
-    { path: "/calories", icon: "bi-graph-up", label: "Calories" },
+    { path: "/calories", icon: "bi-star-fill", label: "SW" },
     { path: "/history", icon: "bi-clock-history", label: "History" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
