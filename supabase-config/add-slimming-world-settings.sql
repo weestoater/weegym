@@ -11,15 +11,15 @@
 -- Add the new columns to user_profiles table
 ALTER TABLE user_profiles 
 ADD COLUMN IF NOT EXISTS on_slimming_world BOOLEAN DEFAULT false,
-ADD COLUMN IF NOT EXISTS slimming_world_daily_syns INTEGER DEFAULT 15;
+ADD COLUMN IF NOT EXISTS slimming_world_daily_syns INTEGER DEFAULT 30;
 
 -- Add index for querying Slimming World users
 CREATE INDEX IF NOT EXISTS idx_user_profiles_slimming_world ON user_profiles(on_slimming_world);
 
--- Update existing users to have default values (false and 15 Syns)
+-- Update existing users to have default values (false and 30 Syns)
 UPDATE user_profiles
 SET on_slimming_world = false,
-    slimming_world_daily_syns = 15
+    slimming_world_daily_syns = 30
 WHERE on_slimming_world IS NULL;
 
 -- Add comments for documentation
@@ -27,7 +27,7 @@ COMMENT ON COLUMN user_profiles.on_slimming_world IS
   'Indicates if the user is following the Slimming World diet plan';
 
 COMMENT ON COLUMN user_profiles.slimming_world_daily_syns IS 
-  'Daily Syns allowance for Slimming World users (typically 5-15 Syns per day)';
+  'Daily Syns allowance for Slimming World users (typically 15-30 Syns per day)';
 
 -- ============================================================================
 -- VERIFICATION QUERIES

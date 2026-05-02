@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 import BarcodeScanner from "../components/BarcodeScanner";
+import MealSuggestions from "../components/MealSuggestions";
+import ProgressIndicator from "../components/ProgressIndicator";
 import { getUserProfile } from "../services/userProfileService";
 import {
   searchByBarcode,
@@ -10,6 +12,7 @@ import {
   calculateDailyTotals,
   getNutritionalSummary,
 } from "../services/nutritionService";
+import "../styles/accessibility.css";
 
 function CalorieTracker() {
   const { user } = useAuth();
@@ -219,17 +222,17 @@ function CalorieTracker() {
     const syns = parseFloat(synsValue) || 0;
     if (syns < 4) {
       return {
-        badge: "badge bg-success",
+        badge: "badge bg-success pattern-success",
         icon: "bi-check-circle-fill",
       };
     } else if (syns <= 9) {
       return {
-        badge: "badge bg-warning text-dark",
+        badge: "badge bg-warning text-dark pattern-warning",
         icon: "bi-question-circle-fill",
       };
     } else {
       return {
-        badge: "badge bg-danger",
+        badge: "badge bg-danger pattern-danger",
         icon: "bi-exclamation-triangle-fill",
       };
     }
@@ -241,7 +244,7 @@ function CalorieTracker() {
       <div className="container py-4">
         <div className="alert alert-info">
           <i className="bi bi-info-circle me-2"></i>
-          Please log in to access the calorie tracker.
+          Please log in to access SW logs.
         </div>
       </div>
     );
@@ -262,13 +265,21 @@ function CalorieTracker() {
 
   return (
     <div className="container py-4" style={{ paddingBottom: "80px" }}>
+      {/* Skip to main content link for keyboard users */}
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-          <i className="bi bi-graph-up me-2"></i>
-          Calorie Tracker
-        </h2>
-      </div>
+      <header className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="heading-primary mb-0">
+          <i
+            className="bi bi-star-fill text-warning me-2"
+            aria-hidden="true"
+          ></i>
+          <span>SW Logs</span>
+        </h1>
+      </header>
 
       {/* Database Setup Required Alert */}
       {tableNotFound && (
@@ -294,7 +305,8 @@ function CalorieTracker() {
           </ol>
           <p className="mb-0 small">
             See <strong>docs/QUICK_START_CALORIE_TRACKER.md</strong> for
-            detailed instructions.
+            detailed instructions. The syns tracker uses the same database
+            table.
           </p>
           <button
             type="button"
@@ -306,379 +318,443 @@ function CalorieTracker() {
       )}
 
       {/* Daily Summary */}
-      {dailyTotals && (
-        <div className="card mb-3 bg-primary text-white">
-          <div className="card-body">
-            <h5 className="card-title mb-3">Today's Summary</h5>
-            <div className="row text-center">
-              <div className="col-6 col-md-3 mb-2">
-                <div className="fs-3 fw-bold">
-                  {Math.round(dailyTotals.calories)}
-                </div>
-                <small>Calories</small>
-              </div>
-              <div className="col-6 col-md-3 mb-2">
-                <div className="fs-3 fw-bold">
-                  {formatNumber(dailyTotals.protein)}g
-                </div>
-                <small>Protein</small>
-              </div>
-              <div className="col-6 col-md-3 mb-2">
-                <div className="fs-3 fw-bold">
-                  {formatNumber(dailyTotals.carbohydrates)}g
-                </div>
-                <small>Carbs</small>
-              </div>
-              <div className="col-6 col-md-3 mb-2">
-                <div className="fs-3 fw-bold">
-                  {formatNumber(dailyTotals.fat)}g
-                </div>
-                <small>Fat</small>
+      <main id="main-content" role="main">
+        {dailyTotals && userProfile?.slimming_world_daily_syns && (
+          <section className="card mb-3" aria-labelledby="summary-heading">
+            <div className="card-body">
+              <h2 id="summary-heading" className="heading-secondary">
+                <i className="bi bi-calendar-check me-2" aria-hidden="true"></i>
+                Today's Summary
+              </h2>
+
+              {/* Progress Indicator with Pattern */}
+              <ProgressIndicator
+                current={dailyTotals.slimmingWorldSyns}
+                total={userProfile.slimming_world_daily_syns}
+                label="Syns"
+                showPercentage={true}
+              />
+
+              <div
+                className="text-center mt-3 p-3 bg-light rounded"
+                role="status"
+                aria-live="polite"
+              >
+                <i className="bi bi-list-check me-2" aria-hidden="true"></i>
+                <strong>{dailyTotals.items}</strong>
+                <span className="visually-hidden">You have logged</span>{" "}
+                {dailyTotals.items === 1 ? "item" : "items"} logged today
               </div>
             </div>
-            {dailyTotals.slimmingWorldSyns > 0 && (
-              <div className="row text-center mt-3 pt-3 border-top border-white">
-                <div className="col-12">
-                  <div className="fs-4 fw-bold">
-                    <i className="bi bi-star-fill me-2"></i>
-                    {formatNumber(dailyTotals.slimmingWorldSyns)} Syns
-                    {userProfile?.on_slimming_world &&
-                      userProfile?.slimming_world_daily_syns && (
-                        <span className="ms-2" style={{ fontSize: "0.8rem" }}>
-                          / {userProfile.slimming_world_daily_syns} daily
-                        </span>
-                      )}
-                  </div>
-                  <small>
-                    Slimming World
-                    {userProfile?.on_slimming_world &&
-                      userProfile?.slimming_world_daily_syns && (
-                        <span
-                          className={`ms-2 badge ${
-                            dailyTotals.slimmingWorldSyns <=
-                            userProfile.slimming_world_daily_syns
-                              ? "bg-success"
-                              : "bg-warning text-dark"
-                          }`}
-                        >
-                          {dailyTotals.slimmingWorldSyns <=
-                          userProfile.slimming_world_daily_syns
-                            ? `${formatNumber(userProfile.slimming_world_daily_syns - dailyTotals.slimmingWorldSyns)} remaining`
-                            : `${formatNumber(dailyTotals.slimmingWorldSyns - userProfile.slimming_world_daily_syns)} over`}
-                        </span>
-                      )}
-                  </small>
-                </div>
-              </div>
-            )}
-            <div className="text-center mt-2">
-              <small>{dailyTotals.items} items logged today</small>
-            </div>
+          </section>
+        )}
+
+        {/* No daily allowance set */}
+        {dailyTotals && !userProfile?.slimming_world_daily_syns && (
+          <div className="alert alert-info" role="alert">
+            <h2 className="alert-heading heading-tertiary">
+              <i className="bi bi-info-circle me-2" aria-hidden="true"></i>
+              Set Your Daily Syn Allowance
+            </h2>
+            <p className="mb-2">
+              To see your progress and get personalized meal suggestions, please
+              set your daily syn allowance in your profile.
+            </p>
+            <a href="/profile-manager" className="btn btn-primary">
+              <i className="bi bi-gear me-2" aria-hidden="true"></i>
+              Go to Profile Settings
+            </a>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Add Food Buttons */}
-      {!showScanner && !showSearch && !showManual && (
-        <div className="card mb-3">
-          <div className="card-body">
-            <h5 className="card-title mb-3">Add Food</h5>
-            <div className="d-grid gap-2">
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowScanner(true)}
-              >
-                <i className="bi bi-upc-scan me-2"></i>
-                Scan Barcode
-              </button>
-              <button
-                className="btn btn-outline-primary"
-                onClick={() => setShowSearch(true)}
-              >
-                <i className="bi bi-search me-2"></i>
-                Search Food Database
-              </button>
-              <button
-                className="btn btn-outline-secondary"
-                onClick={() => setShowManual(true)}
-              >
-                <i className="bi bi-pencil me-2"></i>
-                Manual Entry
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Date Selector */}
-      <div className="card mb-3">
-        <div className="card-body">
-          <label className="form-label fw-bold">Date</label>
-          <input
-            type="date"
-            className="form-control"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            max={new Date().toISOString().split("T")[0]}
+        {/* Meal Suggestions */}
+        {userProfile?.slimming_world_daily_syns && dailyTotals && (
+          <MealSuggestions
+            remainingSyns={
+              userProfile.slimming_world_daily_syns -
+              dailyTotals.slimmingWorldSyns
+            }
+            dailySyns={userProfile.slimming_world_daily_syns}
+            foodLogs={foodLogs}
+            userProfile={userProfile}
           />
-        </div>
-      </div>
+        )}
 
-      {/* Scanner Modal */}
-      {showScanner && (
-        <div className="mb-3">
-          <BarcodeScanner
-            onScan={handleBarcodeScanned}
-            onClose={() => setShowScanner(false)}
-          />
-        </div>
-      )}
-
-      {/* Search Interface */}
-      {showSearch && (
-        <div className="card mb-3">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="card-title mb-0">Search Food</h5>
-              <button
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => {
-                  setShowSearch(false);
-                  setSearchResults([]);
-                  setSearchQuery("");
-                  setLastSearchQuery("");
-                  setSelectedProduct(null);
-                  setShowManual(false);
-                }}
-                aria-label="Close search"
+        {/* Add Food Buttons */}
+        {!showScanner && !showSearch && !showManual && (
+          <section className="card mb-3" aria-labelledby="add-food-heading">
+            <div className="card-body">
+              <h2 id="add-food-heading" className="heading-secondary">
+                <i className="bi bi-plus-circle me-2" aria-hidden="true"></i>
+                Add Food
+              </h2>
+              <div
+                className="d-grid gap-2"
+                role="group"
+                aria-label="Food entry options"
               >
-                <i className="bi bi-x-lg"></i>
-              </button>
-            </div>
-
-            <form onSubmit={handleSearch} className="mb-2">
-              <div className="input-group" style={{ maxWidth: "400px" }}>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search for food..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
                 <button
                   className="btn btn-primary"
-                  type="submit"
-                  disabled={searching || !searchQuery.trim()}
+                  onClick={() => setShowScanner(true)}
+                  aria-label="Scan barcode to add food"
                 >
-                  {searching ? (
-                    <span className="spinner-border spinner-border-sm" />
-                  ) : (
-                    <i className="bi bi-search"></i>
-                  )}
+                  <i className="bi bi-upc-scan me-2" aria-hidden="true"></i>
+                  Scan Barcode
+                </button>
+                <button
+                  className="btn btn-outline-primary"
+                  onClick={() => setShowSearch(true)}
+                  aria-label="Search food database to add food"
+                >
+                  <i className="bi bi-search me-2" aria-hidden="true"></i>
+                  Search Food Database
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowManual(true)}
+                  aria-label="Manually enter food details"
+                >
+                  <i className="bi bi-pencil me-2" aria-hidden="true"></i>
+                  Manual Entry
                 </button>
               </div>
-            </form>
+            </div>
+          </section>
+        )}
 
-            {searchQuery && (
-              <div className="d-flex justify-content-between mb-3">
+        {/* Date Selector */}
+        <section className="card mb-3" aria-labelledby="date-selector-heading">
+          <div className="card-body">
+            <label
+              id="date-selector-heading"
+              htmlFor="date-input"
+              className="form-label fw-bold heading-tertiary"
+            >
+              <i className="bi bi-calendar3 me-2" aria-hidden="true"></i>
+              Date
+            </label>
+            <input
+              id="date-input"
+              type="date"
+              className="form-control"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              max={new Date().toISOString().split("T")[0]}
+              aria-describedby="date-help"
+            />
+            <small id="date-help" className="form-text text-muted">
+              Select a date to view or add food logs
+            </small>
+          </div>
+        </section>
+        {/* Scanner Modal */}
+        {showScanner && (
+          <div className="mb-3">
+            <BarcodeScanner
+              onScan={handleBarcodeScanned}
+              onClose={() => setShowScanner(false)}
+            />
+          </div>
+        )}
+
+        {/* Search Interface */}
+        {showSearch && (
+          <div className="card mb-3">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="card-title mb-0">Search Food</h5>
                 <button
-                  className="btn btn-secondary btn-sm"
-                  type="button"
+                  className="btn btn-sm btn-outline-secondary"
                   onClick={() => {
+                    setShowSearch(false);
+                    setSearchResults([]);
                     setSearchQuery("");
                     setLastSearchQuery("");
-                    setSearchResults([]);
                     setSelectedProduct(null);
                     setShowManual(false);
                   }}
+                  aria-label="Close search"
                 >
-                  <i className="bi bi-x-circle me-1"></i>
-                  Clear search
+                  <i className="bi bi-x-lg"></i>
                 </button>
-                {selectedProduct && (
+              </div>
+
+              <form onSubmit={handleSearch} className="mb-2">
+                <div className="input-group" style={{ maxWidth: "400px" }}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search for food..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                   <button
-                    className="btn btn-info btn-sm"
+                    className="btn btn-primary"
+                    type="submit"
+                    disabled={searching || !searchQuery.trim()}
+                  >
+                    {searching ? (
+                      <span className="spinner-border spinner-border-sm" />
+                    ) : (
+                      <i className="bi bi-search"></i>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {searchQuery && (
+                <div className="d-flex justify-content-between mb-3">
+                  <button
+                    className="btn btn-secondary btn-sm"
                     type="button"
                     onClick={() => {
+                      setSearchQuery("");
+                      setLastSearchQuery("");
+                      setSearchResults([]);
                       setSelectedProduct(null);
                       setShowManual(false);
                     }}
                   >
-                    <i className="bi bi-card-list me-1"></i>
-                    Show results
+                    <i className="bi bi-x-circle me-1"></i>
+                    Clear search
                   </button>
-                )}
-              </div>
-            )}
+                  {selectedProduct && (
+                    <button
+                      className="btn btn-info btn-sm"
+                      type="button"
+                      onClick={() => {
+                        setSelectedProduct(null);
+                        setShowManual(false);
+                      }}
+                    >
+                      <i className="bi bi-card-list me-1"></i>
+                      Show results
+                    </button>
+                  )}
+                </div>
+              )}
 
-            {/* Only show search results if no product is currently selected */}
-            {!selectedProduct && (
-              <>
-                {searchResults.length > 0 ? (
-                  <div className="list-group">
-                    {searchResults.map((product, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        className="list-group-item list-group-item-action"
-                        onClick={() => handleProductSelect(product)}
-                      >
-                        <div className="d-flex w-100 justify-content-between align-items-start">
-                          <div>
-                            <h6 className="mb-1">{product.productName}</h6>
-                            {product.brand && (
-                              <small className="text-muted d-block">
-                                {product.brand}
+              {/* Only show search results if no product is currently selected */}
+              {!selectedProduct && (
+                <>
+                  {searchResults.length > 0 ? (
+                    <div className="list-group">
+                      {searchResults.map((product, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          className="list-group-item list-group-item-action"
+                          onClick={() => handleProductSelect(product)}
+                        >
+                          <div className="d-flex w-100 justify-content-between align-items-start">
+                            <div>
+                              <h6 className="mb-1">{product.productName}</h6>
+                              {product.brand && (
+                                <small className="text-muted d-block">
+                                  {product.brand}
+                                </small>
+                              )}
+                              <small className="text-muted">
+                                {getNutritionalSummary(product)}
                               </small>
+                            </div>
+                            {product.imageThumbnail && (
+                              <img
+                                src={product.imageThumbnail}
+                                alt={product.productName}
+                                style={{
+                                  width: "50px",
+                                  height: "50px",
+                                  objectFit: "cover",
+                                }}
+                                className="rounded"
+                              />
                             )}
-                            <small className="text-muted">
-                              {getNutritionalSummary(product)}
-                            </small>
                           </div>
-                          {product.imageThumbnail && (
-                            <img
-                              src={product.imageThumbnail}
-                              alt={product.productName}
-                              style={{
-                                width: "50px",
-                                height: "50px",
-                                objectFit: "cover",
-                              }}
-                              className="rounded"
-                            />
-                          )}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  !searching &&
-                  lastSearchQuery &&
-                  searchQuery === lastSearchQuery && (
-                    <div className="alert alert-info">
-                      <i className="bi bi-info-circle me-2"></i>
-                      No results found for "{lastSearchQuery}". Try different
-                      keywords or{" "}
-                      <button
-                        className="btn btn-link p-0"
-                        onClick={() => {
-                          setShowSearch(false);
-                          setShowManual(true);
-                        }}
-                      >
-                        use manual entry
-                      </button>
-                      .
+                        </button>
+                      ))}
                     </div>
-                  )
-                )}
-              </>
-            )}
+                  ) : (
+                    !searching &&
+                    lastSearchQuery &&
+                    searchQuery === lastSearchQuery && (
+                      <div className="alert alert-info">
+                        <i className="bi bi-info-circle me-2"></i>
+                        No results found for "{lastSearchQuery}". Try different
+                        keywords or{" "}
+                        <button
+                          className="btn btn-link p-0"
+                          onClick={() => {
+                            setShowSearch(false);
+                            setShowManual(true);
+                          }}
+                        >
+                          use manual entry
+                        </button>
+                        .
+                      </div>
+                    )
+                  )}
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Manual Entry / Product Details Modal */}
-      {showManual && (
-        <div className="card mb-3">
-          <div className="card-body">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="card-title mb-0">
-                {selectedProduct ? "Add to Log" : "Manual Entry"}
-              </h5>
-              <button
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => {
+        {/* Manual Entry / Product Details Modal */}
+        {showManual && (
+          <div className="card mb-3">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="card-title mb-0">
+                  {selectedProduct ? "Add to Log" : "Manual Entry"}
+                </h5>
+                <button
+                  className="btn btn-sm btn-outline-secondary"
+                  onClick={() => {
+                    setShowManual(false);
+                    setSelectedProduct(null);
+                  }}
+                  aria-label="Close entry form"
+                >
+                  <i className="bi bi-x-lg"></i>
+                </button>
+              </div>
+
+              <FoodEntryForm
+                initialData={selectedProduct}
+                onSubmit={handleAddFoodLog}
+                onCancel={() => {
                   setShowManual(false);
                   setSelectedProduct(null);
                 }}
-                aria-label="Close entry form"
-              >
-                <i className="bi bi-x-lg"></i>
-              </button>
+                userProfile={userProfile}
+              />
             </div>
-
-            <FoodEntryForm
-              initialData={selectedProduct}
-              onSubmit={handleAddFoodLog}
-              onCancel={() => {
-                setShowManual(false);
-                setSelectedProduct(null);
-              }}
-              userProfile={userProfile}
-            />
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Food Log List */}
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title mb-3">Food Log</h5>
+        {/* Food Log List */}
+        <section className="card" aria-labelledby="food-log-heading">
+          <div className="card-body">
+            <h2 id="food-log-heading" className="heading-secondary">
+              <i className="bi bi-list-ul me-2" aria-hidden="true"></i>
+              Food Log
+              <span className="visually-hidden">
+                {foodLogs.length === 0
+                  ? ". No items logged yet"
+                  : `. ${foodLogs.length} ${foodLogs.length === 1 ? "item" : "items"} logged`}
+              </span>
+            </h2>
 
-          {foodLogs.length === 0 ? (
-            <div className="text-center text-muted py-4">
-              <i className="bi bi-inbox fs-1 d-block mb-2"></i>
-              <p>No food logged for this date</p>
-            </div>
-          ) : (
-            <div className="list-group">
-              {foodLogs.map((log) => {
-                const synsValue = log.slimming_world_syns * log.quantity;
-                const synsIndicator = getSynsIndicator(synsValue);
+            {foodLogs.length === 0 ? (
+              <div
+                className="text-center text-muted py-4"
+                role="status"
+                aria-label="No food entries"
+              >
+                <i
+                  className="bi bi-inbox fs-1 d-block mb-2"
+                  aria-hidden="true"
+                ></i>
+                <p>No food logged for this date</p>
+              </div>
+            ) : (
+              <ul
+                className="list-group"
+                role="list"
+                aria-label="Food entries for selected date"
+              >
+                {foodLogs.map((log) => {
+                  const synsValue = log.slimming_world_syns * log.quantity;
+                  const synsIndicator = getSynsIndicator(synsValue);
+                  const isFreeFood = log.slimming_world_syns === 0;
 
-                return (
-                  <div key={log.id} className="list-group-item">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div className="flex-grow-1">
-                        <h6 className="mb-1">{log.product_name}</h6>
-                        {log.brand && (
-                          <small className="text-muted d-block">
-                            {log.brand}
-                          </small>
-                        )}
-                        <small className="text-muted">
-                          {log.serving_size} × {log.quantity} ={" "}
-                          {Math.round(log.calories * log.quantity)} cal
-                          {log.slimming_world_syns > 0 && (
-                            <>
-                              {" • "}
-                              <span className={synsIndicator.badge}>
-                                <i
-                                  className={`bi ${synsIndicator.icon} me-1`}
-                                ></i>
-                                {formatNumber(synsValue)} syns
-                              </span>
-                            </>
+                  return (
+                    <li
+                      key={log.id}
+                      className="list-group-item"
+                      role="listitem"
+                    >
+                      <article className="d-flex justify-content-between align-items-start">
+                        <div className="flex-grow-1">
+                          <h3 className="h6 mb-1">{log.product_name}</h3>
+                          {log.brand && (
+                            <small className="text-muted d-block">
+                              {log.brand}
+                            </small>
                           )}
-                        </small>
-                        {log.meal_type && (
-                          <span className="badge bg-secondary ms-2">
-                            {log.meal_type}
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => handleDeleteLog(log.id)}
-                        aria-label="Delete food entry"
-                      >
-                        <i className="bi bi-trash"></i>
-                      </button>
-                    </div>
-                    {log.notes && (
-                      <small className="text-muted d-block mt-2">
-                        <i className="bi bi-chat-left-text me-1"></i>
-                        {log.notes}
-                      </small>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
+                          <small className="text-muted">
+                            <span className="visually-hidden">
+                              Serving size:
+                            </span>
+                            {log.serving_size} × {log.quantity}
+                            {!isFreeFood ? (
+                              <>
+                                {" = "}
+                                <span className={synsIndicator.badge}>
+                                  <i
+                                    className={`bi ${synsIndicator.icon} me-1`}
+                                    aria-hidden="true"
+                                  ></i>
+                                  <span
+                                    aria-label={`${formatNumber(synsValue)} syns`}
+                                  >
+                                    {formatNumber(synsValue)} syns
+                                  </span>
+                                </span>
+                              </>
+                            ) : (
+                              <span
+                                className="badge bg-success ms-2"
+                                aria-label="Free food, zero syns"
+                              >
+                                <i
+                                  className="bi bi-check-circle-fill me-1"
+                                  aria-hidden="true"
+                                ></i>
+                                Free Food
+                              </span>
+                            )}
+                          </small>
+                          {log.meal_type && (
+                            <span
+                              className="badge bg-secondary ms-2"
+                              aria-label={`Meal type: ${log.meal_type}`}
+                            >
+                              {log.meal_type}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => handleDeleteLog(log.id)}
+                          aria-label={`Delete ${log.product_name} from log`}
+                        >
+                          <i className="bi bi-trash" aria-hidden="true"></i>
+                          <span className="visually-hidden">Delete</span>
+                        </button>
+                      </article>
+                      {log.notes && (
+                        <div className="mt-2">
+                          <small className="text-muted d-block">
+                            <i
+                              className="bi bi-chat-left-text me-1"
+                              aria-hidden="true"
+                            ></i>
+                            <span className="visually-hidden">Notes: </span>
+                            {log.notes}
+                          </small>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
@@ -709,19 +785,19 @@ function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
     const syns = parseFloat(synsValue) || 0;
     if (syns < 4) {
       return {
-        badge: "badge bg-success",
+        badge: "badge bg-success pattern-success",
         icon: "bi-check-circle-fill",
         label: "Low Syns - Great choice!",
       };
     } else if (syns <= 9) {
       return {
-        badge: "badge bg-warning text-dark",
+        badge: "badge bg-warning text-dark pattern-warning",
         icon: "bi-question-circle-fill",
         label: "Moderate Syns",
       };
     } else {
       return {
-        badge: "badge bg-danger",
+        badge: "badge bg-danger pattern-danger",
         icon: "bi-exclamation-triangle-fill",
         label: "High Syns - Be mindful",
       };
