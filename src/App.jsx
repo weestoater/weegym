@@ -22,6 +22,7 @@ import AddUser from "./pages/AddUser";
 function NavigationBar() {
   const location = useLocation();
   const { user } = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
 
   // Don't show navigation on login page or if not authenticated
   if (!user || location.pathname === "/login") {
@@ -31,37 +32,102 @@ function NavigationBar() {
   const navItems = [
     { path: "/", icon: "bi-house-door", label: "Home" },
     { path: "/workout", icon: "bi-play-circle", label: "Workout" },
-    { path: "/wellbeing", icon: "bi-activity", label: "AW" },
-    { path: "/calories", icon: "bi-star-fill", label: "SW" },
+    { path: "/wellbeing", icon: "bi-activity", label: "Active Wellbeing" },
+    { path: "/calories", icon: "bi-star-fill", label: "Slimming World" },
     { path: "/history", icon: "bi-clock-history", label: "History" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
   ];
 
+  const handleNavClick = () => {
+    setShowMenu(false);
+  };
+
   return (
-    <nav className="navbar navbar-light bg-light border-top fixed-bottom">
-      <div className="container-fluid">
-        <div className="d-flex justify-content-around w-100">
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`nav-link text-center ${
-                location.pathname === item.path
-                  ? "text-primary"
-                  : "text-secondary"
-              }`}
-              style={{ flex: 1 }}
-            >
-              <i className={`${item.icon} fs-6 d-block`}></i>
-              <small className="d-block" style={{ fontSize: "0.7rem" }}>
-                {item.label}
-              </small>
-            </Link>
-          ))}
+    <>
+      {/* Navigation Menu Popup */}
+      {showMenu && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-end justify-content-center"
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 1050,
+          }}
+          onClick={() => setShowMenu(false)}
+        >
+          <div
+            className="bg-white rounded-top shadow-lg"
+            style={{
+              width: "80%",
+              maxWidth: "250px",
+              maxHeight: "70vh",
+              overflowY: "auto",
+              animation: "slideUp 0.3s ease-out",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="d-flex justify-content-between align-items-center p-3 border-bottom">
+              <h5 className="mb-0">
+                <i className="bi bi-list me-2"></i>
+                Navigation
+              </h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowMenu(false)}
+                aria-label="Close menu"
+              ></button>
+            </div>
+            <div className="list-group list-group-flush">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`list-group-item list-group-item-action d-flex align-items-center py-3 ${
+                    location.pathname === item.path ? "active" : ""
+                  }`}
+                  onClick={handleNavClick}
+                >
+                  <i className={`${item.icon} fs-4 me-3`}></i>
+                  <span className="fw-semibold">{item.label}</span>
+                  {location.pathname === item.path && (
+                    <i className="bi bi-check2 ms-auto fs-5"></i>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </nav>
+      )}
+
+      {/* Footer with Menu Button */}
+      <nav className="navbar navbar-light bg-light border-top fixed-bottom">
+        <div className="container-fluid">
+          <div className="d-flex justify-content-center w-100">
+            <button
+              className="btn btn-primary btn-lg d-flex align-items-center gap-2"
+              onClick={() => setShowMenu(true)}
+              aria-label="Open navigation menu"
+            >
+              <i className="bi bi-list fs-4"></i>
+              <span>Menu</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Slide Up Animation */}
+      <style>{`
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+    </>
   );
 }
 
