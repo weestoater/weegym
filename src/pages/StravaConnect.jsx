@@ -251,13 +251,17 @@ function StravaConnect() {
             <div className="mt-3 pt-3 border-top">
               <strong>Calorie Data Debug:</strong>
               <ul className="mb-0 mt-2">
-                <li>✅ With calories: {syncResult.debug.withCalories}</li>
-                <li>⚡ With kilojoules: {syncResult.debug.withKilojoules}</li>
-                <li>❌ No energy data: {syncResult.debug.withNoEnergy}</li>
+                <li>✅ With Strava calories: {syncResult.debug.withCalories}</li>
+                <li>⚡ With kilojoules (converted): {syncResult.debug.withKilojoules}</li>
+                <li>🧮 Estimated (no Strava data): {syncResult.debug.withNoEnergy}</li>
               </ul>
+              <small className="text-muted d-block mt-2">
+                Note: Since Strava doesn't provide Garmin calorie data via API, we estimate
+                calories based on heart rate, activity type, and duration.
+              </small>
               {syncResult.debug.samples && syncResult.debug.samples.length > 0 && (
                 <div className="mt-2">
-                  <small className="text-muted">Sample data from Strava:</small>
+                  <small className="text-muted">Sample calculations:</small>
                   <pre className="mt-1 p-2 bg-light small" style={{ fontSize: '0.75rem' }}>
                     {JSON.stringify(syncResult.debug.samples, null, 2)}
                   </pre>

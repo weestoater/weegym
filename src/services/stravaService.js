@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabaseClient";
+import { estimateCalories } from "../utils/calorieEstimator";
 
 /**
  * Strava Integration Service
@@ -294,14 +295,29 @@ export async function syncActivities(userId, options = {}) {
       // Strava API may provide calories in multiple ways:
       // 1. activity.calories (direct from source device like Garmin)
       // 2. activity.kilojoules (Strava's calculation, 1 kJ = ~0.239 cal)
+      // 3. Estimated based on heart rate and activity type (fallback)
       let calories = null;
+      let calorieSource = null;
+      
       if (detailedActivity.calories) {
         calories = Math.round(detailedActivity.calories);
         caloriesCount++;
+        calorieSource = 'strava_calories';
       } else if (detailedActivity.kilojoules) {
         calories = Math.round(detailedActivity.kilojoules * 0.239);
         kilojoulesCount++;
+        calorieSource = 'strava_kilojoules';
       } else {
+        // Estimate calories since Strava doesn't provide them
+        const estimated = estimateCalories(detailedActivity, {
+          userWeight: 75, // TODO: Get from user profile
+          userAge: 40,
+          userGender: 'male',
+        });
+        if (estimated) {
+          calories = estimated;
+          calorieSource = 'estimated';
+        }
         noEnergyCount++;
       }
 
@@ -313,6 +329,8 @@ export async function syncActivities(userId, options = {}) {
           calories: detailedActivity.calories,
           kilojoules: detailedActivity.kilojoules,
           computed: calories,
+          source: calorieSource,
+          hasHeartRate: !!detailedActivity.average_heartrate,
         });
       }
 
