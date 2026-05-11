@@ -267,10 +267,22 @@ export async function syncActivities(userId, options = {}) {
     let updatedCount = 0;
 
     for (const activity of activities) {
-      // Strava API returns 'kilojoules', convert to calories (1 kJ = ~0.239 calories)
-      const calories = activity.kilojoules 
-        ? Math.round(activity.kilojoules * 0.239) 
-        : null;
+      // Debug: Log calorie/energy data from Strava
+      console.log(`Activity "${activity.name}":`, {
+        calories: activity.calories,
+        kilojoules: activity.kilojoules,
+        hasHeartRate: !!activity.average_heartrate,
+      });
+
+      // Strava API may provide calories in multiple ways:
+      // 1. activity.calories (direct from source device like Garmin)
+      // 2. activity.kilojoules (Strava's calculation, 1 kJ = ~0.239 cal)
+      let calories = null;
+      if (activity.calories) {
+        calories = Math.round(activity.calories);
+      } else if (activity.kilojoules) {
+        calories = Math.round(activity.kilojoules * 0.239);
+      }
 
       const activityData = {
         user_id: userId,
