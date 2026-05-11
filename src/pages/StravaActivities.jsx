@@ -47,7 +47,7 @@ function StravaActivities() {
     try {
       const connectionStatus = await isConnected();
       setConnected(connectionStatus);
-      
+
       if (!connectionStatus) {
         setLoading(false);
       }
@@ -156,7 +156,10 @@ function StravaActivities() {
       <div className="container mt-4">
         <div className="card">
           <div className="card-body text-center py-5">
-            <i className="bi bi-bicycle" style={{ fontSize: "4rem", color: "#FC4C02" }}></i>
+            <i
+              className="bi bi-bicycle"
+              style={{ fontSize: "4rem", color: "#FC4C02" }}
+            ></i>
             <h3 className="mt-3">Not Connected to Strava</h3>
             <p className="text-muted">
               Connect your Strava account to view your activities here.
@@ -186,7 +189,11 @@ function StravaActivities() {
         >
           {syncing ? (
             <>
-              <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              <span
+                className="spinner-border spinner-border-sm me-2"
+                role="status"
+                aria-hidden="true"
+              ></span>
               Syncing...
             </>
           ) : (
@@ -199,7 +206,10 @@ function StravaActivities() {
       </div>
 
       {error && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+        <div
+          className="alert alert-danger alert-dismissible fade show"
+          role="alert"
+        >
           {error}
           <button
             type="button"
@@ -238,7 +248,8 @@ function StravaActivities() {
                 <div className="text-center">
                   <i className="bi bi-clock text-primary"></i>
                   <div className="h4 mb-0">
-                    {Math.floor(stats.totalMovingTime / 3600)}h {Math.floor((stats.totalMovingTime % 3600) / 60)}m
+                    {Math.floor(stats.totalMovingTime / 3600)}h{" "}
+                    {Math.floor((stats.totalMovingTime % 3600) / 60)}m
                   </div>
                   <small className="text-muted">Total Time</small>
                 </div>
@@ -246,7 +257,9 @@ function StravaActivities() {
               <div className="col-6 col-md-3">
                 <div className="text-center">
                   <i className="bi bi-fire text-warning"></i>
-                  <div className="h4 mb-0">{Math.round(stats.totalCalories)}</div>
+                  <div className="h4 mb-0">
+                    {Math.round(stats.totalCalories)}
+                  </div>
                   <small className="text-muted">Total Calories</small>
                 </div>
               </div>
@@ -314,14 +327,21 @@ function StravaActivities() {
       {activities.length === 0 ? (
         <div className="card">
           <div className="card-body text-center py-5">
-            <i className="bi bi-inbox" style={{ fontSize: "3rem" }} className="text-muted"></i>
+            <i
+              className="bi bi-inbox text-muted"
+              style={{ fontSize: "3rem" }}
+            ></i>
             <h4 className="mt-3">No Activities Found</h4>
             <p className="text-muted">
               {dateRange !== "all" || activityType !== "all"
                 ? "Try adjusting your filters or sync your activities."
                 : "Sync your Strava activities to see them here."}
             </p>
-            <button className="btn btn-primary" onClick={handleSync} disabled={syncing}>
+            <button
+              className="btn btn-primary"
+              onClick={handleSync}
+              disabled={syncing}
+            >
               <i className="bi bi-arrow-repeat me-1"></i>
               Sync Activities
             </button>
