@@ -18,6 +18,9 @@ import Settings from "./pages/Settings";
 import Login from "./pages/Login";
 import UserProfileManager from "./pages/UserProfileManager";
 import AddUser from "./pages/AddUser";
+import StravaConnect from "./pages/StravaConnect";
+import StravaActivities from "./pages/StravaActivities";
+import StravaCallback from "./pages/StravaCallback";
 
 function NavigationBar() {
   const location = useLocation();
@@ -34,6 +37,7 @@ function NavigationBar() {
     { path: "/workout", icon: "bi-play-circle", label: "Workout" },
     { path: "/wellbeing", icon: "bi-activity", label: "Active Wellbeing" },
     { path: "/calories", icon: "bi-star-fill", label: "Slimming World" },
+    { path: "/strava", icon: "bi-bicycle", label: "Strava" },
     { path: "/history", icon: "bi-clock-history", label: "History" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
@@ -295,6 +299,30 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <AddUser />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/strava"
+            element={
+              <ProtectedRoute>
+                <StravaConnect />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/strava/activities"
+            element={
+              <ProtectedRoute>
+                <StravaActivities />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/strava/callback"
+            element={
+              <ProtectedRoute>
+                <StravaCallback />
               </ProtectedRoute>
             }
           />
