@@ -265,6 +265,10 @@ export async function syncActivities(userId, options = {}) {
     // Store activities in database
     let newCount = 0;
     let updatedCount = 0;
+    let caloriesCount = 0;
+    let kilojoulesCount = 0;
+    let noEnergyCount = 0;
+    const debugSamples = [];
 
     for (const activity of activities) {
       // Fetch detailed activity data (list endpoint doesn't include calories)
@@ -293,8 +297,23 @@ export async function syncActivities(userId, options = {}) {
       let calories = null;
       if (detailedActivity.calories) {
         calories = Math.round(detailedActivity.calories);
+        caloriesCount++;
       } else if (detailedActivity.kilojoules) {
         calories = Math.round(detailedActivity.kilojoules * 0.239);
+        kilojoulesCount++;
+      } else {
+        noEnergyCount++;
+      }
+
+      // Save first 3 activities as debug samples
+      if (debugSamples.length < 3) {
+        debugSamples.push({
+          name: detailedActivity.name,
+          type: detailedActivity.type,
+          calories: detailedActivity.calories,
+          kilojoules: detailedActivity.kilojoules,
+          computed: calories,
+        });
       }
 
       const activityData = {
@@ -353,6 +372,12 @@ export async function syncActivities(userId, options = {}) {
       new: newCount,
       updated: updatedCount,
       hasMore: activities.length === perPage,
+      debug: {
+        withCalories: caloriesCount,
+        withKilojoules: kilojoulesCount,
+        withNoEnergy: noEnergyCount,
+        samples: debugSamples,
+      },
     };
   } catch (err) {
     console.error("Failed to sync activities:", err);

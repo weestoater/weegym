@@ -49,7 +49,11 @@ function StravaConnect() {
   };
 
   const handleDisconnect = async () => {
-    if (!window.confirm("Are you sure you want to disconnect Strava? This will remove all synced activities.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to disconnect Strava? This will remove all synced activities.",
+      )
+    ) {
       return;
     }
 
@@ -73,7 +77,7 @@ function StravaConnect() {
       setError(null);
       const result = await syncActivities(user.id);
       setSyncResult(result);
-      
+
       // Reload connection to update last_sync timestamp
       await loadConnection();
     } catch (err) {
@@ -118,7 +122,10 @@ function StravaConnect() {
       </h2>
 
       {error && (
-        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+        <div
+          className="alert alert-danger alert-dismissible fade show"
+          role="alert"
+        >
           {error}
           <button
             type="button"
@@ -140,12 +147,16 @@ function StravaConnect() {
           {connection ? (
             <>
               <div className="d-flex align-items-center mb-3">
-                <i className="bi bi-check-circle-fill text-success me-2" style={{ fontSize: "1.5rem" }}></i>
+                <i
+                  className="bi bi-check-circle-fill text-success me-2"
+                  style={{ fontSize: "1.5rem" }}
+                ></i>
                 <div>
                   <strong>Connected</strong>
                   <br />
                   <small className="text-muted">
-                    Athlete: {connection.athlete_data?.firstname} {connection.athlete_data?.lastname}
+                    Athlete: {connection.athlete_data?.firstname}{" "}
+                    {connection.athlete_data?.lastname}
                   </small>
                 </div>
               </div>
@@ -154,7 +165,8 @@ function StravaConnect() {
                 <div className="mb-3">
                   <small className="text-muted">
                     <i className="bi bi-clock me-1"></i>
-                    Last synced: {new Date(connection.last_sync).toLocaleString()}
+                    Last synced:{" "}
+                    {new Date(connection.last_sync).toLocaleString()}
                   </small>
                 </div>
               )}
@@ -167,7 +179,11 @@ function StravaConnect() {
                 >
                   {syncing ? (
                     <>
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
                       Syncing...
                     </>
                   ) : (
@@ -196,7 +212,10 @@ function StravaConnect() {
           ) : (
             <>
               <div className="d-flex align-items-center mb-3">
-                <i className="bi bi-x-circle text-muted me-2" style={{ fontSize: "1.5rem" }}></i>
+                <i
+                  className="bi bi-x-circle text-muted me-2"
+                  style={{ fontSize: "1.5rem" }}
+                ></i>
                 <div>
                   <strong>Not Connected</strong>
                   <br />
@@ -206,10 +225,7 @@ function StravaConnect() {
                 </div>
               </div>
 
-              <button
-                className="btn btn-primary"
-                onClick={handleConnect}
-              >
+              <button className="btn btn-primary" onClick={handleConnect}>
                 <i className="bi bi-box-arrow-up-right me-1"></i>
                 Connect to Strava
               </button>
@@ -220,13 +236,36 @@ function StravaConnect() {
 
       {/* Sync Result */}
       {syncResult && (
-        <div className="alert alert-success alert-dismissible fade show" role="alert">
+        <div
+          className="alert alert-success alert-dismissible fade show"
+          role="alert"
+        >
           <strong>Sync Complete!</strong>
           <ul className="mb-0 mt-2">
             <li>Total activities fetched: {syncResult.total}</li>
             <li>New activities: {syncResult.new}</li>
             <li>Updated activities: {syncResult.updated}</li>
           </ul>
+          
+          {syncResult.debug && (
+            <div className="mt-3 pt-3 border-top">
+              <strong>Calorie Data Debug:</strong>
+              <ul className="mb-0 mt-2">
+                <li>✅ With calories: {syncResult.debug.withCalories}</li>
+                <li>⚡ With kilojoules: {syncResult.debug.withKilojoules}</li>
+                <li>❌ No energy data: {syncResult.debug.withNoEnergy}</li>
+              </ul>
+              {syncResult.debug.samples && syncResult.debug.samples.length > 0 && (
+                <div className="mt-2">
+                  <small className="text-muted">Sample data from Strava:</small>
+                  <pre className="mt-1 p-2 bg-light small" style={{ fontSize: '0.75rem' }}>
+                    {JSON.stringify(syncResult.debug.samples, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+          
           <button
             type="button"
             className="btn-close"
@@ -252,8 +291,9 @@ function StravaConnect() {
             <li>Runs and other activities</li>
           </ul>
           <p className="text-muted small mb-0">
-            <strong>Privacy:</strong> Your activities are stored securely and only you can see them.
-            You can disconnect at any time to remove all synced data.
+            <strong>Privacy:</strong> Your activities are stored securely and
+            only you can see them. You can disconnect at any time to remove all
+            synced data.
           </p>
         </div>
       </div>
