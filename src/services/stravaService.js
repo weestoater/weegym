@@ -267,6 +267,11 @@ export async function syncActivities(userId, options = {}) {
     let updatedCount = 0;
 
     for (const activity of activities) {
+      // Strava API returns 'kilojoules', convert to calories (1 kJ = ~0.239 calories)
+      const calories = activity.kilojoules 
+        ? Math.round(activity.kilojoules * 0.239) 
+        : null;
+
       const activityData = {
         user_id: userId,
         strava_id: activity.id,
@@ -281,7 +286,7 @@ export async function syncActivities(userId, options = {}) {
         max_speed: activity.max_speed,
         average_heartrate: activity.average_heartrate,
         max_heartrate: activity.max_heartrate,
-        calories: activity.calories,
+        calories: calories,
         activity_data: activity, // Store full response for future use
         synced_at: new Date().toISOString(),
       };
