@@ -72,16 +72,19 @@ function StravaConnect() {
   };
 
   const handleSync = async () => {
+    console.log('🔄 Sync button clicked!');
     try {
       setSyncing(true);
       setError(null);
+      console.log('🔄 Starting sync for user:', user.id);
       const result = await syncActivities(user.id);
+      console.log('✅ Sync complete! Result:', result);
       setSyncResult(result);
 
       // Reload connection to update last_sync timestamp
       await loadConnection();
     } catch (err) {
-      console.error("Error syncing activities:", err);
+      console.error("❌ Error syncing activities:", err);
       setError("Failed to sync activities: " + err.message);
     } finally {
       setSyncing(false);

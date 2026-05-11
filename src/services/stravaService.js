@@ -215,6 +215,7 @@ async function getValidAccessToken(userId) {
  * @returns {Promise<Object>} Sync result with count of new/updated activities
  */
 export async function syncActivities(userId, options = {}) {
+  console.log('🚀 syncActivities called with userId:', userId, 'options:', options);
   try {
     const { after, page = 1, perPage = 30 } = options;
 
