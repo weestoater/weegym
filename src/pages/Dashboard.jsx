@@ -54,10 +54,11 @@ function Dashboard() {
       // Check Strava connection status
       try {
         const stravaStatus = await getConnectionStatus();
-        setStravaConnected(stravaStatus.connected);
+        const isConnected = !!stravaStatus;
+        setStravaConnected(isConnected);
 
         // If connected, load Strava activity stats
-        if (stravaStatus.connected && stravaStatus.user_id) {
+        if (isConnected && stravaStatus.user_id) {
           const stats = await getActivityStats(stravaStatus.user_id);
           setStravaStats(stats);
 
@@ -129,7 +130,7 @@ function Dashboard() {
           {isProgrammeMode ? (
             // Programme Mode: Show workouts and wellbeing stats
             <div className="row g-3 mb-4">
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-fire text-danger fs-1"></i>
@@ -138,7 +139,7 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-calendar-check text-success fs-1"></i>
@@ -157,7 +158,7 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-activity text-primary fs-1"></i>
@@ -166,7 +167,7 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-trophy text-warning fs-1"></i>
@@ -179,7 +180,7 @@ function Dashboard() {
               </div>
               {stravaConnected && (
                 <>
-                  <div className="col-6">
+                  <div className="col-6 col-md-4">
                     <div className="card text-center">
                       <div className="card-body">
                         <i className="bi bi-bicycle text-danger fs-1"></i>
@@ -197,7 +198,7 @@ function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
+                  <div className="col-6 col-md-4">
                     <div className="card text-center">
                       <div className="card-body">
                         <i className="bi bi-lightning-charge text-warning fs-1"></i>
@@ -218,7 +219,7 @@ function Dashboard() {
           ) : (
             // Wellbeing Only Mode: Focus on wellbeing stats
             <div className="row g-3 mb-4">
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-activity text-primary fs-1"></i>
@@ -227,7 +228,7 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-trophy text-warning fs-1"></i>
@@ -238,7 +239,7 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-calendar-check text-success fs-1"></i>
@@ -257,7 +258,7 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
-              <div className="col-6">
+              <div className="col-6 col-md-4">
                 <div className="card text-center">
                   <div className="card-body">
                     <i className="bi bi-star text-info fs-1"></i>
@@ -270,7 +271,7 @@ function Dashboard() {
               </div>
               {stravaConnected && (
                 <>
-                  <div className="col-6">
+                  <div className="col-6 col-md-4">
                     <div className="card text-center">
                       <div className="card-body">
                         <i className="bi bi-bicycle text-danger fs-1"></i>
@@ -288,7 +289,7 @@ function Dashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="col-6">
+                  <div className="col-6 col-md-4">
                     <div className="card text-center">
                       <div className="card-body">
                         <i className="bi bi-lightning-charge text-warning fs-1"></i>
