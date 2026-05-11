@@ -44,7 +44,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
               {dateStr} at {timeStr}
             </p>
           </div>
-          <span className={`badge bg-${activity.type === "Ride" ? "primary" : activity.type === "Walk" ? "success" : "info"}`}>
+          <span
+            className={`badge bg-${activity.type === "Ride" ? "primary" : activity.type === "Walk" ? "success" : "info"}`}
+          >
             {activity.type}
           </span>
         </div>
@@ -54,14 +56,18 @@ function StravaActivityCard({ activity, useMetric = false }) {
           <div className="col-6 col-md-3">
             <div className="text-center p-2 bg-light rounded">
               <i className="bi bi-signpost-2 text-primary"></i>
-              <div className="fw-bold">{formatDistance(activity.distance, useMetric)}</div>
+              <div className="fw-bold">
+                {formatDistance(activity.distance, useMetric)}
+              </div>
               <small className="text-muted">Distance</small>
             </div>
           </div>
           <div className="col-6 col-md-3">
             <div className="text-center p-2 bg-light rounded">
               <i className="bi bi-clock text-primary"></i>
-              <div className="fw-bold">{formatDuration(activity.moving_time)}</div>
+              <div className="fw-bold">
+                {formatDuration(activity.moving_time)}
+              </div>
               <small className="text-muted">Duration</small>
             </div>
           </div>
@@ -69,7 +75,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
             <div className="text-center p-2 bg-light rounded">
               <i className="bi bi-heart-pulse text-danger"></i>
               <div className="fw-bold">
-                {activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : "N/A"}
+                {activity.average_heartrate
+                  ? `${Math.round(activity.average_heartrate)} bpm`
+                  : "N/A"}
               </div>
               <small className="text-muted">Avg Heart Rate</small>
             </div>
@@ -96,15 +104,21 @@ function StravaActivityCard({ activity, useMetric = false }) {
                 <ul className="list-unstyled small">
                   <li className="mb-1">
                     <strong>Elevation Gain:</strong>{" "}
-                    {activity.total_elevation_gain ? `${Math.round(activity.total_elevation_gain)}m` : "N/A"}
+                    {activity.total_elevation_gain
+                      ? `${Math.round(activity.total_elevation_gain)}m`
+                      : "N/A"}
                   </li>
                   <li className="mb-1">
                     <strong>Average Speed:</strong>{" "}
-                    {activity.average_speed ? formatSpeed(activity.average_speed, useMetric) : "N/A"}
+                    {activity.average_speed
+                      ? formatSpeed(activity.average_speed, useMetric)
+                      : "N/A"}
                   </li>
                   <li className="mb-1">
                     <strong>Max Speed:</strong>{" "}
-                    {activity.max_speed ? formatSpeed(activity.max_speed, useMetric) : "N/A"}
+                    {activity.max_speed
+                      ? formatSpeed(activity.max_speed, useMetric)
+                      : "N/A"}
                   </li>
                 </ul>
               </div>
@@ -115,11 +129,15 @@ function StravaActivityCard({ activity, useMetric = false }) {
                 <ul className="list-unstyled small">
                   <li className="mb-1">
                     <strong>Average HR:</strong>{" "}
-                    {activity.average_heartrate ? `${Math.round(activity.average_heartrate)} bpm` : "N/A"}
+                    {activity.average_heartrate
+                      ? `${Math.round(activity.average_heartrate)} bpm`
+                      : "N/A"}
                   </li>
                   <li className="mb-1">
                     <strong>Max HR:</strong>{" "}
-                    {activity.max_heartrate ? `${Math.round(activity.max_heartrate)} bpm` : "N/A"}
+                    {activity.max_heartrate
+                      ? `${Math.round(activity.max_heartrate)} bpm`
+                      : "N/A"}
                   </li>
                 </ul>
                 <h6 className="text-muted mb-2 mt-3">
@@ -127,10 +145,12 @@ function StravaActivityCard({ activity, useMetric = false }) {
                 </h6>
                 <ul className="list-unstyled small">
                   <li className="mb-1">
-                    <strong>Moving Time:</strong> {formatDuration(activity.moving_time)}
+                    <strong>Moving Time:</strong>{" "}
+                    {formatDuration(activity.moving_time)}
                   </li>
                   <li className="mb-1">
-                    <strong>Elapsed Time:</strong> {formatDuration(activity.elapsed_time)}
+                    <strong>Elapsed Time:</strong>{" "}
+                    {formatDuration(activity.elapsed_time)}
                   </li>
                 </ul>
               </div>

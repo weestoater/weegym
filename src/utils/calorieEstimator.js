@@ -1,9 +1,9 @@
 /**
  * Calorie Estimation Utility
- * 
+ *
  * Since Strava API doesn't expose calorie data from Garmin devices,
  * we estimate calories based on heart rate, activity type, and duration.
- * 
+ *
  * These are approximations based on MET (Metabolic Equivalent) values
  * and heart rate zones.
  */
@@ -18,7 +18,7 @@ export function estimateCalories(activity, options = {}) {
   const {
     userWeight = 75, // kg (default: 165 lbs)
     userAge = 40,
-    userGender = 'male',
+    userGender = "male",
   } = options;
 
   // Need at least duration and some activity metric
@@ -56,7 +56,7 @@ export function estimateCalories(activity, options = {}) {
  */
 function estimateFromHeartRate(avgHR, durationHours, weight, age, gender) {
   // Gender coefficient (males burn slightly more calories at same HR)
-  const genderCoeff = gender === 'male' ? 1.0 : 0.95;
+  const genderCoeff = gender === "male" ? 1.0 : 0.95;
 
   // Simplified formula based on heart rate
   const caloriesPerHour =
@@ -76,42 +76,49 @@ function estimateFromActivityType(type, durationHours, distanceKm, weight) {
   const speedKmh = distanceKm > 0 ? distanceKm / durationHours : 0;
 
   switch (type) {
-    case 'Ride':
-    case 'VirtualRide':
-    case 'EBikeRide':
+    case "Ride":
+    case "VirtualRide":
+    case "EBikeRide":
       // Cycling MET values vary by speed
-      if (speedKmh < 16) met = 4.0; // Light cycling
-      else if (speedKmh < 19) met = 6.8; // Moderate cycling
-      else if (speedKmh < 22) met = 8.0; // Vigorous cycling
+      if (speedKmh < 16)
+        met = 4.0; // Light cycling
+      else if (speedKmh < 19)
+        met = 6.8; // Moderate cycling
+      else if (speedKmh < 22)
+        met = 8.0; // Vigorous cycling
       else met = 10.0; // Racing
       break;
 
-    case 'Run':
-    case 'VirtualRun':
+    case "Run":
+    case "VirtualRun":
       // Running MET values vary by pace
-      if (speedKmh < 8) met = 8.3; // Jogging
-      else if (speedKmh < 11) met = 11.5; // Running
+      if (speedKmh < 8)
+        met = 8.3; // Jogging
+      else if (speedKmh < 11)
+        met = 11.5; // Running
       else met = 14.5; // Fast running
       break;
 
-    case 'Walk':
-    case 'Hike':
+    case "Walk":
+    case "Hike":
       // Walking/hiking
-      if (speedKmh < 4) met = 3.5; // Slow walk
-      else if (speedKmh < 6) met = 4.3; // Moderate walk
+      if (speedKmh < 4)
+        met = 3.5; // Slow walk
+      else if (speedKmh < 6)
+        met = 4.3; // Moderate walk
       else met = 5.0; // Brisk walk
       break;
 
-    case 'Swim':
+    case "Swim":
       met = 6.0; // Moderate swimming
       break;
 
-    case 'Workout':
-    case 'WeightTraining':
+    case "Workout":
+    case "WeightTraining":
       met = 6.0; // General gym workout
       break;
 
-    case 'Yoga':
+    case "Yoga":
       met = 2.5;
       break;
 
@@ -129,24 +136,24 @@ function estimateFromActivityType(type, durationHours, distanceKm, weight) {
  */
 export function getActivityIntensity(type, speedKmh) {
   switch (type) {
-    case 'Ride':
-    case 'VirtualRide':
-      if (speedKmh < 16) return 'Light';
-      if (speedKmh < 22) return 'Moderate';
-      return 'Vigorous';
+    case "Ride":
+    case "VirtualRide":
+      if (speedKmh < 16) return "Light";
+      if (speedKmh < 22) return "Moderate";
+      return "Vigorous";
 
-    case 'Run':
-      if (speedKmh < 8) return 'Jogging';
-      if (speedKmh < 11) return 'Running';
-      return 'Fast';
+    case "Run":
+      if (speedKmh < 8) return "Jogging";
+      if (speedKmh < 11) return "Running";
+      return "Fast";
 
-    case 'Walk':
-    case 'Hike':
-      if (speedKmh < 4) return 'Slow';
-      if (speedKmh < 6) return 'Moderate';
-      return 'Brisk';
+    case "Walk":
+    case "Hike":
+      if (speedKmh < 4) return "Slow";
+      if (speedKmh < 6) return "Moderate";
+      return "Brisk";
 
     default:
-      return 'Moderate';
+      return "Moderate";
   }
 }

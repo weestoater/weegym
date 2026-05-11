@@ -36,12 +36,12 @@ function StravaCallback() {
 
       try {
         setStatus("processing");
-        
+
         // Exchange code for tokens
         await exchangeCodeForToken(code);
-        
+
         setStatus("success");
-        
+
         // Redirect to Strava page after 1.5 seconds
         setTimeout(() => navigate("/strava"), 1500);
       } catch (err) {
@@ -63,8 +63,13 @@ function StravaCallback() {
             <div className="card-body text-center py-5">
               {status === "processing" && (
                 <>
-                  <div className="spinner-border text-primary mb-3" role="status">
-                    <span className="visually-hidden">Connecting to Strava...</span>
+                  <div
+                    className="spinner-border text-primary mb-3"
+                    role="status"
+                  >
+                    <span className="visually-hidden">
+                      Connecting to Strava...
+                    </span>
                   </div>
                   <h4>Connecting to Strava...</h4>
                   <p className="text-muted">
@@ -76,19 +81,23 @@ function StravaCallback() {
               {status === "success" && (
                 <>
                   <div className="mb-3">
-                    <i className="bi bi-check-circle-fill text-success" style={{ fontSize: "4rem" }}></i>
+                    <i
+                      className="bi bi-check-circle-fill text-success"
+                      style={{ fontSize: "4rem" }}
+                    ></i>
                   </div>
                   <h4 className="text-success">Connected Successfully!</h4>
-                  <p className="text-muted">
-                    Redirecting to Strava page...
-                  </p>
+                  <p className="text-muted">Redirecting to Strava page...</p>
                 </>
               )}
 
               {status === "error" && (
                 <>
                   <div className="mb-3">
-                    <i className="bi bi-x-circle-fill text-danger" style={{ fontSize: "4rem" }}></i>
+                    <i
+                      className="bi bi-x-circle-fill text-danger"
+                      style={{ fontSize: "4rem" }}
+                    ></i>
                   </div>
                   <h4 className="text-danger">Connection Failed</h4>
                   <p className="text-muted">{error}</p>

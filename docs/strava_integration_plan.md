@@ -342,12 +342,14 @@ Last synced: 2 hours ago  [↻ Sync Activities] [Filter: All ▾]
 ### Phase 3: Frontend Implementation ✅ COMPLETE (May 11, 2026)
 
 **Files Created:**
+
 - [src/pages/StravaConnect.jsx](../src/pages/StravaConnect.jsx) - Connection management page
 - [src/pages/StravaActivities.jsx](../src/pages/StravaActivities.jsx) - Activities list with filters
 - [src/pages/StravaCallback.jsx](../src/pages/StravaCallback.jsx) - OAuth callback handler
 - [src/components/StravaActivityCard.jsx](../src/components/StravaActivityCard.jsx) - Activity card component
 
 **Files Modified:**
+
 - [src/App.jsx](../src/App.jsx) - Added Strava routes and navigation menu item
 
 #### 3.1 Strava Connection Page (`src/pages/StravaConnect.jsx`)
@@ -366,17 +368,18 @@ Last synced: 2 hours ago  [↻ Sync Activities] [Filter: All ▾]
 ✅ Filter by type (Walk, Ride, Run, Hike)
 ✅ Date range filter (30 days, 3 months, year, all time)
 ✅ Activity cards showing:
-  - Activity name
-  - Type icon
-  - Distance
-  - Duration
-  - Elevation
-  - Calories
-  - Date
-✅ Link to view on Strava
-✅ Manual sync button
-✅ Summary statistics (total distance, time, activities, calories)
-✅ Metric/Imperial unit toggle
+
+- Activity name
+- Type icon
+- Distance
+- Duration
+- Elevation
+- Calories
+- Date
+  ✅ Link to view on Strava
+  ✅ Manual sync button
+  ✅ Summary statistics (total distance, time, activities, calories)
+  ✅ Metric/Imperial unit toggle
 
 #### 3.3 Strava Callback Handler (`src/pages/StravaCallback.jsx`)
 
@@ -515,6 +518,7 @@ supabase-config/
 7. **Enjoy**: Track your mountain bike rides and dog walks automatically!
 
 **Ready to test the integration!**
+
 - **Rate Limits**: https://developers.strava.com/docs/rate-limits/
 - **Webhook Events**: https://developers.strava.com/docs/webhooks/
 
