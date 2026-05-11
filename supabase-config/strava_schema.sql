@@ -112,5 +112,5 @@ COMMENT ON COLUMN strava_activities.type IS 'Activity type: Ride, Walk, Run, Swi
 COMMENT ON COLUMN strava_activities.distance IS 'Distance in meters';
 COMMENT ON COLUMN strava_activities.moving_time IS 'Moving time in seconds (excludes pauses)';
 COMMENT ON COLUMN strava_activities.elapsed_time IS 'Total elapsed time in seconds (includes pauses)';
-COMMENT ON COLUMN strava_activities.calories IS 'Calories burned (converted from Strava kilojoules: 1 kJ = 0.239 cal)';
+COMMENT ON COLUMN strava_activities.calories IS 'Calories burned: from Strava API if available (direct or kilojoules*0.239), otherwise estimated from heart rate and activity type';
 COMMENT ON COLUMN strava_activities.activity_data IS 'Full Strava API response for future feature expansion';
