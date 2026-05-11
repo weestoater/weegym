@@ -267,39 +267,52 @@ export async function syncActivities(userId, options = {}) {
     let updatedCount = 0;
 
     for (const activity of activities) {
-      // Debug: Log calorie/energy data from Strava
-      console.log(`Activity "${activity.name}":`, {
-        calories: activity.calories,
-        kilojoules: activity.kilojoules,
-        hasHeartRate: !!activity.average_heartrate,
-      });
+      // Fetch detailed activity data (list endpoint doesn't include calories)
+      const detailResponse = await fetch(
+        `${STRAVA_API_BASE}/activities/${activity.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      let detailedActivity = activity;
+      if (detailResponse.ok) {
+        detailedActivity = await detailResponse.json();
+        console.log(`Activity "${activity.name}":`, {
+          calories: detailedActivity.calories,
+          kilojoules: detailedActivity.kilojoules,
+          hasHeartRate: !!detailedActivity.average_heartrate,
+        });
+      }
 
       // Strava API may provide calories in multiple ways:
       // 1. activity.calories (direct from source device like Garmin)
       // 2. activity.kilojoules (Strava's calculation, 1 kJ = ~0.239 cal)
       let calories = null;
-      if (activity.calories) {
-        calories = Math.round(activity.calories);
-      } else if (activity.kilojoules) {
-        calories = Math.round(activity.kilojoules * 0.239);
+      if (detailedActivity.calories) {
+        calories = Math.round(detailedActivity.calories);
+      } else if (detailedActivity.kilojoules) {
+        calories = Math.round(detailedActivity.kilojoules * 0.239);
       }
 
       const activityData = {
         user_id: userId,
-        strava_id: activity.id,
-        name: activity.name,
-        type: activity.type,
-        start_date: activity.start_date,
-        distance: activity.distance,
-        moving_time: activity.moving_time,
-        elapsed_time: activity.elapsed_time,
-        total_elevation_gain: activity.total_elevation_gain,
-        average_speed: activity.average_speed,
-        max_speed: activity.max_speed,
-        average_heartrate: activity.average_heartrate,
-        max_heartrate: activity.max_heartrate,
+        strava_id: detailedActivity.id,
+        name: detailedActivity.name,
+        type: detailedActivity.type,
+        start_date: detailedActivity.start_date,
+        distance: detailedActivity.distance,
+        moving_time: detailedActivity.moving_time,
+        elapsed_time: detailedActivity.elapsed_time,
+        total_elevation_gain: detailedActivity.total_elevation_gain,
+        average_speed: detailedActivity.average_speed,
+        max_speed: detailedActivity.max_speed,
+        average_heartrate: detailedActivity.average_heartrate,
+        max_heartrate: detailedActivity.max_heartrate,
         calories: calories,
-        activity_data: activity, // Store full response for future use
+        activity_data: detailedActivity, // Store full detailed response
         synced_at: new Date().toISOString(),
       };
 
