@@ -7,12 +7,14 @@ This document outlines the plan for integrating Strava API to track walks, bike 
 **Status:** Phase 1 Complete ✅ | Ready for Phase 2
 
 **Use Case:** Garmin Watch → Strava → WeeGym
+
 - Track mountain bike rides and dog walks
 - Display activity stats (distance, time, heart rate, calories, etc.)
 - Expandable details with full metrics
 - Optional route mapping
 
 **Simplified Approach:**
+
 - Store connection tokens only (1 table)
 - Fetch activities on-demand from Strava API
 - No local caching (can add later if needed)
@@ -25,17 +27,20 @@ This document outlines the plan for integrating Strava API to track walks, bike 
 ### ✅ What We're Building (MVP)
 
 **Activity Types:**
+
 - Mountain bike rides
 - Dog walks
 - (Other Strava activities will show but focused on above)
 
 **MVP View Features:**
+
 - Distance
 - Duration
 - Average heart rate ❤️
 - Calories
 
 **Expanded View Features:**
+
 - All above +
 - Elevation gain
 - Average & max speed
@@ -44,25 +49,37 @@ This document outlines the plan for integrating Strava API to track walks, bike 
 - Link to view on Strava
 
 **Phase 3 (Optional):**
+
 - Interactive route maps with Leaflet
 
 ### 🏗️ Technical Decisions
 
 **Storage:**
-- ✅ Store tokens only (1 table: `strava_connections`)
-- ❌ No local activity caching (fetch from API on-demand)
-- Reason: Simpler, always fresh data, less sync issues
+
+- ✅ Store tokens AND activities (2 tables: `strava_connections` + `strava_activities`)
+- ✅ Cache all activities locally for speed and historical data
+- ✅ Sync strategy: manual + auto on page load (if 24h elapsed)
+- ✅ Optional weekly auto-sync (Phase 3)
 
 **Security:**
-- ✅ RLS policies on connection table
-- ❌ No token encryption (HTTPS + RLS sufficient for personal use)
+
+- ✅ RLS policies on both tables
+- ❌ No token encryption initially (HTTPS + RLS sufficient for personal use)
 - Can add encryption later if needed
 
-**Data Fetching:**
-- Auto-fetch when page opens
-- Default: Last 30 days
-- Manual refresh button
-- Filter by activity type (optional)
+**Data Display:**
+
+- ✅ Default view: Last 30 days
+- ✅ Filter options: 3 months, year, all time
+- ✅ Filter by activity type (Ride, Walk, Run)
+- ✅ Manual sync button always available
+- ✅ Show sync status and timestamp
+
+**Phase 3 Enhancements:**
+
+- Route mapping with Leaflet
+- Weekly auto-sync scheduler
+- Activity analytics/charts
 
 ---
 
@@ -157,72 +174,132 @@ This document outlines the plan for integrating Strava API to track walks, bike 
 
 ### Phase 2: Backend Implementation (DEVELOPMENT) - REFINED ✨
 
-**Simplified approach: Store tokens only, fetch activities on-demand from Strava API**
+**Hybrid approach: Store tokens + cache activities locally for fast access and history**
 
-#### 2.1 Database Schema (Just 1 Table!)
+#### 2.1 Database Schema (2 Tables)
 
-- Create `strava_connections` table in Supabase:
+**Table 1: Connection Tokens**
 
-  ```sql
-  CREATE TABLE strava_connections (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    athlete_id BIGINT NOT NULL,
-    access_token TEXT NOT NULL,
-    refresh_token TEXT NOT NULL,
-    expires_at TIMESTAMPTZ NOT NULL,
-    athlete_data JSONB,
-    connected_at TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(user_id)
-  );
+```sql
+CREATE TABLE strava_connections (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  athlete_id BIGINT NOT NULL,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  athlete_data JSONB,
+  connected_at TIMESTAMPTZ DEFAULT NOW(),
+  last_sync TIMESTAMPTZ,
+  UNIQUE(user_id)
+);
 
-  -- Enable RLS
-  ALTER TABLE strava_connections ENABLE ROW LEVEL SECURITY;
+-- Enable RLS
+ALTER TABLE strava_connections ENABLE ROW LEVEL SECURITY;
 
-  -- Policy: Users can only see/manage their own connection
-  CREATE POLICY "Users can manage own Strava connection"
-    ON strava_connections
-    FOR ALL
-    USING (auth.uid() = user_id);
-  ```
+-- Policy: Users can only see/manage their own connection
+CREATE POLICY "Users can manage own Strava connection"
+  ON strava_connections
+  FOR ALL
+  USING (auth.uid() = user_id);
+```
 
-**Why simplified?**
-- ✅ No local activity storage = no sync issues
-- ✅ Always fetch fresh data from Strava
-- ✅ Less code to maintain
-- ✅ Can add caching later if needed
+**Table 2: Cached Activities**
+
+```sql
+CREATE TABLE strava_activities (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  strava_id BIGINT NOT NULL,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL, -- 'Ride', 'Walk', 'Run', etc.
+  start_date TIMESTAMPTZ NOT NULL,
+  distance DECIMAL, -- meters
+  moving_time INTEGER, -- seconds
+  elapsed_time INTEGER, -- seconds
+  total_elevation_gain DECIMAL, -- meters
+  average_speed DECIMAL, -- m/s
+  max_speed DECIMAL, -- m/s
+  average_heartrate DECIMAL,
+  max_heartrate DECIMAL,
+  calories DECIMAL,
+  activity_data JSONB, -- full Strava response
+  synced_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id, strava_id)
+);
+
+-- Enable RLS
+ALTER TABLE strava_activities ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can only see their own activities
+CREATE POLICY "Users can view own Strava activities"
+  ON strava_activities
+  FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Index for faster queries
+CREATE INDEX idx_strava_activities_user_date ON strava_activities(user_id, start_date DESC);
+CREATE INDEX idx_strava_activities_type ON strava_activities(user_id, type);
+```
+
+**Why store locally?**
+
+- ✅ Faster loading (no API wait)
+- ✅ Historical data (all your past rides/walks)
+- ✅ Works offline
+- ✅ Fewer API calls
+- ✅ Can build analytics later
 
 #### 2.2 Strava Service (`src/services/stravaService.js`)
 
-**Core Functions (5 total):**
+**Core Functions:**
 
 1. **`getAuthorizationUrl()`** - Generate OAuth URL for initial connection
 2. **`exchangeCodeForToken(code)`** - Exchange authorization code for access tokens
-3. **`refreshAccessToken(refreshToken)`** - Automatically refresh expired tokens
-4. **`getActivities(userId, options)`** - Fetch activities from Strava API with filters
-5. **`getActivityDetail(userId, activityId)`** - Get full stats for expanded view
+3. **`refreshAccessToken(userId)`** - Automatically refresh expired tokens
+4. **`syncActivities(userId, options)`** - Fetch new activities from Strava and store locally
+   - Checks last_sync timestamp
+   - Only fetches activities since last sync (efficient!)
+   - Upserts to database (updates existing, inserts new)
+5. **`getActivities(userId, options)`** - Get activities from local database
+   - Default: Last 30 days
+   - Filter by type (Ride, Walk, etc.)
+   - Pagination support
+6. **`getActivityDetail(userId, activityId)`** - Get full stats for expanded view
+7. **`disconnectStrava(userId)`** - Remove connection and activities
 
-**Optional (Phase 3+):**
-6. **`getActivityStream(userId, activityId)`** - Get GPS coordinates for route mapping
-7. **`disconnectStrava(userId)`** - Remove Strava connection
+**Optional (Phase 3+):** 8. **`getActivityStream(userId, activityId)`** - Get GPS coordinates for route mapping 9. **`scheduleWeeklySync()`** - Auto-sync using cron/scheduler
 
-**Activity Filters (options):**
-- `after` / `before` - Date range
-- `page` / `per_page` - Pagination
-- `type` - Filter by activity type (Ride, Walk, Run)
+**Sync Strategy:**
+
+- Manual sync button always available
+- Auto-sync on page load if last_sync > 24 hours
+- Optional: Weekly auto-sync (Phase 3 enhancement)
 
 #### 2.3 UI Requirements
 
-**MVP View (List):**
+**MVP View (Last 30 Days by Default):**
+
 ```
 🚴 Mountain Bike Ride - May 10, 2026
    📏 15.3 km  ⏱️ 1h 23m  ❤️ 148 bpm avg  🔥 487 cal
 
 🚶 Dog Walk - May 10, 2026
    📏 2.1 km   ⏱️ 28m     ❤️ 112 bpm avg  🔥 89 cal
+
+Last synced: 2 hours ago  [↻ Sync Activities] [Filter: All ▾]
 ```
 
+**Filter Options:**
+
+- Last 30 days (default)
+- Last 3 months
+- Last year
+- All time
+- Activity type: All / Rides / Walks / Runs
+
 **Expanded View (Click to see more):**
+
 ```
 🚴 Mountain Bike Ride - May 10, 2026
    📏 Distance: 15.3 km
@@ -234,11 +311,19 @@ This document outlines the plan for integrating Strava API to track walks, bike 
    ❤️ Avg Heart Rate: 148 bpm
    💪 Max Heart Rate: 172 bpm
    🔥 Calories: 487
-   
-   [View on Strava] [Show Route Map]
+
+   [View on Strava]
 ```
 
-**Route Map (Phase 3):**
+**Sync Status:**
+
+- "Last synced: 2 hours ago"
+- "Syncing..." with spinner during sync
+- "Found 3 new activities" after sync
+
+**Phase 3 - Route Mapping:**
+
+- Add [Show Route] button in expanded view
 - Interactive map with route drawn
 - Start/finish markers
 - Use Leaflet (free, open-source)
@@ -364,33 +449,41 @@ supabase-config/
 
 ---
 
-## Timeline Estimate (Revised - Simplified Approach)
+## Timeline Estimate (Revised - Hybrid Approach)
 
 - **Phase 1 (User Setup)**: ✅ COMPLETE - 15 minutes
-- **Phase 2 (Backend - Simplified)**: 2-3 hours
-  - 1 database table (not 2)
-  - 5 core functions (not 8+)
-  - No encryption, no local caching
+- **Phase 2 (Backend - Hybrid Storage)**: 3-4 hours
+  - 2 database tables (connections + activities)
+  - 7 core functions (auth + sync + query)
+  - No encryption, smart sync strategy
 - **Phase 3 (Frontend - MVP)**: 3-4 hours
   - Connection page
   - Activity list with expand/collapse
+  - Sync button and status
+  - Date/type filters
   - OAuth callback
-- **Phase 4 (Testing)**: 1 hour
+- **Phase 4 (Testing)**: 1-2 hours
+  - OAuth flow, sync, filters, offline behavior
 - **Phase 5 (Route Mapping)**: 2-3 hours (optional)
+- **Phase 6 (Weekly Auto-Sync)**: 1 hour (optional)
 
-**Total MVP Implementation**: ~6-8 hours (down from 8-12)
-**With Route Mapping**: ~8-11 hours
+**Total MVP Implementation**: ~7-10 hours
+**With Route Mapping**: ~9-13 hours
+**Fully Featured**: ~10-14 hours
 
 ---
 
 ## Next Steps
 
-1. **You**: Complete Phase 1 (Strava API application setup)
-2. **Share**: Provide the Client ID and Client Secret
-3. **Development**: We'll implement Phases 2-4 together
-4. **Testing**: Test the OAuth flow and activity sync
-5. **Deploy**: Update production environment variables
-6. **Enjoy**: Track your walks and rides automatically!
+1. ✅ **Phase 1 Complete**: Strava API application set up & credentials validated
+2. **Phase 2**: Implement backend (database tables + Strava service)
+3. **Phase 3**: Build frontend (connection page + activity list + sync UI)
+4. **Phase 4**: Testing (OAuth flow, sync, filters, offline behavior)
+5. **Phase 5**: Optional enhancements (route mapping, auto-sync)
+6. **Deploy**: Update production environment variables
+7. **Enjoy**: Track your mountain bike rides and dog walks automatically!
+
+**Ready to start implementation whenever you are!**
 
 ---
 
