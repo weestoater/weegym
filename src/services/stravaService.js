@@ -309,11 +309,22 @@ export async function syncActivities(userId, options = {}) {
         calorieSource = 'strava_kilojoules';
       } else {
         // Estimate calories since Strava doesn't provide them
+        console.log('Estimating calories for:', {
+          name: detailedActivity.name,
+          type: detailedActivity.type,
+          moving_time: detailedActivity.moving_time,
+          distance: detailedActivity.distance,
+          avg_hr: detailedActivity.average_heartrate,
+        });
+        
         const estimated = estimateCalories(detailedActivity, {
           userWeight: 75, // TODO: Get from user profile
           userAge: 40,
           userGender: 'male',
         });
+        
+        console.log('Estimation result:', estimated);
+        
         if (estimated) {
           calories = estimated;
           calorieSource = 'estimated';
@@ -326,11 +337,13 @@ export async function syncActivities(userId, options = {}) {
         debugSamples.push({
           name: detailedActivity.name,
           type: detailedActivity.type,
+          moving_time: detailedActivity.moving_time,
+          distance: detailedActivity.distance,
+          avg_hr: detailedActivity.average_heartrate,
           calories: detailedActivity.calories,
           kilojoules: detailedActivity.kilojoules,
           computed: calories,
           source: calorieSource,
-          hasHeartRate: !!detailedActivity.average_heartrate,
         });
       }
 
