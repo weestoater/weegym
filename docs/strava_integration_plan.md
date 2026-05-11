@@ -424,6 +424,7 @@ Last synced: 2 hours ago  [↻ Sync Activities] [Filter: All ▾]
 - ✅ Secure callback URL validation
 
 **Key Learnings:**
+
 - Strava API doesn't expose Garmin calorie data - implemented estimation fallback
 - JavaScript falsy checks can cause bugs when 0 is a valid value (use `=== undefined`)
 - Full resync capability essential after processing logic changes
