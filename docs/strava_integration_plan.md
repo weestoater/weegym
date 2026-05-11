@@ -4,6 +4,68 @@
 
 This document outlines the plan for integrating Strava API to track walks, bike rides, and other fitness activities in the WeeGym application.
 
+**Status:** Phase 1 Complete ✅ | Ready for Phase 2
+
+**Use Case:** Garmin Watch → Strava → WeeGym
+- Track mountain bike rides and dog walks
+- Display activity stats (distance, time, heart rate, calories, etc.)
+- Expandable details with full metrics
+- Optional route mapping
+
+**Simplified Approach:**
+- Store connection tokens only (1 table)
+- Fetch activities on-demand from Strava API
+- No local caching (can add later if needed)
+- Estimated time: 6-8 hours MVP
+
+---
+
+## Implementation Decisions (Refined May 11, 2026)
+
+### ✅ What We're Building (MVP)
+
+**Activity Types:**
+- Mountain bike rides
+- Dog walks
+- (Other Strava activities will show but focused on above)
+
+**MVP View Features:**
+- Distance
+- Duration
+- Average heart rate ❤️
+- Calories
+
+**Expanded View Features:**
+- All above +
+- Elevation gain
+- Average & max speed
+- Average & max heart rate
+- Elapsed vs moving time
+- Link to view on Strava
+
+**Phase 3 (Optional):**
+- Interactive route maps with Leaflet
+
+### 🏗️ Technical Decisions
+
+**Storage:**
+- ✅ Store tokens only (1 table: `strava_connections`)
+- ❌ No local activity caching (fetch from API on-demand)
+- Reason: Simpler, always fresh data, less sync issues
+
+**Security:**
+- ✅ RLS policies on connection table
+- ❌ No token encryption (HTTPS + RLS sufficient for personal use)
+- Can add encryption later if needed
+
+**Data Fetching:**
+- Auto-fetch when page opens
+- Default: Last 30 days
+- Manual refresh button
+- Filter by activity type (optional)
+
+---
+
 ## API Research Summary
 
 ### Strava API ⭐ (Recommended)
@@ -93,70 +155,93 @@ This document outlines the plan for integrating Strava API to track walks, bike 
 
 ---
 
-### Phase 2: Backend Implementation (DEVELOPMENT)
+### Phase 2: Backend Implementation (DEVELOPMENT) - REFINED ✨
 
-**What needs to be built:**
+**Simplified approach: Store tokens only, fetch activities on-demand from Strava API**
 
-#### 2.1 Database Schema
+#### 2.1 Database Schema (Just 1 Table!)
 
 - Create `strava_connections` table in Supabase:
 
   ```sql
-  - id (uuid, primary key)
-  - user_id (uuid, references auth.users)
-  - athlete_id (bigint, Strava athlete ID)
-  - access_token (text, encrypted)
-  - refresh_token (text, encrypted)
-  - expires_at (timestamp)
-  - athlete_data (jsonb, stores athlete profile)
-  - connected_at (timestamp)
-  - last_sync (timestamp)
+  CREATE TABLE strava_connections (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    athlete_id BIGINT NOT NULL,
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    athlete_data JSONB,
+    connected_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(user_id)
+  );
+
+  -- Enable RLS
+  ALTER TABLE strava_connections ENABLE ROW LEVEL SECURITY;
+
+  -- Policy: Users can only see/manage their own connection
+  CREATE POLICY "Users can manage own Strava connection"
+    ON strava_connections
+    FOR ALL
+    USING (auth.uid() = user_id);
   ```
 
-- Create `strava_activities` table:
-  ```sql
-  - id (uuid, primary key)
-  - user_id (uuid, references auth.users)
-  - strava_id (bigint, Strava activity ID)
-  - name (text)
-  - type (text, e.g., 'Walk', 'Ride', 'Run')
-  - distance (decimal, meters)
-  - moving_time (integer, seconds)
-  - elapsed_time (integer, seconds)
-  - total_elevation_gain (decimal, meters)
-  - start_date (timestamp)
-  - calories (decimal)
-  - average_speed (decimal)
-  - max_speed (decimal)
-  - average_heartrate (decimal)
-  - max_heartrate (decimal)
-  - activity_data (jsonb, full activity data)
-  - synced_at (timestamp)
-  ```
+**Why simplified?**
+- ✅ No local activity storage = no sync issues
+- ✅ Always fetch fresh data from Strava
+- ✅ Less code to maintain
+- ✅ Can add caching later if needed
 
 #### 2.2 Strava Service (`src/services/stravaService.js`)
 
-- **Authentication functions**:
-  - `getAuthorizationUrl()` - Generate OAuth URL
-  - `exchangeCodeForToken(code)` - Exchange auth code for tokens
-  - `refreshAccessToken(refreshToken)` - Refresh expired tokens
-  - `disconnectStrava(userId)` - Remove connection
+**Core Functions (5 total):**
 
-- **Activity functions**:
-  - `getAthleteActivities(accessToken, page, perPage)` - Fetch activities
-  - `getActivityById(accessToken, activityId)` - Get detailed activity
-  - `syncActivities(userId)` - Sync activities to database
-  - `getLocalActivities(userId, filters)` - Get activities from DB
+1. **`getAuthorizationUrl()`** - Generate OAuth URL for initial connection
+2. **`exchangeCodeForToken(code)`** - Exchange authorization code for access tokens
+3. **`refreshAccessToken(refreshToken)`** - Automatically refresh expired tokens
+4. **`getActivities(userId, options)`** - Fetch activities from Strava API with filters
+5. **`getActivityDetail(userId, activityId)`** - Get full stats for expanded view
 
-- **Webhook functions** (optional, Phase 3):
-  - `createWebhookSubscription()` - Subscribe to activity updates
-  - `handleWebhookEvent(event)` - Process incoming webhooks
+**Optional (Phase 3+):**
+6. **`getActivityStream(userId, activityId)`** - Get GPS coordinates for route mapping
+7. **`disconnectStrava(userId)`** - Remove Strava connection
 
-#### 2.3 Database Service Updates
+**Activity Filters (options):**
+- `after` / `before` - Date range
+- `page` / `per_page` - Pagination
+- `type` - Filter by activity type (Ride, Walk, Run)
 
-- Add Strava-specific database operations
-- Token encryption/decryption helpers
-- Activity sync logic with deduplication
+#### 2.3 UI Requirements
+
+**MVP View (List):**
+```
+🚴 Mountain Bike Ride - May 10, 2026
+   📏 15.3 km  ⏱️ 1h 23m  ❤️ 148 bpm avg  🔥 487 cal
+
+🚶 Dog Walk - May 10, 2026
+   📏 2.1 km   ⏱️ 28m     ❤️ 112 bpm avg  🔥 89 cal
+```
+
+**Expanded View (Click to see more):**
+```
+🚴 Mountain Bike Ride - May 10, 2026
+   📏 Distance: 15.3 km
+   ⏱️ Moving Time: 1h 23m
+   ⏱️ Elapsed Time: 1h 31m
+   ⛰️ Elevation Gain: 342m
+   🏃 Avg Speed: 18.4 km/h
+   ⚡ Max Speed: 42.7 km/h
+   ❤️ Avg Heart Rate: 148 bpm
+   💪 Max Heart Rate: 172 bpm
+   🔥 Calories: 487
+   
+   [View on Strava] [Show Route Map]
+```
+
+**Route Map (Phase 3):**
+- Interactive map with route drawn
+- Start/finish markers
+- Use Leaflet (free, open-source)
 
 ---
 
@@ -279,15 +364,22 @@ supabase-config/
 
 ---
 
-## Timeline Estimate
+## Timeline Estimate (Revised - Simplified Approach)
 
-- **Phase 1 (User Setup)**: 15 minutes
-- **Phase 2 (Backend)**: 3-4 hours
-- **Phase 3 (Frontend)**: 4-5 hours
-- **Phase 4 (Testing)**: 1-2 hours
-- **Phase 5 (Optional)**: Variable
+- **Phase 1 (User Setup)**: ✅ COMPLETE - 15 minutes
+- **Phase 2 (Backend - Simplified)**: 2-3 hours
+  - 1 database table (not 2)
+  - 5 core functions (not 8+)
+  - No encryption, no local caching
+- **Phase 3 (Frontend - MVP)**: 3-4 hours
+  - Connection page
+  - Activity list with expand/collapse
+  - OAuth callback
+- **Phase 4 (Testing)**: 1 hour
+- **Phase 5 (Route Mapping)**: 2-3 hours (optional)
 
-**Total Core Implementation**: ~8-12 hours
+**Total MVP Implementation**: ~6-8 hours (down from 8-12)
+**With Route Mapping**: ~8-11 hours
 
 ---
 
