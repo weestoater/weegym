@@ -189,7 +189,6 @@ async function getValidAccessToken(userId) {
     const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
 
     if (expiresAt.getTime() - now.getTime() < bufferTime) {
-      console.log("Token expiring soon, refreshing...");
       const refreshed = await refreshAccessToken(userId);
       return refreshed.access_token;
     }
@@ -215,7 +214,6 @@ async function getValidAccessToken(userId) {
  * @returns {Promise<Object>} Sync result with count of new/updated activities
  */
 export async function syncActivities(userId, options = {}) {
-  console.log('🚀 syncActivities called with userId:', userId, 'options:', options);
   try {
     const { after, page = 1, perPage = 30 } = options;
 
@@ -223,8 +221,9 @@ export async function syncActivities(userId, options = {}) {
     const accessToken = await getValidAccessToken(userId);
 
     // If no 'after' timestamp provided, get last sync time
+    // Note: Use undefined check, not falsy check, so after: 0 works for full resync
     let afterTimestamp = after;
-    if (!afterTimestamp) {
+    if (after === undefined) {
       const { data: connection } = await supabase
         .from("strava_connections")
         .select("last_sync")
@@ -244,7 +243,9 @@ export async function syncActivities(userId, options = {}) {
       per_page: Math.min(perPage, 200).toString(),
     });
 
-    if (afterTimestamp) {
+    // Only add 'after' param if we have a timestamp > 0
+    // (after: 0 means "all activities", so we omit the param)
+    if (afterTimestamp && afterTimestamp > 0) {
       params.append("after", afterTimestamp.toString());
     }
 
@@ -286,11 +287,6 @@ export async function syncActivities(userId, options = {}) {
       let detailedActivity = activity;
       if (detailResponse.ok) {
         detailedActivity = await detailResponse.json();
-        console.log(`Activity "${activity.name}":`, {
-          calories: detailedActivity.calories,
-          kilojoules: detailedActivity.kilojoules,
-          hasHeartRate: !!detailedActivity.average_heartrate,
-        });
       }
 
       // Strava API may provide calories in multiple ways:
@@ -299,36 +295,26 @@ export async function syncActivities(userId, options = {}) {
       // 3. Estimated based on heart rate and activity type (fallback)
       let calories = null;
       let calorieSource = null;
-      
+
       if (detailedActivity.calories) {
         calories = Math.round(detailedActivity.calories);
         caloriesCount++;
-        calorieSource = 'strava_calories';
+        calorieSource = "strava_calories";
       } else if (detailedActivity.kilojoules) {
         calories = Math.round(detailedActivity.kilojoules * 0.239);
         kilojoulesCount++;
-        calorieSource = 'strava_kilojoules';
+        calorieSource = "strava_kilojoules";
       } else {
         // Estimate calories since Strava doesn't provide them
-        console.log('Estimating calories for:', {
-          name: detailedActivity.name,
-          type: detailedActivity.type,
-          moving_time: detailedActivity.moving_time,
-          distance: detailedActivity.distance,
-          avg_hr: detailedActivity.average_heartrate,
-        });
-        
         const estimated = estimateCalories(detailedActivity, {
           userWeight: 75, // TODO: Get from user profile
           userAge: 40,
-          userGender: 'male',
+          userGender: "male",
         });
-        
-        console.log('Estimation result:', estimated);
-        
+
         if (estimated) {
           calories = estimated;
-          calorieSource = 'estimated';
+          calorieSource = "estimated";
         }
         noEnergyCount++;
       }

@@ -72,13 +72,10 @@ function StravaConnect() {
   };
 
   const handleSync = async () => {
-    console.log('🔄 Sync button clicked!');
     try {
       setSyncing(true);
       setError(null);
-      console.log('🔄 Starting sync for user:', user.id);
       const result = await syncActivities(user.id);
-      console.log('✅ Sync complete! Result:', result);
       setSyncResult(result);
 
       // Reload connection to update last_sync timestamp
@@ -86,6 +83,31 @@ function StravaConnect() {
     } catch (err) {
       console.error("❌ Error syncing activities:", err);
       setError("Failed to sync activities: " + err.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleFullResync = async () => {
+    if (
+      !confirm(
+        "This will re-fetch and re-process ALL your Strava activities. This may take a minute. Continue?",
+      )
+    ) {
+      return;
+    }
+    try {
+      setSyncing(true);
+      setError(null);
+      // Pass after: 0 to fetch all activities, ignoring last_sync
+      const result = await syncActivities(user.id, { after: 0 });
+      setSyncResult(result);
+
+      // Reload connection to update last_sync timestamp
+      await loadConnection();
+    } catch (err) {
+      console.error("❌ Error during full resync:", err);
+      setError("Failed to resync activities: " + err.message);
     } finally {
       setSyncing(false);
     }
@@ -192,7 +214,29 @@ function StravaConnect() {
                   ) : (
                     <>
                       <i className="bi bi-arrow-repeat me-1"></i>
-                      Sync Activities
+                      Sync New
+                    </>
+                  )}
+                </button>
+                <button
+                  className="btn btn-warning"
+                  onClick={handleFullResync}
+                  disabled={syncing}
+                  title="Re-fetch and re-process ALL activities (useful after code changes)"
+                >
+                  {syncing ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-arrow-clockwise me-1"></i>
+                      Full Resync
                     </>
                   )}
                 </button>
@@ -249,30 +293,42 @@ function StravaConnect() {
             <li>New activities: {syncResult.new}</li>
             <li>Updated activities: {syncResult.updated}</li>
           </ul>
-          
+
           {syncResult.debug && (
             <div className="mt-3 pt-3 border-top">
               <strong>Calorie Data Debug:</strong>
               <ul className="mb-0 mt-2">
-                <li>✅ With Strava calories: {syncResult.debug.withCalories}</li>
-                <li>⚡ With kilojoules (converted): {syncResult.debug.withKilojoules}</li>
-                <li>🧮 Estimated (no Strava data): {syncResult.debug.withNoEnergy}</li>
+                <li>
+                  ✅ With Strava calories: {syncResult.debug.withCalories}
+                </li>
+                <li>
+                  ⚡ With kilojoules (converted):{" "}
+                  {syncResult.debug.withKilojoules}
+                </li>
+                <li>
+                  🧮 Estimated (no Strava data): {syncResult.debug.withNoEnergy}
+                </li>
               </ul>
               <small className="text-muted d-block mt-2">
-                Note: Since Strava doesn't provide Garmin calorie data via API, we estimate
-                calories based on heart rate, activity type, and duration.
+                Note: Since Strava doesn't provide Garmin calorie data via API,
+                we estimate calories based on heart rate, activity type, and
+                duration.
               </small>
-              {syncResult.debug.samples && syncResult.debug.samples.length > 0 && (
-                <div className="mt-2">
-                  <small className="text-muted">Sample calculations:</small>
-                  <pre className="mt-1 p-2 bg-light small" style={{ fontSize: '0.75rem' }}>
-                    {JSON.stringify(syncResult.debug.samples, null, 2)}
-                  </pre>
-                </div>
-              )}
+              {syncResult.debug.samples &&
+                syncResult.debug.samples.length > 0 && (
+                  <div className="mt-2">
+                    <small className="text-muted">Sample calculations:</small>
+                    <pre
+                      className="mt-1 p-2 bg-light small"
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      {JSON.stringify(syncResult.debug.samples, null, 2)}
+                    </pre>
+                  </div>
+                )}
             </div>
           )}
-          
+
           <button
             type="button"
             className="btn-close"
