@@ -204,12 +204,12 @@ function Dashboard() {
                         <i className="bi bi-lightning-charge text-warning fs-1"></i>
                         <h3 className="h2 mb-0">
                           {stravaStats?.totalCalories
-                            ? Math.round(stravaStats.totalCalories).toLocaleString()
+                            ? Math.round(
+                                stravaStats.totalCalories,
+                              ).toLocaleString()
                             : "--"}
                         </h3>
-                        <p className="text-muted small mb-0">
-                          Strava Calories
-                        </p>
+                        <p className="text-muted small mb-0">Strava Calories</p>
                       </div>
                     </div>
                   </div>
@@ -295,12 +295,12 @@ function Dashboard() {
                         <i className="bi bi-lightning-charge text-warning fs-1"></i>
                         <h3 className="h2 mb-0">
                           {stravaStats?.totalCalories
-                            ? Math.round(stravaStats.totalCalories).toLocaleString()
+                            ? Math.round(
+                                stravaStats.totalCalories,
+                              ).toLocaleString()
                             : "--"}
                         </h3>
-                        <p className="text-muted small mb-0">
-                          Strava Calories
-                        </p>
+                        <p className="text-muted small mb-0">Strava Calories</p>
                       </div>
                     </div>
                   </div>
@@ -342,7 +342,10 @@ function Dashboard() {
                           <i className="bi bi-play-circle text-primary me-3 fs-5"></i>
                           <div className="flex-grow-1">
                             <div className="fw-medium small">Day 1 Workout</div>
-                            <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                            <div
+                              className="text-muted"
+                              style={{ fontSize: "0.75rem" }}
+                            >
                               Chest • Shoulders • Arms
                             </div>
                           </div>
@@ -355,7 +358,10 @@ function Dashboard() {
                           <i className="bi bi-play-circle text-primary me-3 fs-5"></i>
                           <div className="flex-grow-1">
                             <div className="fw-medium small">Day 2 Workout</div>
-                            <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                            <div
+                              className="text-muted"
+                              style={{ fontSize: "0.75rem" }}
+                            >
                               Legs • Shoulders • Core
                             </div>
                           </div>
@@ -372,7 +378,10 @@ function Dashboard() {
                       <i className="bi bi-star-fill text-warning me-3 fs-5"></i>
                       <div className="flex-grow-1">
                         <div className="fw-medium small">Slimming World</div>
-                        <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
                           Track meals & syns
                         </div>
                       </div>
@@ -389,11 +398,19 @@ function Dashboard() {
                         <div className="fw-medium small">
                           Strava Activities
                           {stravaConnected && (
-                            <i className="bi bi-check-circle-fill text-success ms-2" style={{ fontSize: "0.75rem" }}></i>
+                            <i
+                              className="bi bi-check-circle-fill text-success ms-2"
+                              style={{ fontSize: "0.75rem" }}
+                            ></i>
                           )}
                         </div>
-                        <div className="text-muted" style={{ fontSize: "0.75rem" }}>
-                          {stravaConnected ? "View your activities" : "Connect your account"}
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          {stravaConnected
+                            ? "View your activities"
+                            : "Connect your account"}
                         </div>
                       </div>
                       <i className="bi bi-chevron-right text-muted"></i>
@@ -407,7 +424,10 @@ function Dashboard() {
                       <i className="bi bi-activity text-success me-3 fs-5"></i>
                       <div className="flex-grow-1">
                         <div className="fw-medium small">Active Wellbeing</div>
-                        <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
                           {wellbeingSessions > 0
                             ? `${wellbeingSessions} sessions logged`
                             : "Log your activities"}
@@ -424,7 +444,10 @@ function Dashboard() {
                       <i className="bi bi-clock-history text-info me-3 fs-5"></i>
                       <div className="flex-grow-1">
                         <div className="fw-medium small">History</div>
-                        <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
                           {isProgrammeMode
                             ? `${streak} workouts completed`
                             : "View your progress"}
@@ -442,7 +465,10 @@ function Dashboard() {
                         <i className="bi bi-journal-text text-secondary me-3 fs-5"></i>
                         <div className="flex-grow-1">
                           <div className="fw-medium small">Programme</div>
-                          <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                          <div
+                            className="text-muted"
+                            style={{ fontSize: "0.75rem" }}
+                          >
                             View full programme
                           </div>
                         </div>
@@ -457,65 +483,80 @@ function Dashboard() {
 
           {/* Last Workout Summary - Only for Programme Mode */}
           {isProgrammeMode && lastWorkout && (
-            <>
-              <h3 className="h6 text-muted mt-4 mb-3">LAST WORKOUT</h3>
-              <div className="card mb-3">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                      <h4 className="h6 mb-1">{lastWorkout.name}</h4>
-                      <p className="text-muted small mb-0">
-                        <i className="bi bi-calendar me-1"></i>
-                        {new Date(lastWorkout.date).toLocaleDateString("en-GB")}
-                      </p>
-                    </div>
-                    <div className="text-end">
-                      <p className="mb-0 text-muted small">Duration</p>
-                      <p className="h6 mb-0">
-                        {lastWorkout.duration || "--"} min
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Display all exercises/machines worked on */}
-                  {lastWorkout.exercises &&
-                    lastWorkout.exercises.length > 0 && (
-                      <div className="mt-3 pt-3 border-top">
-                        <p className="text-muted small mb-2">
-                          <strong>Machines & Exercises:</strong>
-                        </p>
-                        <div className="row g-2">
-                          {[
-                            ...new Set(
-                              lastWorkout.exercises.map(
-                                (ex) => ex.exerciseName,
-                              ),
-                            ),
-                          ].map((exerciseName, index) => {
-                            const exerciseSets = lastWorkout.exercises.filter(
-                              (ex) => ex.exerciseName === exerciseName,
-                            );
-                            const totalSets = exerciseSets.length;
-                            return (
-                              <div key={index} className="col-12">
-                                <div className="d-flex justify-content-between align-items-center p-2 bg-light rounded">
-                                  <span className="small">
-                                    <i className="bi bi-check-circle-fill text-success me-2"></i>
-                                    {exerciseName}
-                                  </span>
-                                  <span className="badge bg-secondary">
-                                    {totalSets} sets
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+            <div className="accordion mb-3" id="lastWorkoutAccordion">
+              <div className="accordion-item">
+                <h2 className="accordion-header">
+                  <button
+                    className="accordion-button collapsed"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseLastWorkout"
+                    aria-expanded="false"
+                    aria-controls="collapseLastWorkout"
+                  >
+                    <div className="d-flex justify-content-between align-items-center w-100 me-3">
+                      <div>
+                        <i className="bi bi-clipboard-check me-2"></i>
+                        <span className="fw-semibold">{lastWorkout.name}</span>
+                        <span className="text-muted ms-2 small">
+                          <i className="bi bi-calendar me-1"></i>
+                          {new Date(lastWorkout.date).toLocaleDateString("en-GB")}
+                        </span>
                       </div>
-                    )}
+                      <div className="text-end">
+                        <span className="badge bg-primary">
+                          {lastWorkout.duration || "--"} min
+                        </span>
+                      </div>
+                    </div>
+                  </button>
+                </h2>
+                <div
+                  id="collapseLastWorkout"
+                  className="accordion-collapse collapse"
+                  data-bs-parent="#lastWorkoutAccordion"
+                >
+                  <div className="accordion-body">
+                    {/* Display all exercises/machines worked on */}
+                    {lastWorkout.exercises &&
+                      lastWorkout.exercises.length > 0 && (
+                        <>
+                          <p className="text-muted small mb-2">
+                            <strong>Machines & Exercises:</strong>
+                          </p>
+                          <div className="row g-2">
+                            {[
+                              ...new Set(
+                                lastWorkout.exercises.map(
+                                  (ex) => ex.exerciseName,
+                                ),
+                              ),
+                            ].map((exerciseName, index) => {
+                              const exerciseSets = lastWorkout.exercises.filter(
+                                (ex) => ex.exerciseName === exerciseName,
+                              );
+                              const totalSets = exerciseSets.length;
+                              return (
+                                <div key={index} className="col-12">
+                                  <div className="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                    <span className="small">
+                                      <i className="bi bi-check-circle-fill text-success me-2"></i>
+                                      {exerciseName}
+                                    </span>
+                                    <span className="badge bg-secondary">
+                                      {totalSets} sets
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </>
+                      )}
+                  </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {/* Last Wellbeing Summary - Only for Wellbeing Only Mode */}
