@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getWorkouts, getActiveWellbeingSessions } from "../lib/database";
 import { getUserProfile } from "../services/userProfileService";
+import {
+  getConnectionStatus,
+  getActivities,
+  getActivityStats,
+} from "../services/stravaService";
 
 function Dashboard() {
   const [userProfile, setUserProfile] = useState(null);
@@ -9,6 +14,9 @@ function Dashboard() {
   const [streak, setStreak] = useState(0);
   const [wellbeingSessions, setWellbeingSessions] = useState(0);
   const [lastWellbeing, setLastWellbeing] = useState(null);
+  const [stravaConnected, setStravaConnected] = useState(false);
+  const [stravaStats, setStravaStats] = useState(null);
+  const [lastStravaActivity, setLastStravaActivity] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,6 +49,29 @@ function Dashboard() {
           (a, b) => new Date(b.date) - new Date(a.date),
         );
         setLastWellbeing(sorted[0]);
+      }
+
+      // Check Strava connection status
+      try {
+        const stravaStatus = await getConnectionStatus();
+        setStravaConnected(stravaStatus.connected);
+
+        // If connected, load Strava activity stats
+        if (stravaStatus.connected && stravaStatus.user_id) {
+          const stats = await getActivityStats(stravaStatus.user_id);
+          setStravaStats(stats);
+
+          // Get the most recent activity
+          const activities = await getActivities(stravaStatus.user_id, {
+            limit: 1,
+          });
+          if (activities && activities.length > 0) {
+            setLastStravaActivity(activities[0]);
+          }
+        }
+      } catch (err) {
+        // Strava not connected or error - that's okay
+        setStravaConnected(false);
       }
     } catch (error) {
       console.error("Error loading dashboard data:", error);
@@ -146,6 +177,43 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
+              {stravaConnected && (
+                <>
+                  <div className="col-6">
+                    <div className="card text-center">
+                      <div className="card-body">
+                        <i className="bi bi-bicycle text-danger fs-1"></i>
+                        <h3 className="h2 mb-0">
+                          {lastStravaActivity
+                            ? new Date(
+                                lastStravaActivity.start_date,
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                              })
+                            : "--"}
+                        </h3>
+                        <p className="text-muted small mb-0">Last Activity</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="card text-center">
+                      <div className="card-body">
+                        <i className="bi bi-lightning-charge text-warning fs-1"></i>
+                        <h3 className="h2 mb-0">
+                          {stravaStats?.totalCalories
+                            ? Math.round(stravaStats.totalCalories).toLocaleString()
+                            : "--"}
+                        </h3>
+                        <p className="text-muted small mb-0">
+                          Strava Calories
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             // Wellbeing Only Mode: Focus on wellbeing stats
@@ -200,95 +268,259 @@ function Dashboard() {
                   </div>
                 </div>
               </div>
+              {stravaConnected && (
+                <>
+                  <div className="col-6">
+                    <div className="card text-center">
+                      <div className="card-body">
+                        <i className="bi bi-bicycle text-danger fs-1"></i>
+                        <h3 className="h2 mb-0">
+                          {lastStravaActivity
+                            ? new Date(
+                                lastStravaActivity.start_date,
+                              ).toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "short",
+                              })
+                            : "--"}
+                        </h3>
+                        <p className="text-muted small mb-0">Last Activity</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-6">
+                    <div className="card text-center">
+                      <div className="card-body">
+                        <i className="bi bi-lightning-charge text-warning fs-1"></i>
+                        <h3 className="h2 mb-0">
+                          {stravaStats?.totalCalories
+                            ? Math.round(stravaStats.totalCalories).toLocaleString()
+                            : "--"}
+                        </h3>
+                        <p className="text-muted small mb-0">
+                          Strava Calories
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
-          {/* Quick Actions - Different for each mode */}
-          <h3 className="h6 text-muted mb-3">QUICK ACTIONS</h3>
-          <div className="d-grid gap-3">
-            {isProgrammeMode ? (
-              // Programme Mode: Show workout and wellbeing actions
+          {/* Quick Access Features */}
+          <h3 className="h6 text-muted mb-3">QUICK ACCESS</h3>
+          
+          <div className="row g-3 mb-4">
+            {/* Workout Cards - Only in Programme Mode */}
+            {isProgrammeMode && (
               <>
-                <Link
-                  to="/workout?day=1"
-                  className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
-                >
-                  <div className="text-start">
-                    <div>
-                      <i className="bi bi-play-circle me-2"></i>
-                      Start Day 1 Workout
+                <div className="col-md-6">
+                  <Link
+                    to="/workout?day=1"
+                    className="card h-100 text-decoration-none hover-lift"
+                  >
+                    <div className="card-body">
+                      <div className="d-flex align-items-start">
+                        <div className="flex-shrink-0">
+                          <div
+                            className="rounded-circle bg-primary bg-opacity-10 p-3"
+                            style={{ width: "60px", height: "60px" }}
+                          >
+                            <i className="bi bi-play-circle text-primary fs-4"></i>
+                          </div>
+                        </div>
+                        <div className="flex-grow-1 ms-3">
+                          <h5 className="card-title mb-1">Day 1 Workout</h5>
+                          <p className="card-text text-muted small mb-0">
+                            Chest • Shoulders • Arms
+                          </p>
+                        </div>
+                        <i className="bi bi-chevron-right text-muted"></i>
+                      </div>
                     </div>
-                    <div className="small opacity-75 mt-1">
-                      Chest • Shoulders • Arms
+                  </Link>
+                </div>
+                <div className="col-md-6">
+                  <Link
+                    to="/workout?day=2"
+                    className="card h-100 text-decoration-none hover-lift"
+                  >
+                    <div className="card-body">
+                      <div className="d-flex align-items-start">
+                        <div className="flex-shrink-0">
+                          <div
+                            className="rounded-circle bg-primary bg-opacity-10 p-3"
+                            style={{ width: "60px", height: "60px" }}
+                          >
+                            <i className="bi bi-play-circle text-primary fs-4"></i>
+                          </div>
+                        </div>
+                        <div className="flex-grow-1 ms-3">
+                          <h5 className="card-title mb-1">Day 2 Workout</h5>
+                          <p className="card-text text-muted small mb-0">
+                            Legs • Shoulders • Core
+                          </p>
+                        </div>
+                        <i className="bi bi-chevron-right text-muted"></i>
+                      </div>
                     </div>
+                  </Link>
+                </div>
+              </>
+            )}
+
+            {/* Slimming World Food Tracking */}
+            <div className="col-md-6">
+              <Link
+                to="/calories"
+                className="card h-100 text-decoration-none hover-lift"
+              >
+                <div className="card-body">
+                  <div className="d-flex align-items-start">
+                    <div className="flex-shrink-0">
+                      <div
+                        className="rounded-circle bg-warning bg-opacity-10 p-3"
+                        style={{ width: "60px", height: "60px" }}
+                      >
+                        <i className="bi bi-star-fill text-warning fs-4"></i>
+                      </div>
+                    </div>
+                    <div className="flex-grow-1 ms-3">
+                      <h5 className="card-title mb-1">Slimming World</h5>
+                      <p className="card-text text-muted small mb-0">
+                        Track meals & syns
+                      </p>
+                    </div>
+                    <i className="bi bi-chevron-right text-muted"></i>
                   </div>
-                  <i className="bi bi-chevron-right"></i>
-                </Link>
-                <Link
-                  to="/workout?day=2"
-                  className="btn btn-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
-                >
-                  <div className="text-start">
-                    <div>
-                      <i className="bi bi-play-circle me-2"></i>
-                      Start Day 2 Workout
+                </div>
+              </Link>
+            </div>
+
+            {/* Strava Integration */}
+            <div className="col-md-6">
+              <Link
+                to={stravaConnected ? "/strava/activities" : "/strava"}
+                className="card h-100 text-decoration-none hover-lift"
+              >
+                <div className="card-body">
+                  <div className="d-flex align-items-start">
+                    <div className="flex-shrink-0">
+                      <div
+                        className="rounded-circle bg-danger bg-opacity-10 p-3"
+                        style={{ width: "60px", height: "60px" }}
+                      >
+                        <i className="bi bi-bicycle text-danger fs-4"></i>
+                      </div>
                     </div>
-                    <div className="small opacity-75 mt-1">
-                      Legs • Shoulders • Core
+                    <div className="flex-grow-1 ms-3">
+                      <h5 className="card-title mb-1">
+                        Strava Activities
+                        {stravaConnected && (
+                          <i className="bi bi-check-circle-fill text-success ms-2 small"></i>
+                        )}
+                      </h5>
+                      <p className="card-text text-muted small mb-0">
+                        {stravaConnected
+                          ? "View your activities"
+                          : "Connect your account"}
+                      </p>
                     </div>
+                    <i className="bi bi-chevron-right text-muted"></i>
                   </div>
-                  <i className="bi bi-chevron-right"></i>
-                </Link>
-                <Link
-                  to="/wellbeing"
-                  className="btn btn-success btn-lg btn-touch d-flex align-items-center justify-content-between"
-                >
-                  <span>
-                    <i className="bi bi-activity me-2"></i>
-                    Log Active Wellbeing
-                  </span>
-                  <i className="bi bi-chevron-right"></i>
-                </Link>
+                </div>
+              </Link>
+            </div>
+
+            {/* Active Wellbeing */}
+            <div className="col-md-6">
+              <Link
+                to="/wellbeing"
+                className="card h-100 text-decoration-none hover-lift"
+              >
+                <div className="card-body">
+                  <div className="d-flex align-items-start">
+                    <div className="flex-shrink-0">
+                      <div
+                        className="rounded-circle bg-success bg-opacity-10 p-3"
+                        style={{ width: "60px", height: "60px" }}
+                      >
+                        <i className="bi bi-activity text-success fs-4"></i>
+                      </div>
+                    </div>
+                    <div className="flex-grow-1 ms-3">
+                      <h5 className="card-title mb-1">Active Wellbeing</h5>
+                      <p className="card-text text-muted small mb-0">
+                        {wellbeingSessions > 0
+                          ? `${wellbeingSessions} sessions logged`
+                          : "Log your activities"}
+                      </p>
+                    </div>
+                    <i className="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* History */}
+            <div className="col-md-6">
+              <Link
+                to="/history"
+                className="card h-100 text-decoration-none hover-lift"
+              >
+                <div className="card-body">
+                  <div className="d-flex align-items-start">
+                    <div className="flex-shrink-0">
+                      <div
+                        className="rounded-circle bg-info bg-opacity-10 p-3"
+                        style={{ width: "60px", height: "60px" }}
+                      >
+                        <i className="bi bi-clock-history text-info fs-4"></i>
+                      </div>
+                    </div>
+                    <div className="flex-grow-1 ms-3">
+                      <h5 className="card-title mb-1">History</h5>
+                      <p className="card-text text-muted small mb-0">
+                        {isProgrammeMode
+                          ? `${streak} workouts completed`
+                          : "View your progress"}
+                      </p>
+                    </div>
+                    <i className="bi bi-chevron-right text-muted"></i>
+                  </div>
+                </div>
+              </Link>
+            </div>
+
+            {/* Programme - Only in Programme Mode */}
+            {isProgrammeMode && (
+              <div className="col-md-6">
                 <Link
                   to="/programme"
-                  className="btn btn-outline-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
+                  className="card h-100 text-decoration-none hover-lift"
                 >
-                  <span>
-                    <i className="bi bi-journal-text me-2"></i>
-                    View Programme
-                  </span>
-                  <i className="bi bi-chevron-right"></i>
-                </Link>
-              </>
-            ) : (
-              // Wellbeing Only Mode: Focus on wellbeing actions
-              <>
-                <Link
-                  to="/wellbeing"
-                  className="btn btn-success btn-lg btn-touch d-flex align-items-center justify-content-between"
-                >
-                  <div className="text-start">
-                    <div>
-                      <i className="bi bi-activity me-2"></i>
-                      Log Wellbeing Session
-                    </div>
-                    <div className="small opacity-75 mt-1">
-                      Track your machine activities
+                  <div className="card-body">
+                    <div className="d-flex align-items-start">
+                      <div className="flex-shrink-0">
+                        <div
+                          className="rounded-circle bg-secondary bg-opacity-10 p-3"
+                          style={{ width: "60px", height: "60px" }}
+                        >
+                          <i className="bi bi-journal-text text-secondary fs-4"></i>
+                        </div>
+                      </div>
+                      <div className="flex-grow-1 ms-3">
+                        <h5 className="card-title mb-1">Programme</h5>
+                        <p className="card-text text-muted small mb-0">
+                          View full programme
+                        </p>
+                      </div>
+                      <i className="bi bi-chevron-right text-muted"></i>
                     </div>
                   </div>
-                  <i className="bi bi-chevron-right"></i>
                 </Link>
-                <Link
-                  to="/history"
-                  className="btn btn-outline-primary btn-lg btn-touch d-flex align-items-center justify-content-between"
-                >
-                  <span>
-                    <i className="bi bi-clock-history me-2"></i>
-                    View History
-                  </span>
-                  <i className="bi bi-chevron-right"></i>
-                </Link>
-              </>
+              </div>
             )}
           </div>
 

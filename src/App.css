@@ -53,3 +53,16 @@
     transform: scale(1.2);
   }
 }
+
+/* Hover lift effect for dashboard cards */
+.hover-lift {
+  transition: all 0.2s ease-in-out;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.2);
+  text-decoration: none;
+}
