@@ -4,7 +4,9 @@
 
 This document outlines the plan for integrating Strava API to track walks, bike rides, and other fitness activities in the WeeGym application.
 
-**Status:** Phase 1 Complete ✅ | Ready for Phase 2
+**Status:** Phase 2 Complete ✅ | Ready for Phase 3 (Frontend)
+
+**Last Updated:** May 11, 2026
 
 **Use Case:** Garmin Watch → Strava → WeeGym
 
@@ -172,9 +174,16 @@ This document outlines the plan for integrating Strava API to track walks, bike 
 
 ---
 
-### Phase 2: Backend Implementation (DEVELOPMENT) - REFINED ✨
+### Phase 2: Backend Implementation ✅ COMPLETE (May 11, 2026)
 
 **Hybrid approach: Store tokens + cache activities locally for fast access and history**
+
+**Files Created:**
+
+- [supabase-config/strava_schema.sql](../supabase-config/strava_schema.sql) - Database schema with RLS policies
+- [src/services/stravaService.js](../src/services/stravaService.js) - Complete Strava API integration service
+
+**To Apply Schema:** Run `strava_schema.sql` in Supabase SQL Editor
 
 #### 2.1 Database Schema (2 Tables)
 
@@ -452,11 +461,12 @@ supabase-config/
 ## Timeline Estimate (Revised - Hybrid Approach)
 
 - **Phase 1 (User Setup)**: ✅ COMPLETE - 15 minutes
-- **Phase 2 (Backend - Hybrid Storage)**: 3-4 hours
-  - 2 database tables (connections + activities)
-  - 7 core functions (auth + sync + query)
-  - No encryption, smart sync strategy
-- **Phase 3 (Frontend - MVP)**: 3-4 hours
+- **Phase 2 (Backend - Hybrid Storage)**: ✅ COMPLETE - 3-4 hours
+  - ✅ 2 database tables (connections + activities)
+  - ✅ 7 core functions (auth + sync + query)
+  - ✅ Helper functions for formatting
+  - ✅ Smart sync strategy with auto-refresh
+- **Phase 3 (Frontend - MVP)**: 3-4 hours (NEXT)
   - Connection page
   - Activity list with expand/collapse
   - Sync button and status
@@ -476,14 +486,15 @@ supabase-config/
 ## Next Steps
 
 1. ✅ **Phase 1 Complete**: Strava API application set up & credentials validated
-2. **Phase 2**: Implement backend (database tables + Strava service)
-3. **Phase 3**: Build frontend (connection page + activity list + sync UI)
+2. ✅ **Phase 2 Complete**: Backend implemented (database schema + Strava service with 7 core functions + helpers)
+   - **Next Action**: Apply `supabase-config/strava_schema.sql` in Supabase SQL Editor
+3. **Phase 3 (READY)**: Build frontend (connection page + activity list + sync UI)
 4. **Phase 4**: Testing (OAuth flow, sync, filters, offline behavior)
 5. **Phase 5**: Optional enhancements (route mapping, auto-sync)
 6. **Deploy**: Update production environment variables
 7. **Enjoy**: Track your mountain bike rides and dog walks automatically!
 
-**Ready to start implementation whenever you are!**
+**Ready to start Phase 3: Frontend Implementation!**
 
 ---
 
