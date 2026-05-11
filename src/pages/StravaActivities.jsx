@@ -26,7 +26,7 @@ function StravaActivities() {
   // Filters
   const [dateRange, setDateRange] = useState("30days"); // 30days, 3months, year, all
   const [activityType, setActivityType] = useState("all"); // all, Ride, Walk, Run, etc.
-  const [useMetric, setUseMetric] = useState(true);
+  const [useMetric, setUseMetric] = useState(false);
 
   useEffect(() => {
     checkConnection();

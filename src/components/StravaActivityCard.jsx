@@ -11,7 +11,7 @@ import {
  * StravaActivityCard Component
  * Displays a single Strava activity with collapsible detailed view
  */
-function StravaActivityCard({ activity, useMetric = true }) {
+function StravaActivityCard({ activity, useMetric = false }) {
   const [expanded, setExpanded] = useState(false);
 
   // Format date
