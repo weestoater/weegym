@@ -5,8 +5,12 @@ import {
   formatDuration,
   formatSpeed,
   getActivityIcon,
+  getActivityIconColor,
+  getActivityBadgeColor,
   getActivityStream,
+  getActivityPRs,
 } from "../services/stravaService";
+import { PR_LABELS } from "../utils/prCalculator";
 import { saveActiveWellbeingSession } from "../lib/database";
 import Toast from "./Toast";
 import RouteMap from "./RouteMap";
@@ -21,6 +25,23 @@ function StravaActivityCard({ activity, useMetric = false }) {
   const [toast, setToast] = useState(null);
   const [routeData, setRouteData] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
+  const [activityPRs, setActivityPRs] = useState([]);
+
+  // Load PRs for this activity
+  useEffect(() => {
+    loadPRs();
+  }, [activity.id]);
+
+  const loadPRs = async () => {
+    try {
+      const prs = await getActivityPRs(activity.id);
+      // Filter for all-time PRs only for display
+      const allTimePRs = prs.filter(pr => pr.time_scope === 'all_time');
+      setActivityPRs(allTimePRs);
+    } catch (error) {
+      console.error('Failed to load activity PRs:', error);
+    }
+  };
 
   // Load route data when expanded
   useEffect(() => {
@@ -116,18 +137,33 @@ function StravaActivityCard({ activity, useMetric = false }) {
         <div className="d-flex justify-content-between align-items-start mb-2">
           <div className="flex-grow-1">
             <h5 className="card-title mb-1">
-              <i className={`bi ${getActivityIcon(activity.type)} me-2`}></i>
+              <i className={`bi ${getActivityIcon(activity.type)} fs-4 me-2`}></i>
               {activity.name}
             </h5>
             <p className="text-muted small mb-0">
               {dateStr} at {timeStr}
             </p>
           </div>
-          <span
-            className={`badge bg-${activity.type === "Ride" ? "primary" : activity.type === "Walk" ? "success" : "info"}`}
-          >
-            {activity.type}
-          </span>
+          <div className="text-end">
+            <span className={`badge ${getActivityBadgeColor(activity.type)}`}>
+              <i className={`bi ${getActivityIcon(activity.type)} me-1`}></i>
+              {activity.type}
+            </span>
+            {/* PR Badges */}
+            {activityPRs.length > 0 && (
+              <div className="mt-1">
+                {activityPRs.map((pr) => (
+                  <span
+                    key={pr.pr_category}
+                    className="badge bg-warning text-dark me-1 small"
+                    title={PR_LABELS[pr.pr_category]}
+                  >
+                    <i className="bi bi-trophy-fill"></i> PR
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* MVP Stats - Always Visible */}

@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import StravaActivityCard from "../components/StravaActivityCard";
+import Toast from "../components/Toast";
+import { PR_LABELS } from "../utils/prCalculator";
 import {
   getConnectionStatus,
   getAuthorizationUrl,
@@ -30,6 +32,7 @@ function StravaConnect() {
   const [dateRange, setDateRange] = useState("30days");
   const [activityType, setActivityType] = useState("all");
   const [useMetric, setUseMetric] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     loadConnection();
@@ -140,6 +143,18 @@ function StravaConnect() {
       const result = await syncActivities(user.id);
       setSyncResult(result);
 
+      // Show PR notifications if any were set
+      if (result.newPRs && result.newPRs.length > 0) {
+        const prCount = result.newPRs.length;
+        const prList = result.newPRs
+          .map(pr => PR_LABELS[pr.category])
+          .join(', ');
+        setToast({
+          message: `🎉 New Personal Record${prCount > 1 ? 's' : ''}! ${prList}`,
+          type: 'success'
+        });
+      }
+
       // Reload connection and activities
       await loadConnection();
       await loadActivities();
@@ -164,6 +179,18 @@ function StravaConnect() {
       setError(null);
       const result = await syncActivities(user.id, { after: 0 });
       setSyncResult(result);
+
+      // Show PR notifications if any were set
+      if (result.newPRs && result.newPRs.length > 0) {
+        const prCount = result.newPRs.length;
+        const prList = result.newPRs
+          .map(pr => PR_LABELS[pr.category])
+          .join(', ');
+        setToast({
+          message: `🎉 New Personal Record${prCount > 1 ? 's' : ''}! ${prList}`,
+          type: 'success'
+        });
+      }
 
       // Reload connection and activities
       await loadConnection();
@@ -261,6 +288,13 @@ function StravaConnect() {
                       title="View analytics"
                     >
                       <i className="bi bi-graph-up-arrow"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-warning"
+                      onClick={() => navigate("/strava/records")}
+                      title="View personal records"
+                    >
+                      <i className="bi bi-trophy-fill"></i>
                     </button>
                     <button
                       className="btn btn-sm btn-outline-danger"
@@ -397,6 +431,15 @@ function StravaConnect() {
             </div>
           )}
         </>
+      )}
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );

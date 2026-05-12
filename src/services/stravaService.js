@@ -1,5 +1,10 @@
 import { supabase } from "../lib/supabaseClient";
 import { estimateCalories } from "../utils/calorieEstimator";
+import { 
+  checkForPersonalRecords, 
+  calculatePRsFromActivities,
+  PR_CATEGORIES 
+} from "../utils/prCalculator";
 
 /**
  * Strava Integration Service
@@ -384,12 +389,23 @@ export async function syncActivities(userId, options = {}) {
       .update({ last_sync: new Date().toISOString() })
       .eq("user_id", userId);
 
+    // Get the newly synced activities from database for PR calculation
+    const { data: syncedActivities } = await supabase
+      .from("strava_activities")
+      .select("*")
+      .eq("user_id", userId)
+      .in("strava_id", activities.map(a => a.id));
+
+    // Check and update personal records
+    const newPRs = await updatePersonalRecords(userId, syncedActivities || []);
+
     return {
       success: true,
       total: activities.length,
       new: newCount,
       updated: updatedCount,
       hasMore: activities.length === perPage,
+      newPRs: newPRs, // Include PR information in response
       debug: {
         withCalories: caloriesCount,
         withKilojoules: kilojoulesCount,
@@ -661,6 +677,204 @@ export async function disconnectStrava(userId) {
 }
 
 // ============================================================================
+// PERSONAL RECORDS (PRs)
+// ============================================================================
+
+/**
+ * Get current personal records for a user
+ * @param {string} userId - User ID
+ * @param {Object} options - Query options
+ * @param {string} options.activityType - Filter by activity type (optional)
+ * @param {string} options.timeScope - Time scope: 'all_time', 'year', 'month' (default: 'all_time')
+ * @returns {Promise<Array>} Array of PR records
+ */
+export async function getPersonalRecords(userId, options = {}) {
+  try {
+    const { activityType, timeScope = 'all_time' } = options;
+
+    let query = supabase
+      .from('strava_personal_records')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('time_scope', timeScope)
+      .order('set_at', { ascending: false });
+
+    if (activityType) {
+      query = query.eq('activity_type', activityType);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching personal records:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Failed to get personal records:', err);
+    throw err;
+  }
+}
+
+/**
+ * Update personal records after syncing activities
+ * @param {string} userId - User ID
+ * @param {Array} newActivities - Newly synced activities
+ * @returns {Promise<Array>} Array of new PRs that were set
+ */
+export async function updatePersonalRecords(userId, newActivities) {
+  if (!newActivities || newActivities.length === 0) {
+    return [];
+  }
+
+  try {
+    console.log('🏆 Checking for personal records...');
+    const allNewPRs = [];
+
+    // Get unique activity types from new activities
+    const activityTypes = [...new Set(newActivities.map(a => a.type))];
+
+    for (const activityType of activityTypes) {
+      // Get activities of this type
+      const typeActivities = newActivities.filter(a => a.type === activityType);
+
+      // Check PRs for each time scope
+      const timeScopes = ['all_time', 'year', 'month'];
+      
+      for (const timeScope of timeScopes) {
+        // Get current PRs for this type and scope
+        const currentPRs = await getPersonalRecords(userId, { activityType, timeScope });
+        
+        // Convert to object for easier lookup
+        const currentPRValues = {};
+        currentPRs.forEach(pr => {
+          currentPRValues[pr.pr_category] = pr.record_value;
+        });
+
+        // Check each activity
+        for (const activity of typeActivities) {
+          // Filter by time scope
+          if (timeScope === 'year') {
+            const activityYear = new Date(activity.start_date).getFullYear();
+            const currentYear = new Date().getFullYear();
+            if (activityYear !== currentYear) continue;
+          } else if (timeScope === 'month') {
+            const activityDate = new Date(activity.start_date);
+            const now = new Date();
+            if (activityDate.getFullYear() !== now.getFullYear() || 
+                activityDate.getMonth() !== now.getMonth()) {
+              continue;
+            }
+          }
+
+          const newPRs = checkForPersonalRecords(activity, currentPRValues, activityType);
+
+          // Save each new PR
+          for (const pr of newPRs) {
+            const prRecord = {
+              user_id: userId,
+              activity_type: activityType,
+              pr_category: pr.category,
+              record_value: pr.value,
+              record_unit: pr.unit,
+              activity_id: activity.id,
+              strava_activity_id: activity.strava_id,
+              activity_name: activity.name,
+              activity_date: activity.start_date,
+              previous_record_value: pr.previousValue,
+              time_scope: timeScope,
+            };
+
+            const { error } = await supabase
+              .from('strava_personal_records')
+              .upsert(prRecord, {
+                onConflict: 'user_id,activity_type,pr_category,time_scope'
+              });
+
+            if (error) {
+              console.error('Error saving PR:', error);
+            } else {
+              console.log(`✅ New PR: ${activityType} - ${pr.category} (${timeScope})`);
+              if (timeScope === 'all_time') {
+                // Only add to notification list for all-time PRs
+                allNewPRs.push({
+                  activityType,
+                  category: pr.category,
+                  value: pr.value,
+                  unit: pr.unit,
+                  previousValue: pr.previousValue,
+                  improvement: pr.improvement,
+                  activityName: activity.name,
+                });
+              }
+            }
+
+            // Update current PR values for next activity check
+            currentPRValues[pr.category] = pr.value;
+          }
+        }
+      }
+    }
+
+    return allNewPRs;
+  } catch (err) {
+    console.error('Failed to update personal records:', err);
+    return [];
+  }
+}
+
+/**
+ * Get PRs grouped by activity type for display
+ * @param {string} userId - User ID
+ * @param {string} timeScope - Time scope: 'all_time', 'year', 'month'
+ * @returns {Promise<Object>} Object with PRs grouped by activity type
+ */
+export async function getPersonalRecordsByType(userId, timeScope = 'all_time') {
+  try {
+    const prs = await getPersonalRecords(userId, { timeScope });
+    
+    // Group by activity type
+    const grouped = {};
+    prs.forEach(pr => {
+      if (!grouped[pr.activity_type]) {
+        grouped[pr.activity_type] = [];
+      }
+      grouped[pr.activity_type].push(pr);
+    });
+
+    return grouped;
+  } catch (err) {
+    console.error('Failed to get PRs by type:', err);
+    return {};
+  }
+}
+
+/**
+ * Check if an activity has any PRs
+ * @param {string} activityId - Activity UUID
+ * @returns {Promise<Array>} Array of PR categories this activity holds
+ */
+export async function getActivityPRs(activityId) {
+  try {
+    const { data, error } = await supabase
+      .from('strava_personal_records')
+      .select('pr_category, time_scope')
+      .eq('activity_id', activityId);
+
+    if (error) {
+      console.error('Error fetching activity PRs:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Failed to get activity PRs:', err);
+    return [];
+  }
+}
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 
@@ -725,18 +939,98 @@ export function formatSpeed(metersPerSecond, useMetric = true) {
  * @param {string} type - Activity type (Ride, Walk, Run, etc.)
  * @returns {string} Bootstrap icon class
  */
+/**
+ * Get activity type icon
+ * @param {string} type - Activity type (Ride, Walk, Run, etc.)
+ * @returns {string} Bootstrap icon class
+ */
 export function getActivityIcon(type) {
   const icons = {
     Ride: "bi-bicycle",
+    MountainBikeRide: "bi-bicycle",
+    GravelRide: "bi-bicycle",
+    EBikeRide: "bi-bicycle",
     Walk: "bi-person-walking",
     Run: "bi-person-running",
+    TrailRun: "bi-person-running",
     Hike: "bi-tree",
     Swim: "bi-water",
-    VirtualRide: "bi-bicycle",
-    VirtualRun: "bi-person-running",
+    VirtualRide: "bi-display",
+    VirtualRun: "bi-display",
     Workout: "bi-heart-pulse",
+    WeightTraining: "bi-award",
+    Yoga: "bi-flower1",
+    Crossfit: "bi-award",
+    Elliptical: "bi-arrow-repeat",
+    StairStepper: "bi-arrow-up",
+    AlpineSki: "bi-snow",
+    NordicSki: "bi-snow",
+    Snowboard: "bi-snow",
+    IceSkate: "bi-snow",
+    RockClimbing: "bi-triangle",
+    Rowing: "bi-water",
+    Kayaking: "bi-water",
+    Canoeing: "bi-water",
+    Surfing: "bi-water",
+    Skateboard: "bi-circle",
+    InlineSkate: "bi-circle",
+    Golf: "bi-flag",
     default: "bi-activity",
   };
 
   return icons[type] || icons.default;
+}
+
+/**
+ * Get activity type icon color class
+ * @param {string} type - Activity type
+ * @returns {string} Bootstrap text color class
+ */
+export function getActivityIconColor(type) {
+  const colors = {
+    Ride: "text-primary",
+    MountainBikeRide: "text-primary",
+    GravelRide: "text-primary",
+    EBikeRide: "text-info",
+    Walk: "text-success",
+    Run: "text-danger",
+    TrailRun: "text-danger",
+    Hike: "text-success",
+    Swim: "text-info",
+    VirtualRide: "text-secondary",
+    VirtualRun: "text-secondary",
+    Workout: "text-warning",
+    WeightTraining: "text-dark",
+    Yoga: "text-purple",
+    default: "text-muted",
+  };
+
+  return colors[type] || colors.default;
+}
+
+/**
+ * Get activity type badge color class
+ * @param {string} type - Activity type
+ * @returns {string} Bootstrap badge color class
+ */
+export function getActivityBadgeColor(type) {
+  const colors = {
+    Ride: "bg-primary",
+    MountainBikeRide: "bg-primary",
+    GravelRide: "bg-primary",
+    EBikeRide: "bg-info",
+    Walk: "bg-success",
+    Run: "bg-danger",
+    TrailRun: "bg-danger",
+    Hike: "bg-success",
+    Swim: "bg-info",
+    VirtualRide: "bg-secondary",
+    VirtualRun: "bg-secondary",
+    Workout: "bg-warning text-dark",
+    WeightTraining: "bg-dark",
+    Yoga: "bg-purple text-white",
+    default: "bg-secondary",
+  };
+
+  return colors[type] || colors.default;
 }
