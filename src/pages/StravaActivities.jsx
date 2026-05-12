@@ -178,10 +178,28 @@ function StravaActivities() {
     <div className="container mt-4">
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>
-          <i className="bi bi-activity me-2"></i>
-          Strava Activities
-        </h2>
+        <div>
+          <h2>
+            <i className="bi bi-activity me-2"></i>
+            Strava Activities
+          </h2>
+          <div className="btn-group mt-2" role="group">
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => navigate("/strava")}
+            >
+              <i className="bi bi-arrow-left me-1"></i>
+              Back
+            </button>
+            <button
+              className="btn btn-sm btn-outline-info"
+              onClick={() => navigate("/strava/analytics")}
+            >
+              <i className="bi bi-graph-up-arrow me-1"></i>
+              Analytics
+            </button>
+          </div>
+        </div>
         <button
           className="btn btn-primary"
           onClick={handleSync}

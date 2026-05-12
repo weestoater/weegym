@@ -12,6 +12,7 @@ function ActiveWellbeing() {
   const machineNames = [
     "Chest & Legs",
     "Cross cycle",
+    "Outdoor Activity",
     "Seated Climber",
     "Tricep Dip & Leg Curl",
     "Flys & Thighs",

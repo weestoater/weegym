@@ -481,6 +481,69 @@ export async function getActivityDetail(userId, activityId) {
 }
 
 /**
+ * Get activity GPS stream data for route mapping
+ * @param {number} stravaActivityId - Strava activity ID (not database ID)
+ * @returns {Promise<Array>} Array of {lat, lng} coordinates
+ */
+export async function getActivityStream(stravaActivityId) {
+  try {
+    // Get connection and ensure token is valid
+    const connection = await getConnectionStatus();
+    if (!connection) {
+      throw new Error("Not connected to Strava");
+    }
+
+    // Refresh token if expired
+    const expiresAt = new Date(connection.expires_at);
+    if (expiresAt < new Date()) {
+      const { data: userData } = await supabase.auth.getUser();
+      await refreshAccessToken(userData.user.id);
+      // Re-fetch connection with new token
+      const { data: refreshedConnection } = await supabase
+        .from("strava_connections")
+        .select("*")
+        .eq("user_id", userData.user.id)
+        .single();
+      
+      if (!refreshedConnection) {
+        throw new Error("Failed to refresh connection");
+      }
+    }
+
+    // Fetch stream data (latlng type)
+    const response = await fetch(
+      `${STRAVA_API_BASE}/activities/${stravaActivityId}/streams?keys=latlng&key_by_type=true`,
+      {
+        headers: {
+          Authorization: `Bearer ${connection.access_token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        // No GPS data available for this activity
+        return [];
+      }
+      throw new Error(`Failed to fetch stream: ${response.statusText}`);
+    }
+
+    const streamData = await response.json();
+    
+    // Check if latlng stream exists
+    if (!streamData.latlng || !streamData.latlng.data) {
+      return [];
+    }
+
+    // Convert to {lat, lng} format
+    return streamData.latlng.data.map(([lat, lng]) => ({ lat, lng }));
+  } catch (err) {
+    console.error("Failed to get activity stream:", err);
+    throw err;
+  }
+}
+
+/**
  * Get activity statistics summary
  * @param {string} userId - User ID
  * @param {Object} options - Filter options (same as getActivities)

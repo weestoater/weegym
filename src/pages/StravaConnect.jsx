@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import StravaActivityCard from "../components/StravaActivityCard";
 import {
   getConnectionStatus,
   getAuthorizationUrl,
   disconnectStrava,
   syncActivities,
+  getActivities,
+  getActivityStats,
 } from "../services/stravaService";
 
 /**
  * StravaConnect Component
- * Manages Strava connection: connect, disconnect, sync status
+ * Manages Strava connection and displays activities
  */
 function StravaConnect() {
   const { user } = useAuth();
@@ -20,10 +23,23 @@ function StravaConnect() {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
   const [error, setError] = useState(null);
+  
+  // Activity state
+  const [activities, setActivities] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [dateRange, setDateRange] = useState("30days");
+  const [activityType, setActivityType] = useState("all");
+  const [useMetric, setUseMetric] = useState(false);
 
   useEffect(() => {
     loadConnection();
   }, [user]);
+
+  useEffect(() => {
+    if (connection) {
+      loadActivities();
+    }
+  }, [connection, dateRange, activityType]);
 
   const loadConnection = async () => {
     if (!user) {
@@ -40,6 +56,52 @@ function StravaConnect() {
       setError("Failed to load connection status");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadActivities = async () => {
+    if (!user || !connection) return;
+
+    try {
+      // Calculate date range
+      const now = new Date();
+      let startDate = null;
+
+      switch (dateRange) {
+        case "30days":
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case "3months":
+          startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case "year":
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+        case "all":
+        default:
+          startDate = null;
+          break;
+      }
+
+      const options = {
+        startDate,
+        limit: 100,
+      };
+
+      if (activityType !== "all") {
+        options.type = activityType;
+      }
+
+      const [activitiesData, statsData] = await Promise.all([
+        getActivities(user.id, options),
+        getActivityStats(user.id, options),
+      ]);
+
+      setActivities(activitiesData);
+      setStats(statsData);
+    } catch (err) {
+      console.error("Error loading activities:", err);
+      setError("Failed to load activities: " + err.message);
     }
   };
 
@@ -78,8 +140,9 @@ function StravaConnect() {
       const result = await syncActivities(user.id);
       setSyncResult(result);
 
-      // Reload connection to update last_sync timestamp
+      // Reload connection and activities
       await loadConnection();
+      await loadActivities();
     } catch (err) {
       console.error("❌ Error syncing activities:", err);
       setError("Failed to sync activities: " + err.message);
@@ -99,22 +162,18 @@ function StravaConnect() {
     try {
       setSyncing(true);
       setError(null);
-      // Pass after: 0 to fetch all activities, ignoring last_sync
       const result = await syncActivities(user.id, { after: 0 });
       setSyncResult(result);
 
-      // Reload connection to update last_sync timestamp
+      // Reload connection and activities
       await loadConnection();
+      await loadActivities();
     } catch (err) {
       console.error("❌ Error during full resync:", err);
       setError("Failed to resync activities: " + err.message);
     } finally {
       setSyncing(false);
     }
-  };
-
-  const handleViewActivities = () => {
-    navigate("/strava/activities");
   };
 
   if (loading) {
@@ -139,12 +198,89 @@ function StravaConnect() {
     );
   }
 
+  // Get available activity types for filter
+  const activityTypes = [...new Set(activities.map((a) => a.type))];
+
   return (
     <div className="container mt-4">
-      <h2 className="mb-4">
-        <i className="bi bi-bicycle me-2"></i>
-        Strava Integration
-      </h2>
+      {/* Header with Control Panel */}
+      <div className="row mb-4">
+        <div className="col-lg-8">
+          <h2>
+            <i className="bi bi-bicycle me-2"></i>
+            Strava Activities
+          </h2>
+          {connection && (
+            <small className="text-muted">
+              <i className="bi bi-person me-1"></i>
+              {connection.athlete_data?.firstname} {connection.athlete_data?.lastname}
+              {connection.last_sync && (
+                <>
+                  {" • "}
+                  <i className="bi bi-clock me-1"></i>
+                  Last sync: {new Date(connection.last_sync).toLocaleString()}
+                </>
+              )}
+            </small>
+          )}
+        </div>
+        <div className="col-lg-4">
+          {/* Control Panel */}
+          <div className="card border-primary">
+            <div className="card-body p-3">
+              <h6 className="card-subtitle mb-2 text-primary">
+                <i className="bi bi-gear me-1"></i>
+                Controls
+              </h6>
+              <div className="d-flex flex-wrap gap-2">
+                {connection ? (
+                  <>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      onClick={handleSync}
+                      disabled={syncing}
+                      title="Sync new activities"
+                    >
+                      {syncing ? (
+                        <span className="spinner-border spinner-border-sm" role="status"></span>
+                      ) : (
+                        <i className="bi bi-arrow-repeat"></i>
+                      )}
+                    </button>
+                    <button
+                      className="btn btn-sm btn-warning"
+                      onClick={handleFullResync}
+                      disabled={syncing}
+                      title="Full resync (all activities)"
+                    >
+                      <i className="bi bi-arrow-clockwise"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-info text-white"
+                      onClick={() => navigate("/strava/analytics")}
+                      title="View analytics"
+                    >
+                      <i className="bi bi-graph-up-arrow"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={handleDisconnect}
+                      title="Disconnect Strava"
+                    >
+                      <i className="bi bi-x-circle"></i>
+                    </button>
+                  </>
+                ) : (
+                  <button className="btn btn-sm btn-primary w-100" onClick={handleConnect}>
+                    <i className="bi bi-box-arrow-up-right me-1"></i>
+                    Connect to Strava
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {error && (
         <div
@@ -161,174 +297,12 @@ function StravaConnect() {
         </div>
       )}
 
-      {/* Connection Status Card */}
-      <div className="card mb-4">
-        <div className="card-body">
-          <h5 className="card-title">
-            <i className="bi bi-plug me-2"></i>
-            Connection Status
-          </h5>
-
-          {connection ? (
-            <>
-              <div className="d-flex align-items-center mb-3">
-                <i
-                  className="bi bi-check-circle-fill text-success me-2"
-                  style={{ fontSize: "1.5rem" }}
-                ></i>
-                <div>
-                  <strong>Connected</strong>
-                  <br />
-                  <small className="text-muted">
-                    Athlete: {connection.athlete_data?.firstname}{" "}
-                    {connection.athlete_data?.lastname}
-                  </small>
-                </div>
-              </div>
-
-              {connection.last_sync && (
-                <div className="mb-3">
-                  <small className="text-muted">
-                    <i className="bi bi-clock me-1"></i>
-                    Last synced:{" "}
-                    {new Date(connection.last_sync).toLocaleString()}
-                  </small>
-                </div>
-              )}
-
-              <div className="d-flex gap-2 flex-wrap">
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSync}
-                  disabled={syncing}
-                >
-                  {syncing ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      Syncing...
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-arrow-repeat me-1"></i>
-                      Sync New
-                    </>
-                  )}
-                </button>
-                <button
-                  className="btn btn-warning"
-                  onClick={handleFullResync}
-                  disabled={syncing}
-                  title="Re-fetch and re-process ALL activities (useful after code changes)"
-                >
-                  {syncing ? (
-                    <>
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      ></span>
-                      Syncing...
-                    </>
-                  ) : (
-                    <>
-                      <i className="bi bi-arrow-clockwise me-1"></i>
-                      Full Resync
-                    </>
-                  )}
-                </button>
-                <button
-                  className="btn btn-success"
-                  onClick={handleViewActivities}
-                >
-                  <i className="bi bi-list-ul me-1"></i>
-                  View Activities
-                </button>
-                <button
-                  className="btn btn-outline-danger"
-                  onClick={handleDisconnect}
-                >
-                  <i className="bi bi-x-circle me-1"></i>
-                  Disconnect
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="d-flex align-items-center mb-3">
-                <i
-                  className="bi bi-x-circle text-muted me-2"
-                  style={{ fontSize: "1.5rem" }}
-                ></i>
-                <div>
-                  <strong>Not Connected</strong>
-                  <br />
-                  <small className="text-muted">
-                    Connect your Strava account to sync activities
-                  </small>
-                </div>
-              </div>
-
-              <button className="btn btn-primary" onClick={handleConnect}>
-                <i className="bi bi-box-arrow-up-right me-1"></i>
-                Connect to Strava
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Sync Result */}
       {syncResult && (
         <div
           className="alert alert-success alert-dismissible fade show"
           role="alert"
         >
-          <strong>Sync Complete!</strong>
-          <ul className="mb-0 mt-2">
-            <li>Total activities fetched: {syncResult.total}</li>
-            <li>New activities: {syncResult.new}</li>
-            <li>Updated activities: {syncResult.updated}</li>
-          </ul>
-
-          {syncResult.debug && (
-            <div className="mt-3 pt-3 border-top">
-              <strong>Calorie Data Debug:</strong>
-              <ul className="mb-0 mt-2">
-                <li>
-                  ✅ With Strava calories: {syncResult.debug.withCalories}
-                </li>
-                <li>
-                  ⚡ With kilojoules (converted):{" "}
-                  {syncResult.debug.withKilojoules}
-                </li>
-                <li>
-                  🧮 Estimated (no Strava data): {syncResult.debug.withNoEnergy}
-                </li>
-              </ul>
-              <small className="text-muted d-block mt-2">
-                Note: Since Strava doesn't provide Garmin calorie data via API,
-                we estimate calories based on heart rate, activity type, and
-                duration.
-              </small>
-              {syncResult.debug.samples &&
-                syncResult.debug.samples.length > 0 && (
-                  <div className="mt-2">
-                    <small className="text-muted">Sample calculations:</small>
-                    <pre
-                      className="mt-1 p-2 bg-light small"
-                      style={{ fontSize: "0.75rem" }}
-                    >
-                      {JSON.stringify(syncResult.debug.samples, null, 2)}
-                    </pre>
-                  </div>
-                )}
-            </div>
-          )}
-
+          <strong>Sync Complete!</strong> {syncResult.total} activities fetched, {syncResult.new} new
           <button
             type="button"
             className="btn-close"
@@ -338,28 +312,92 @@ function StravaConnect() {
         </div>
       )}
 
-      {/* Info Card */}
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">
-            <i className="bi bi-info-circle me-2"></i>
-            About Strava Integration
-          </h5>
-          <p className="mb-2">
-            Connect your Strava account to automatically track your activities:
-          </p>
-          <ul className="mb-3">
-            <li>Mountain bike rides</li>
-            <li>Dog walks</li>
-            <li>Runs and other activities</li>
-          </ul>
-          <p className="text-muted small mb-0">
-            <strong>Privacy:</strong> Your activities are stored securely and
-            only you can see them. You can disconnect at any time to remove all
-            synced data.
+      {!connection ? (
+        <div className="text-center py-5">
+          <i className="bi bi-bicycle text-muted" style={{ fontSize: "4rem" }}></i>
+          <h3 className="mt-3">Connect Your Strava Account</h3>
+          <p className="text-muted">
+            Sync your activities from Strava to track your progress
           </p>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Filters and Stats */}
+          <div className="row mb-4">
+            <div className="col-md-3">
+              <label className="form-label small">Time Range</label>
+              <select
+                className="form-select form-select-sm"
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+              >
+                <option value="30days">Last 30 Days</option>
+                <option value="3months">Last 3 Months</option>
+                <option value="year">Last Year</option>
+                <option value="all">All Time</option>
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Activity Type</label>
+              <select
+                className="form-select form-select-sm"
+                value={activityType}
+                onChange={(e) => setActivityType(e.target.value)}
+              >
+                <option value="all">All Types</option>
+                {activityTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Units</label>
+              <div className="form-check form-switch mt-2">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="metricToggle"
+                  checked={useMetric}
+                  onChange={(e) => setUseMetric(e.target.checked)}
+                />
+                <label className="form-check-label small" htmlFor="metricToggle">
+                  Use Metric (km/kmh)
+                </label>
+              </div>
+            </div>
+            <div className="col-md-3">
+              {stats && (
+                <div className="text-end">
+                  <label className="form-label small">Summary</label>
+                  <div className="small text-muted">
+                    {stats.count} activities • {(stats.totalDistance / 1000).toFixed(0)} km
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Activity List */}
+          {activities.length === 0 ? (
+            <div className="text-center py-5">
+              <i className="bi bi-inbox text-muted" style={{ fontSize: "3rem" }}></i>
+              <p className="text-muted mt-3">
+                No activities found. Try syncing or adjusting your filters.
+              </p>
+            </div>
+          ) : (
+            <div className="row">
+              {activities.map((activity) => (
+                <div key={activity.id} className="col-12">
+                  <StravaActivityCard activity={activity} useMetric={useMetric} />
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

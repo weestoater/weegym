@@ -20,6 +20,7 @@ import UserProfileManager from "./pages/UserProfileManager";
 import AddUser from "./pages/AddUser";
 import StravaConnect from "./pages/StravaConnect";
 import StravaActivities from "./pages/StravaActivities";
+import StravaAnalytics from "./pages/StravaAnalytics";
 import StravaCallback from "./pages/StravaCallback";
 
 function NavigationBar() {
@@ -315,6 +316,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <StravaActivities />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/strava/analytics"
+            element={
+              <ProtectedRoute>
+                <StravaAnalytics />
               </ProtectedRoute>
             }
           />
