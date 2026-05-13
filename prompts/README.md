@@ -1,67 +1,148 @@
-# Slimming World Syns Tracker Implementation Prompts
+# WeeGym Project Prompts
 
-## ⚠️ ARCHIVE NOTICE - ALL PROMPTS COMPLETED ✅
+## 📁 Folder Organization
 
-**Status:** All 5 prompts have been successfully implemented (May 2026).  
-**Complete Overview:** [guides/COMPLETE_IMPLEMENTATION_OVERVIEW.md](../guides/COMPLETE_IMPLEMENTATION_OVERVIEW.md)
+### Current Files
 
-This folder contains **completed and archived** prompts for converting the calorie tracker to a Slimming World syns tracker with accessibility features.
+- **[ToDo.md](./ToDo.md)** - 🎯 Active roadmap with next stages planning and future enhancements
+- **[README.md](./README.md)** - This file, navigation and overview
 
-## Context
+### Archive
 
-- **Daily syn allowances**: Configurable per user (30 syns default, 15 minimum)
-- **Accessibility**: Screen reader compatible (VoiceOver/TalkBack)
-- **Visual design**: Color-coding with patterns for colorblind users
-- **Smart guidance**: Free foods, SP days, and alternatives
-- **Preserve**: Barcode scanning functionality
+- **[Done/](./Done/)** - ✅ Completed prompts and implementation summaries (Slimming World Syns Tracker Phases 1-5)
 
-## Prompts Overview
+---
 
-1. **[Core Functionality Update](01-core-functionality-update.md)** - ✅ **COMPLETED** - Convert calorie tracking to syn tracking
-2. **[Meal Recommendation System](02-meal-recommendation-system.md)** - ✅ **COMPLETED** - Implement smart meal suggestions
-3. **[Accessibility & Visual Design](03-accessibility-visual-design.md)** - ✅ **COMPLETED** - Ensure WCAG compliance and screen reader support
-4. **[Smart Guidance & Error Prevention](04-smart-guidance-error-prevention.md)** - ✅ **COMPLETED** (via Prompts 2-3) - Add proactive guidance features
-5. **[Testing & Validation](05-testing-validation.md)** - ✅ **COMPLETED** - Comprehensive accessibility testing
+## 🚀 Quick Links
 
-## Implementation Status
+**Planning a new feature?** → Start with [ToDo.md](./ToDo.md) to see the roadmap
 
-### ✅ All Prompts Completed!
+**Looking for completed work?** → Check the [Done/](./Done/) folder
 
-- **Prompt 1**: Core functionality converted to syns tracking with configurable allowances
-- **Prompt 2**: Meal recommendation system with 20 free foods, SP Day guidance, and full accessibility
-- **Prompt 3**: Comprehensive accessibility with patterns for colorblind users, semantic HTML, ARIA labels, keyboard navigation, and ProgressIndicator component
-- **Prompt 4**: Smart guidance implemented through meal recommendations, error prevention via form validation, and proactive advice
-- **Prompt 5**: Complete testing framework with comprehensive guides, report templates, and WCAG 2.1 AA validation procedures
+**Implementation details?** → See [guides/COMPLETE_IMPLEMENTATION_OVERVIEW.md](../guides/COMPLETE_IMPLEMENTATION_OVERVIEW.md)
 
-## Testing Documentation
+---
 
-The application now includes comprehensive accessibility testing documentation:
+## ✅ Major Completed Features (All in Done/ folder)
 
-- **[ACCESSIBILITY_TESTING_GUIDE.md](ACCESSIBILITY_TESTING_GUIDE.md)** - Complete testing manual with step-by-step procedures (1,100+ lines)
-- **[ACCESSIBILITY_TEST_REPORT_TEMPLATE.md](ACCESSIBILITY_TEST_REPORT_TEMPLATE.md)** - Fillable template for documenting test results (700+ lines)
-- **[ACCESSIBILITY_QUICK_CHECKLIST.md](ACCESSIBILITY_QUICK_CHECKLIST.md)** - Printable one-page quick reference (500+ lines)
+### Slimming World Syns Tracker (May 2026)
 
-## Implementation Summaries
+- Core functionality with configurable syn allowances
+- Meal recommendation system with free foods
+- Full accessibility (WCAG 2.1 AA) with screen reader support
+- Smart guidance and error prevention
+- Comprehensive testing framework
 
-Detailed implementation documentation for each prompt:
+**Details:** All 5 prompts completed, files moved to [Done/](./Done/) subfolder
 
-- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Prompt 1 details
-- **[IMPLEMENTATION_SUMMARY_PROMPT2.md](IMPLEMENTATION_SUMMARY_PROMPT2.md)** - Prompt 2 details
-- **[IMPLEMENTATION_SUMMARY_PROMPT3.md](IMPLEMENTATION_SUMMARY_PROMPT3.md)** - Prompt 3 details
-- **[IMPLEMENTATION_SUMMARY_PROMPT5.md](IMPLEMENTATION_SUMMARY_PROMPT5.md)** - Prompt 5 details
+---
 
-## User Guides
+## 🎯 Active Planning
 
-- **[QUICK_SETUP.md](QUICK_SETUP.md)** - User setup for syns tracking
-- **[MEAL_SUGGESTIONS_USER_GUIDE.md](MEAL_SUGGESTIONS_USER_GUIDE.md)** - Guide to meal recommendations
-- **[ACCESSIBILITY_USER_GUIDE.md](ACCESSIBILITY_USER_GUIDE.md)** - Guide to accessibility features
+See **[ToDo.md](./ToDo.md)** for complete roadmap including:
 
-## Implementation Order
+### High Priority
 
-Prompts 1 and 2 are complete! Review the implementation summaries for details.
+- Strava webhooks for real-time sync
+- Exercise video/image library
+- Programme templates library
 
-## Notes
+### Quality of Life
 
-- All features should maintain backward compatibility
-- Focus on non-judgmental, supportive language
-- Prioritize accessibility throughout
+- Enhanced data export (CSV/PDF)
+- Unified activity dashboard
+- Workout calendar with scheduling
+
+### Advanced Features
+
+- Advanced Strava analytics
+- Training goals and plans
+- Meal planning features
+- Progress photos & measurements
+
+---
+
+## 📝 Project Status Summary
+
+| Feature Area        | Status      | Notes                    |
+| ------------------- | ----------- | ------------------------ |
+| Syns Tracker        | ✅ Complete | Phases 1-5 done          |
+| Strava Integration  | ✅ Complete | Phases 1-6 with PRs      |
+| Multi-User System   | ✅ Complete | Auth & custom programmes |
+| Active Wellbeing    | ✅ Complete | Session tracking         |
+| Calorie Tracker     | ✅ Complete | Barcode scanning         |
+| Exercise Library    | 🎯 Planned  | P2 in ToDo.md            |
+| Programme Templates | 🎯 Planned  | P3 in ToDo.md            |
+| Webhooks            | 🎯 Planned  | P1 in ToDo.md            |
+| Meal Planning       | 🔮 Future   | A3 in ToDo.md            |
+
+---
+
+## 📖 Documentation Structure
+
+```
+prompts/
+├── ToDo.md              # Current roadmap & planning
+├── README.md            # This file - navigation
+└── Done/                # Completed prompt files
+    ├── 01-core-functionality-update.md
+    ├── 02-meal-recommendation-system.md
+    ├── 03-accessibility-visual-design.md
+    ├── 04-smart-guidance-error-prevention.md
+    ├── 05-testing-validation.md
+    └── IMPLEMENTATION_SUMMARY_PROMPT*.md
+
+docs/                    # Detailed technical documentation
+guides/                  # User guides and overviews
+```
+
+---
+
+## 💡 How to Use This Folder
+
+### When starting a new feature:
+
+1. Check [ToDo.md](./ToDo.md) to see if it's already planned
+2. Review priority and effort estimates
+3. Check related docs in `/docs` folder
+4. Implement with reference to best practices in ToDo.md
+
+### When completing a feature:
+
+1. Update relevant sections in [ToDo.md](./ToDo.md)
+2. Move any design docs to appropriate location
+3. Update project documentation in `/docs` or `/guides`
+4. Mark items as complete with ✅
+
+### When reviewing project status:
+
+1. Start with [ToDo.md](./ToDo.md) for future plans
+2. Check [Done/](./Done/) for completed implementation details
+3. See [guides/](../guides/) for user-facing documentation
+
+---
+
+## 🏗️ Context - Slimming World Syns Tracker (Historical)
+
+This folder originally contained implementation prompts for converting WeeGym's calorie tracker to a Slimming World syns tracker with full accessibility support.
+
+### What Was Delivered (May 2026)
+
+- Core syn tracking with configurable allowances
+- Meal recommendation system with 20 free foods and SP Day guidance
+- WCAG 2.1 AA accessibility compliance
+- Screen reader support (VoiceOver/TalkBack/NVDA)
+- Color-coding with patterns for colorblind users
+- Smart guidance and error prevention
+- Comprehensive testing framework and documentation
+
+### Archive Location
+
+All 5 completed prompts and implementation summaries moved to **[Done/](./Done/)** subfolder.
+
+**Full details:** [guides/COMPLETE_IMPLEMENTATION_OVERVIEW.md](../guides/COMPLETE_IMPLEMENTATION_OVERVIEW.md)
+
+---
+
+**Last Updated:** May 13, 2026  
+**Active Roadmap:** [ToDo.md](./ToDo.md)
