@@ -228,6 +228,133 @@ CREATE TABLE programme_templates (
 
 ---
 
+### Q4: App Icon & PWA Enhancement 📱
+
+**Value:** Medium | **Effort:** 2-3 hours | **Status:** Not Started
+
+**Why:** Professional appearance when users add app to home screen on iPhone/iPad/Android
+
+**What:**
+
+- Design custom WeeGym app icon
+- Create multiple icon sizes for different devices (PWA manifest)
+- Add web app manifest for "Add to Home Screen" functionality
+- Configure apple-touch-icon for iOS devices
+- Add splash screens for iOS
+- Set app theme colors and display mode
+
+**Icon Specifications:**
+
+- **iOS:** 180x180px (apple-touch-icon)
+- **Android/PWA:** 192x192px, 512x512px (manifest icons)
+- **Favicon:** 32x32px, 16x16px for browsers
+- **Format:** PNG with transparent or solid background
+- **Design:** Should represent fitness/gym theme, recognizable at small sizes
+
+**Icon Design Tools (Recommended):**
+
+- **[Canva](https://www.canva.com)** - Free, easy-to-use, lots of templates
+  - Search for "app icon" templates
+  - Export as PNG at required sizes
+- **[Figma](https://www.figma.com)** - Free for individuals, professional design tool
+- **[Adobe Express](https://www.adobe.com/express/)** - Free tier available
+- **[App Icon Generator](https://www.appicon.co/)** - Upload one image, generates all sizes
+- **[RealFaviconGenerator](https://realfavicongenerator.net/)** - Complete favicon/icon package
+
+**Design Considerations:**
+
+- **Simple & Bold:** Must be recognizable at 60x60px or smaller
+- **Avoid Text:** Small text becomes unreadable at icon size
+- **Strong Contrast:** Works on both light and dark backgrounds
+- **Consistent Branding:** Match app's color scheme (e.g., Bootstrap primary color)
+- **Unique:** Distinguishable from other fitness apps
+
+**Implementation:**
+
+1. **Create Icon Design:**
+   - Base size: 1024x1024px (scales down better than up)
+   - Consider dumbbell, gym equipment, or "W" monogram
+   - Use WeeGym brand colors
+
+2. **Generate All Sizes:**
+   - Use App Icon Generator or manual resize
+   - Export as optimized PNGs
+
+3. **File Structure:**
+
+   ```
+   public/
+   ├── favicon.ico              # Browser tab icon
+   ├── favicon-16x16.png
+   ├── favicon-32x32.png
+   ├── apple-touch-icon.png     # 180x180 for iOS
+   ├── android-chrome-192x192.png
+   ├── android-chrome-512x512.png
+   └── manifest.json            # PWA manifest
+   ```
+
+4. **Update index.html:**
+
+   ```html
+   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+   <link rel="manifest" href="/manifest.json" />
+   <meta name="theme-color" content="#0d6efd" />
+   <meta name="apple-mobile-web-app-capable" content="yes" />
+   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+   <meta name="apple-mobile-web-app-title" content="WeeGym" />
+   ```
+
+5. **Create manifest.json:**
+   ```json
+   {
+     "name": "WeeGym Tracker",
+     "short_name": "WeeGym",
+     "description": "Complete fitness tracking app",
+     "start_url": "/",
+     "display": "standalone",
+     "background_color": "#ffffff",
+     "theme_color": "#0d6efd",
+     "icons": [
+       {
+         "src": "/android-chrome-192x192.png",
+         "sizes": "192x192",
+         "type": "image/png"
+       },
+       {
+         "src": "/android-chrome-512x512.png",
+         "sizes": "512x512",
+         "type": "image/png"
+       }
+     ]
+   }
+   ```
+
+**Testing:**
+
+- iOS Safari: Tap Share → Add to Home Screen
+- Android Chrome: Tap Menu → Add to Home Screen
+- Desktop: Check browser tab for favicon
+- Verify icon appears correctly on home screen
+
+**Design Ideas:**
+
+- 💪 Dumbbell silhouette with "W" overlay
+- 🏋️ Stylized gym equipment icon
+- 📊 Fitness graph with upward trend
+- ⚡ Lightning bolt for energy/activity
+- 🎯 Target with checkmark for goals
+
+**References:**
+
+- [PWA Manifest Generator](https://app-manifest.firebaseapp.com/)
+- [iOS App Icon Guidelines](https://developer.apple.com/design/human-interface-guidelines/app-icons)
+- [PWA Icon Best Practices](https://web.dev/add-manifest/)
+
+---
+
 ## 🔬 Advanced Features (Lower Priority)
 
 ### A1: Advanced Strava Analytics 📈
@@ -379,27 +506,28 @@ CREATE TABLE programme_templates (
 ### Immediate (Next 2-4 Weeks)
 
 1. **P1: Strava Webhooks** - Biggest UX improvement for Strava users
-2. **Q1: Bug Fixes** - Address known issues
-3. **Q2: UX Polish** - Improve loading states, error messages
+2. **Q4: App Icon & PWA** - Quick win for professional appearance (2-3 hours)
+3. **Q1: Bug Fixes** - Address known issues
+4. **Q2: UX Polish** - Improve loading states, error messages
 
 ### Short-Term (1-2 Months)
 
-4. **P2: Exercise Library** - High value for programme users
-5. **P3: Programme Templates** - Accelerate new user onboarding
-6. **Q2: Dashboard Enhancements** - Better overview of all activities
+5. **P2: Exercise Library** - High value for programme users
+6. **P3: Programme Templates** - Accelerate new user onboarding
+7. **Q2: Dashboard Enhancements** - Better overview of all activities
 
 ### Medium-Term (2-4 Months)
 
-7. **Q3: Workout Calendar** - Better planning and scheduling
-8. **A1: Advanced Analytics** - Deeper insights for data-driven users
-9. **Q1: Enhanced Exports** - Data portability and reporting
+8. **Q3: Workout Calendar** - Better planning and scheduling
+9. **A1: Advanced Analytics** - Deeper insights for data-driven users
+10. **Q1: Enhanced Exports** - Data portability and reporting
 
 ### Long-Term (4+ Months)
 
-10. **A2: Training Goals** - Comprehensive goal tracking
-11. **A3: Meal Planning** - Extend syns tracker capabilities
-12. **A4: Progress Photos** - Visual progress tracking
-13. **A5: Social Features** - Community engagement (if multi-user grows)
+11. **A2: Training Goals** - Comprehensive goal tracking
+12. **A3: Meal Planning** - Extend syns tracker capabilities
+13. **A4: Progress Photos** - Visual progress tracking
+14. **A5: Social Features** - Community engagement (if multi-user grows)
 
 ---
 
