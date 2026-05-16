@@ -1,0 +1,89 @@
+name: ✨ Enhancement
+description: Suggest an improvement to an existing feature
+title: "[Enhancement] "
+labels: ["enhancement", "p2-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting an enhancement to WeeGym!
+
+  - type: dropdown
+    id: feature-area
+    attributes:
+      label: Feature Area
+      description: Which part of WeeGym does this affect?
+      options:
+        - Strava Integration
+        - Calorie Tracker
+        - Slimming World Syns
+        - Active Wellbeing
+        - Workout Programmes
+        - User Authentication
+        - Settings & Profile
+        - UI/UX
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current Behavior
+      description: How does it work now?
+      placeholder: Describe the current functionality
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-improvement
+    attributes:
+      label: Proposed Improvement
+      description: How should it work instead?
+      placeholder: Describe the enhancement in detail
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: Why is this improvement valuable?
+      placeholder: |
+        - Improves user experience by...
+        - Reduces friction when...
+        - Makes it easier to...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this enhancement?
+      options:
+        - p3-low (Nice polish)
+        - p2-medium (Noticeable improvement)
+        - p1-high (Significant UX gain)
+    validations:
+      required: true
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or Examples
+      description: Visual examples if applicable
+      placeholder: Screenshots, wireframes, or links to similar implementations
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope of Change
+      description: What kind of changes are needed?
+      options:
+        - label: UI/Visual changes
+        - label: Backend/API changes
+        - label: Database schema changes
+        - label: New dependencies required

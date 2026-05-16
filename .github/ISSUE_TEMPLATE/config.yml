@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/weestoater/weegym/discussions
+    about: For ideas, questions, and general discussions (not committed work)
+  - name: 📚 Documentation
+    url: https://github.com/weestoater/weegym/blob/main/README.md
+    about: Check the project documentation and guides

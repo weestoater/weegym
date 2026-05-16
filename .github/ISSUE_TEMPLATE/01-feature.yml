@@ -1,0 +1,70 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or capability for WeeGym
+title: "[Feature] "
+labels: ["feature", "p2-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest a new feature!
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: Describe who needs this and why
+      placeholder: "As a [user type], I want [goal] so that [benefit]"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Description
+      description: Provide more context about the feature
+      placeholder: What should this feature do? How should it work?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How will we know this is complete?
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - p3-low (Nice to have)
+        - p2-medium (Would improve UX)
+        - p1-high (Important for key workflows)
+        - p0-critical (Blocking users)
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other solutions have you thought about?
+      placeholder: Alternative approaches or workarounds
+    validations:
+      required: false
+
+  - type: textarea
+    id: implementation-notes
+    attributes:
+      label: Implementation Notes
+      description: Technical considerations (optional)
+      placeholder: Suggested approach, files to modify, APIs to use, etc.
+    validations:
+      required: false

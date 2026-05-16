@@ -5,6 +5,7 @@
 ### Current Files
 
 - **[ToDo.md](./ToDo.md)** - 🎯 Active roadmap with next stages planning and future enhancements
+- **[conventional-commits.md](./conventional-commits.md)** - 📝 Quick reference for conventional commit format (required for releases)
 - **[README.md](./README.md)** - This file, navigation and overview
 
 ### Archive

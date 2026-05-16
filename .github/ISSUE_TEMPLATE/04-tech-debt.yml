@@ -1,0 +1,111 @@
+name: 🔧 Technical Debt
+description: Address technical debt, refactoring, or code quality improvements
+title: "[Tech Debt] "
+labels: ["tech-debt", "p2-medium"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for identifying technical debt! Keeping the codebase healthy is important.
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: Technical Issue
+      description: What technical problem exists?
+      placeholder: Describe the current technical debt or code quality issue
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: What type of technical debt is this?
+      options:
+        - Code Duplication
+        - Poor Abstraction
+        - Missing Tests
+        - Performance Issue
+        - Security Concern
+        - Outdated Dependencies
+        - Poor Documentation
+        - Code Complexity
+        - Architecture Issue
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-impact
+    attributes:
+      label: Current Impact
+      description: How is this affecting development?
+      placeholder: |
+        - Makes it harder to...
+        - Slows down...
+        - Increases risk of...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed Solution
+      description: How should this be addressed?
+      placeholder: Describe the refactoring or improvement approach
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How urgent is this?
+      options:
+        - p3-low (Can wait)
+        - p2-medium (Should address soon)
+        - p1-high (Blocking new features)
+        - p0-critical (Security/stability risk)
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected-files
+    attributes:
+      label: Affected Files/Areas
+      description: Which parts of the codebase are affected?
+      placeholder: |
+        - src/services/stravaService.js
+        - src/components/ActivityCard.jsx
+        - etc.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: breaking-changes
+    attributes:
+      label: Breaking Changes
+      description: Will this require breaking changes?
+      options:
+        - label: May require breaking changes
+        - label: Requires database migration
+        - label: Affects public API
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks
+      description: What are the risks of making this change?
+      placeholder: Potential issues or things to watch out for
+    validations:
+      required: false
+
+  - type: textarea
+    id: testing-strategy
+    attributes:
+      label: Testing Strategy
+      description: How should this be tested?
+      placeholder: Unit tests, integration tests, manual testing checklist
+    validations:
+      required: false

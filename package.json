@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run version:bump && vite build",
-    "version:bump": "npm version patch --no-git-tag-version",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
@@ -19,7 +18,8 @@
     "security:console": "git grep -n \"console\\.log\" src/ || echo '✅ No console.log found'",
     "security:audit": "npm audit",
     "security:check": "npm run security:scan && npm run security:console && npm run security:audit",
-    "precommit": "npm run security:check"
+    "precommit": "npm run security:check",
+    "semantic-release": "semantic-release"
   },
   "dependencies": {
     "@ericblade/quagga2": "^1.12.1",
@@ -51,6 +51,11 @@
     "globals": "^16.5.0",
     "jsdom": "^28.0.0",
     "sass": "^1.77.0",
+    "semantic-release": "^24.2.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "sharp": "^0.34.5",
     "vite": "^7.2.4",
     "vite-plugin-pwa": "^0.21.1",
