@@ -25,6 +25,14 @@ vi.mock("../services/settingsService", () => ({
   },
 }));
 
+// Mock AuthContext to prevent Supabase client initialization
+vi.mock("../contexts/AuthContext", () => ({
+  useAuth: vi.fn(() => ({
+    user: { id: "test-user-id" },
+    signOut: vi.fn(),
+  })),
+}));
+
 describe("Settings Component - Refactored", () => {
   beforeEach(() => {
     vi.clearAllMocks();

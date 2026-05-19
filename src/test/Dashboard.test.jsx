@@ -40,6 +40,13 @@ vi.mock("../services/userProfileService", () => ({
   ),
 }));
 
+// Mock stravaService to prevent Supabase client initialization
+vi.mock("../services/stravaService", () => ({
+  getConnectionStatus: vi.fn(() => Promise.resolve(false)),
+  getActivities: vi.fn(() => Promise.resolve([])),
+  getActivityStats: vi.fn(() => Promise.resolve(null)),
+}));
+
 describe("Dashboard Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
