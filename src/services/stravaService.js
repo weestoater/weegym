@@ -1,9 +1,9 @@
 import { supabase } from "../lib/supabaseClient";
 import { estimateCalories } from "../utils/calorieEstimator";
-import { 
-  checkForPersonalRecords, 
+import {
+  checkForPersonalRecords,
   calculatePRsFromActivities,
-  PR_CATEGORIES 
+  PR_CATEGORIES,
 } from "../utils/prCalculator";
 
 /**
@@ -394,7 +394,10 @@ export async function syncActivities(userId, options = {}) {
       .from("strava_activities")
       .select("*")
       .eq("user_id", userId)
-      .in("strava_id", activities.map(a => a.id));
+      .in(
+        "strava_id",
+        activities.map((a) => a.id),
+      );
 
     // Check and update personal records
     const newPRs = await updatePersonalRecords(userId, syncedActivities || []);
@@ -520,7 +523,7 @@ export async function getActivityStream(stravaActivityId) {
         .select("*")
         .eq("user_id", userData.user.id)
         .single();
-      
+
       if (!refreshedConnection) {
         throw new Error("Failed to refresh connection");
       }
@@ -533,7 +536,7 @@ export async function getActivityStream(stravaActivityId) {
         headers: {
           Authorization: `Bearer ${connection.access_token}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -545,7 +548,7 @@ export async function getActivityStream(stravaActivityId) {
     }
 
     const streamData = await response.json();
-    
+
     // Check if latlng stream exists
     if (!streamData.latlng || !streamData.latlng.data) {
       return [];
@@ -690,29 +693,29 @@ export async function disconnectStrava(userId) {
  */
 export async function getPersonalRecords(userId, options = {}) {
   try {
-    const { activityType, timeScope = 'all_time' } = options;
+    const { activityType, timeScope = "all_time" } = options;
 
     let query = supabase
-      .from('strava_personal_records')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('time_scope', timeScope)
-      .order('set_at', { ascending: false });
+      .from("strava_personal_records")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("time_scope", timeScope)
+      .order("set_at", { ascending: false });
 
     if (activityType) {
-      query = query.eq('activity_type', activityType);
+      query = query.eq("activity_type", activityType);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error fetching personal records:', error);
+      console.error("Error fetching personal records:", error);
       throw error;
     }
 
     return data || [];
   } catch (err) {
-    console.error('Failed to get personal records:', err);
+    console.error("Failed to get personal records:", err);
     throw err;
   }
 }
@@ -729,46 +732,57 @@ export async function updatePersonalRecords(userId, newActivities) {
   }
 
   try {
-    console.log('🏆 Checking for personal records...');
+    console.log("🏆 Checking for personal records...");
     const allNewPRs = [];
 
     // Get unique activity types from new activities
-    const activityTypes = [...new Set(newActivities.map(a => a.type))];
+    const activityTypes = [...new Set(newActivities.map((a) => a.type))];
 
     for (const activityType of activityTypes) {
       // Get activities of this type
-      const typeActivities = newActivities.filter(a => a.type === activityType);
+      const typeActivities = newActivities.filter(
+        (a) => a.type === activityType,
+      );
 
       // Check PRs for each time scope
-      const timeScopes = ['all_time', 'year', 'month'];
-      
+      const timeScopes = ["all_time", "year", "month"];
+
       for (const timeScope of timeScopes) {
         // Get current PRs for this type and scope
-        const currentPRs = await getPersonalRecords(userId, { activityType, timeScope });
-        
+        const currentPRs = await getPersonalRecords(userId, {
+          activityType,
+          timeScope,
+        });
+
         // Convert to object for easier lookup
         const currentPRValues = {};
-        currentPRs.forEach(pr => {
+        currentPRs.forEach((pr) => {
           currentPRValues[pr.pr_category] = pr.record_value;
         });
 
         // Check each activity
         for (const activity of typeActivities) {
           // Filter by time scope
-          if (timeScope === 'year') {
+          if (timeScope === "year") {
             const activityYear = new Date(activity.start_date).getFullYear();
             const currentYear = new Date().getFullYear();
             if (activityYear !== currentYear) continue;
-          } else if (timeScope === 'month') {
+          } else if (timeScope === "month") {
             const activityDate = new Date(activity.start_date);
             const now = new Date();
-            if (activityDate.getFullYear() !== now.getFullYear() || 
-                activityDate.getMonth() !== now.getMonth()) {
+            if (
+              activityDate.getFullYear() !== now.getFullYear() ||
+              activityDate.getMonth() !== now.getMonth()
+            ) {
               continue;
             }
           }
 
-          const newPRs = checkForPersonalRecords(activity, currentPRValues, activityType);
+          const newPRs = checkForPersonalRecords(
+            activity,
+            currentPRValues,
+            activityType,
+          );
 
           // Save each new PR
           for (const pr of newPRs) {
@@ -787,16 +801,18 @@ export async function updatePersonalRecords(userId, newActivities) {
             };
 
             const { error } = await supabase
-              .from('strava_personal_records')
+              .from("strava_personal_records")
               .upsert(prRecord, {
-                onConflict: 'user_id,activity_type,pr_category,time_scope'
+                onConflict: "user_id,activity_type,pr_category,time_scope",
               });
 
             if (error) {
-              console.error('Error saving PR:', error);
+              console.error("Error saving PR:", error);
             } else {
-              console.log(`✅ New PR: ${activityType} - ${pr.category} (${timeScope})`);
-              if (timeScope === 'all_time') {
+              console.log(
+                `✅ New PR: ${activityType} - ${pr.category} (${timeScope})`,
+              );
+              if (timeScope === "all_time") {
                 // Only add to notification list for all-time PRs
                 allNewPRs.push({
                   activityType,
@@ -819,7 +835,7 @@ export async function updatePersonalRecords(userId, newActivities) {
 
     return allNewPRs;
   } catch (err) {
-    console.error('Failed to update personal records:', err);
+    console.error("Failed to update personal records:", err);
     return [];
   }
 }
@@ -830,13 +846,13 @@ export async function updatePersonalRecords(userId, newActivities) {
  * @param {string} timeScope - Time scope: 'all_time', 'year', 'month'
  * @returns {Promise<Object>} Object with PRs grouped by activity type
  */
-export async function getPersonalRecordsByType(userId, timeScope = 'all_time') {
+export async function getPersonalRecordsByType(userId, timeScope = "all_time") {
   try {
     const prs = await getPersonalRecords(userId, { timeScope });
-    
+
     // Group by activity type
     const grouped = {};
-    prs.forEach(pr => {
+    prs.forEach((pr) => {
       if (!grouped[pr.activity_type]) {
         grouped[pr.activity_type] = [];
       }
@@ -845,7 +861,7 @@ export async function getPersonalRecordsByType(userId, timeScope = 'all_time') {
 
     return grouped;
   } catch (err) {
-    console.error('Failed to get PRs by type:', err);
+    console.error("Failed to get PRs by type:", err);
     return {};
   }
 }
@@ -858,18 +874,18 @@ export async function getPersonalRecordsByType(userId, timeScope = 'all_time') {
 export async function getActivityPRs(activityId) {
   try {
     const { data, error } = await supabase
-      .from('strava_personal_records')
-      .select('pr_category, time_scope')
-      .eq('activity_id', activityId);
+      .from("strava_personal_records")
+      .select("pr_category, time_scope")
+      .eq("activity_id", activityId);
 
     if (error) {
-      console.error('Error fetching activity PRs:', error);
+      console.error("Error fetching activity PRs:", error);
       return [];
     }
 
     return data || [];
   } catch (err) {
-    console.error('Failed to get activity PRs:', err);
+    console.error("Failed to get activity PRs:", err);
     return [];
   }
 }
@@ -1033,4 +1049,143 @@ export function getActivityBadgeColor(type) {
   };
 
   return colors[type] || colors.default;
+}
+
+// ============================================================================
+// WEBHOOK MANAGEMENT
+// ============================================================================
+
+/**
+ * Subscribe to Strava webhooks for real-time activity updates
+ * @param {string} callbackUrl - Public webhook endpoint URL (Supabase Edge Function)
+ * @returns {Promise<Object>} Subscription data with subscription_id
+ */
+export async function subscribeToWebhooks(callbackUrl) {
+  try {
+    console.log("🔔 Subscribing to Strava webhooks...");
+
+    const response = await fetch(`${STRAVA_API_BASE}/push_subscriptions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        client_id: STRAVA_CONFIG.clientId,
+        client_secret: STRAVA_CONFIG.clientSecret,
+        callback_url: callbackUrl,
+        verify_token: "WEEGYM_STRAVA_WEBHOOK", // Must match Edge Function
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(
+        `Failed to subscribe to webhooks: ${error.message || response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+    console.log("✅ Webhook subscription created:", data);
+
+    // Store subscription ID in database
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData?.user) {
+      await supabase
+        .from("strava_connections")
+        .update({
+          webhook_subscription_id: data.id,
+          webhook_callback_url: callbackUrl,
+          webhook_subscribed_at: new Date().toISOString(),
+        })
+        .eq("user_id", userData.user.id);
+    }
+
+    return data;
+  } catch (err) {
+    console.error("❌ Failed to subscribe to webhooks:", err);
+    throw err;
+  }
+}
+
+/**
+ * View current webhook subscriptions
+ * @returns {Promise<Array>} List of active subscriptions
+ */
+export async function viewWebhookSubscriptions() {
+  try {
+    const response = await fetch(
+      `${STRAVA_API_BASE}/push_subscriptions?client_id=${STRAVA_CONFIG.clientId}&client_secret=${STRAVA_CONFIG.clientSecret}`,
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to view subscriptions: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error("❌ Failed to view webhook subscriptions:", err);
+    throw err;
+  }
+}
+
+/**
+ * Unsubscribe from Strava webhooks
+ * @param {number} subscriptionId - Subscription ID to delete
+ * @returns {Promise<void>}
+ */
+export async function unsubscribeFromWebhooks(subscriptionId) {
+  try {
+    console.log("🔕 Unsubscribing from webhook:", subscriptionId);
+
+    const response = await fetch(
+      `${STRAVA_API_BASE}/push_subscriptions/${subscriptionId}?client_id=${STRAVA_CONFIG.clientId}&client_secret=${STRAVA_CONFIG.clientSecret}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to unsubscribe: ${response.statusText}`);
+    }
+
+    console.log("✅ Webhook unsubscribed successfully");
+
+    // Clear subscription info from database
+    const { data: userData } = await supabase.auth.getUser();
+    if (userData?.user) {
+      await supabase
+        .from("strava_connections")
+        .update({
+          webhook_subscription_id: null,
+          webhook_callback_url: null,
+          webhook_subscribed_at: null,
+        })
+        .eq("user_id", userData.user.id);
+    }
+  } catch (err) {
+    console.error("❌ Failed to unsubscribe from webhooks:", err);
+    throw err;
+  }
+}
+
+/**
+ * Check if user has webhook subscription active
+ * @returns {Promise<boolean>}
+ */
+export async function hasActiveWebhook() {
+  try {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) return false;
+
+    const { data: connection } = await supabase
+      .from("strava_connections")
+      .select("webhook_subscription_id")
+      .eq("user_id", userData.user.id)
+      .single();
+
+    return !!(connection && connection.webhook_subscription_id);
+  } catch (err) {
+    console.error("Error checking webhook status:", err);
+    return false;
+  }
 }
