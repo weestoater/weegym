@@ -100,7 +100,7 @@ describe("CalorieTracker Component", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Calorie Tracker")).toBeInTheDocument();
+      expect(screen.getByText("SW Logs")).toBeInTheDocument();
     });
   });
 
@@ -258,10 +258,8 @@ describe("CalorieTracker Component", () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText("Calories")).toBeInTheDocument();
-        expect(screen.getByText("Protein")).toBeInTheDocument();
-        expect(screen.getByText("Carbs")).toBeInTheDocument();
-        expect(screen.getByText("Fat")).toBeInTheDocument();
+        expect(screen.getByText("Today's Summary")).toBeInTheDocument();
+        expect(screen.getByText("Syns")).toBeInTheDocument();
       });
     });
   });

@@ -78,9 +78,9 @@ describe("Dashboard Component", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Start Day 1 Workout/i)).toBeInTheDocument();
-      expect(screen.getByText(/Start Day 2 Workout/i)).toBeInTheDocument();
-      expect(screen.getByText(/Log Active Wellbeing/i)).toBeInTheDocument();
+      expect(screen.getByText(/Day 1 Workout/i)).toBeInTheDocument();
+      expect(screen.getByText(/Day 2 Workout/i)).toBeInTheDocument();
+      expect(screen.getByText(/Active Wellbeing/i)).toBeInTheDocument();
     });
   });
 
