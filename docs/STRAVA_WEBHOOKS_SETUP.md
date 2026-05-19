@@ -15,7 +15,7 @@ Strava webhooks enable **real-time activity updates** without manual syncing. Wh
 
 ## Architecture
 
-```
+```text
 Strava Activity Upload
     ↓
 Strava sends webhook event
@@ -113,7 +113,7 @@ supabase functions deploy strava-webhook
 
 **Result:** You'll get a URL like:
 
-```
+```text
 https://your-project-ref.supabase.co/functions/v1/strava-webhook
 ```
 
@@ -359,7 +359,7 @@ After webhooks are working:
 **Service Methods:** `src/services/stravaService.js` (webhook management section)  
 **Database Migration:** `supabase-config/add-strava-webhooks.sql`
 
-**Strava Webhooks Docs:** https://developers.strava.com/docs/webhooks/
+**Strava Webhooks Docs:** <https://developers.strava.com/docs/webhooks/>
 
 ---
 

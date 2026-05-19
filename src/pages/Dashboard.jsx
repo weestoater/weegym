@@ -70,7 +70,7 @@ function Dashboard() {
             setLastStravaActivity(activities[0]);
           }
         }
-      } catch (err) {
+      } catch {
         // Strava not connected or error - that's okay
         setStravaConnected(false);
       }
@@ -500,7 +500,9 @@ function Dashboard() {
                         <span className="fw-semibold">{lastWorkout.name}</span>
                         <span className="text-muted ms-2 small">
                           <i className="bi bi-calendar me-1"></i>
-                          {new Date(lastWorkout.date).toLocaleDateString("en-GB")}
+                          {new Date(lastWorkout.date).toLocaleDateString(
+                            "en-GB",
+                          )}
                         </span>
                       </div>
                       <div className="text-end">

@@ -13,30 +13,30 @@ function ProgressIndicator({ current, total, label, showPercentage = true }) {
   const isOver = current > total;
 
   // Determine status and styling
-  let status, className, icon, patternClass, message;
+  let status, className, icon, _patternClass, message;
 
   if (isOver) {
     status = "over";
     className = "progress-over";
-    patternClass = "pattern-danger";
+    _patternClass = "pattern-danger";
     icon = "bi-exclamation-triangle-fill";
     message = `Over limit by ${(current - total).toFixed(1)}`;
   } else if (percentage >= 90) {
     status = "caution";
     className = "progress-caution";
-    patternClass = "pattern-warning";
+    _patternClass = "pattern-warning";
     icon = "bi-exclamation-circle-fill";
     message = `${remaining.toFixed(1)} remaining`;
   } else if (percentage >= 70) {
     status = "warning";
     className = "progress-caution";
-    patternClass = "pattern-warning";
+    _patternClass = "pattern-warning";
     icon = "bi-info-circle-fill";
     message = `${remaining.toFixed(1)} remaining`;
   } else {
     status = "good";
     className = "progress-good";
-    patternClass = "pattern-success";
+    _patternClass = "pattern-success";
     icon = "bi-check-circle-fill";
     message = `${remaining.toFixed(1)} remaining`;
   }

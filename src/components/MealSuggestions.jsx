@@ -13,7 +13,12 @@ import "../styles/accessibility.css";
  * Displays intelligent meal recommendations based on remaining syns,
  * time of day, and eating patterns. Fully accessible with ARIA labels.
  */
-function MealSuggestions({ remainingSyns, dailySyns, foodLogs, userProfile }) {
+function MealSuggestions({
+  remainingSyns,
+  dailySyns: _dailySyns,
+  foodLogs,
+  userProfile,
+}) {
   const [showSPDay, setShowSPDay] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
 

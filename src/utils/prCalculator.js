@@ -6,32 +6,32 @@
 
 // PR Category Constants
 export const PR_CATEGORIES = {
-  LONGEST_DISTANCE: 'longest_distance',
-  MOST_ELEVATION: 'most_elevation',
-  HIGHEST_AVG_SPEED: 'highest_avg_speed',
-  LONGEST_DURATION: 'longest_duration',
-  MOST_CALORIES: 'most_calories',
-  MAX_SPEED: 'max_speed',
+  LONGEST_DISTANCE: "longest_distance",
+  MOST_ELEVATION: "most_elevation",
+  HIGHEST_AVG_SPEED: "highest_avg_speed",
+  LONGEST_DURATION: "longest_duration",
+  MOST_CALORIES: "most_calories",
+  MAX_SPEED: "max_speed",
 };
 
 // PR Category Labels for UI
 export const PR_LABELS = {
-  [PR_CATEGORIES.LONGEST_DISTANCE]: 'Longest Distance',
-  [PR_CATEGORIES.MOST_ELEVATION]: 'Most Elevation',
-  [PR_CATEGORIES.HIGHEST_AVG_SPEED]: 'Highest Avg Speed',
-  [PR_CATEGORIES.LONGEST_DURATION]: 'Longest Duration',
-  [PR_CATEGORIES.MOST_CALORIES]: 'Most Calories',
-  [PR_CATEGORIES.MAX_SPEED]: 'Max Speed',
+  [PR_CATEGORIES.LONGEST_DISTANCE]: "Longest Distance",
+  [PR_CATEGORIES.MOST_ELEVATION]: "Most Elevation",
+  [PR_CATEGORIES.HIGHEST_AVG_SPEED]: "Highest Avg Speed",
+  [PR_CATEGORIES.LONGEST_DURATION]: "Longest Duration",
+  [PR_CATEGORIES.MOST_CALORIES]: "Most Calories",
+  [PR_CATEGORIES.MAX_SPEED]: "Max Speed",
 };
 
 // PR Category Icons for UI
 export const PR_ICONS = {
-  [PR_CATEGORIES.LONGEST_DISTANCE]: 'bi-arrow-right',
-  [PR_CATEGORIES.MOST_ELEVATION]: 'bi-triangle',
-  [PR_CATEGORIES.HIGHEST_AVG_SPEED]: 'bi-speedometer2',
-  [PR_CATEGORIES.LONGEST_DURATION]: 'bi-clock',
-  [PR_CATEGORIES.MOST_CALORIES]: 'bi-fire',
-  [PR_CATEGORIES.MAX_SPEED]: 'bi-lightning',
+  [PR_CATEGORIES.LONGEST_DISTANCE]: "bi-arrow-right",
+  [PR_CATEGORIES.MOST_ELEVATION]: "bi-triangle",
+  [PR_CATEGORIES.HIGHEST_AVG_SPEED]: "bi-speedometer2",
+  [PR_CATEGORIES.LONGEST_DURATION]: "bi-clock",
+  [PR_CATEGORIES.MOST_CALORIES]: "bi-fire",
+  [PR_CATEGORIES.MAX_SPEED]: "bi-lightning",
 };
 
 /**
@@ -41,70 +41,109 @@ export const PR_ICONS = {
  * @param {string} activityType - Type of activity (Ride, Run, Walk, etc.)
  * @returns {Array} Array of new PRs set by this activity
  */
-export function checkForPersonalRecords(activity, existingPRs = {}, activityType) {
+export function checkForPersonalRecords(
+  activity,
+  existingPRs = {},
+  _activityType,
+) {
   const newPRs = [];
 
   // 1. Check longest distance
-  if (activity.distance && activity.distance > (existingPRs.longest_distance || 0)) {
+  if (
+    activity.distance &&
+    activity.distance > (existingPRs.longest_distance || 0)
+  ) {
     newPRs.push({
       category: PR_CATEGORIES.LONGEST_DISTANCE,
       value: activity.distance,
-      unit: 'meters',
+      unit: "meters",
       previousValue: existingPRs.longest_distance || null,
-      improvement: existingPRs.longest_distance 
-        ? ((activity.distance - existingPRs.longest_distance) / existingPRs.longest_distance * 100).toFixed(1)
+      improvement: existingPRs.longest_distance
+        ? (
+            ((activity.distance - existingPRs.longest_distance) /
+              existingPRs.longest_distance) *
+            100
+          ).toFixed(1)
         : null,
     });
   }
 
   // 2. Check most elevation
-  if (activity.total_elevation_gain && activity.total_elevation_gain > (existingPRs.most_elevation || 0)) {
+  if (
+    activity.total_elevation_gain &&
+    activity.total_elevation_gain > (existingPRs.most_elevation || 0)
+  ) {
     newPRs.push({
       category: PR_CATEGORIES.MOST_ELEVATION,
       value: activity.total_elevation_gain,
-      unit: 'meters',
+      unit: "meters",
       previousValue: existingPRs.most_elevation || null,
       improvement: existingPRs.most_elevation
-        ? ((activity.total_elevation_gain - existingPRs.most_elevation) / existingPRs.most_elevation * 100).toFixed(1)
+        ? (
+            ((activity.total_elevation_gain - existingPRs.most_elevation) /
+              existingPRs.most_elevation) *
+            100
+          ).toFixed(1)
         : null,
     });
   }
 
   // 3. Check highest average speed
-  if (activity.average_speed && activity.average_speed > (existingPRs.highest_avg_speed || 0)) {
+  if (
+    activity.average_speed &&
+    activity.average_speed > (existingPRs.highest_avg_speed || 0)
+  ) {
     newPRs.push({
       category: PR_CATEGORIES.HIGHEST_AVG_SPEED,
       value: activity.average_speed,
-      unit: 'meters_per_second',
+      unit: "meters_per_second",
       previousValue: existingPRs.highest_avg_speed || null,
       improvement: existingPRs.highest_avg_speed
-        ? ((activity.average_speed - existingPRs.highest_avg_speed) / existingPRs.highest_avg_speed * 100).toFixed(1)
+        ? (
+            ((activity.average_speed - existingPRs.highest_avg_speed) /
+              existingPRs.highest_avg_speed) *
+            100
+          ).toFixed(1)
         : null,
     });
   }
 
   // 4. Check longest duration
-  if (activity.moving_time && activity.moving_time > (existingPRs.longest_duration || 0)) {
+  if (
+    activity.moving_time &&
+    activity.moving_time > (existingPRs.longest_duration || 0)
+  ) {
     newPRs.push({
       category: PR_CATEGORIES.LONGEST_DURATION,
       value: activity.moving_time,
-      unit: 'seconds',
+      unit: "seconds",
       previousValue: existingPRs.longest_duration || null,
       improvement: existingPRs.longest_duration
-        ? ((activity.moving_time - existingPRs.longest_duration) / existingPRs.longest_duration * 100).toFixed(1)
+        ? (
+            ((activity.moving_time - existingPRs.longest_duration) /
+              existingPRs.longest_duration) *
+            100
+          ).toFixed(1)
         : null,
     });
   }
 
   // 5. Check most calories
-  if (activity.calories && activity.calories > (existingPRs.most_calories || 0)) {
+  if (
+    activity.calories &&
+    activity.calories > (existingPRs.most_calories || 0)
+  ) {
     newPRs.push({
       category: PR_CATEGORIES.MOST_CALORIES,
       value: activity.calories,
-      unit: 'calories',
+      unit: "calories",
       previousValue: existingPRs.most_calories || null,
       improvement: existingPRs.most_calories
-        ? ((activity.calories - existingPRs.most_calories) / existingPRs.most_calories * 100).toFixed(1)
+        ? (
+            ((activity.calories - existingPRs.most_calories) /
+              existingPRs.most_calories) *
+            100
+          ).toFixed(1)
         : null,
     });
   }
@@ -114,10 +153,14 @@ export function checkForPersonalRecords(activity, existingPRs = {}, activityType
     newPRs.push({
       category: PR_CATEGORIES.MAX_SPEED,
       value: activity.max_speed,
-      unit: 'meters_per_second',
+      unit: "meters_per_second",
       previousValue: existingPRs.max_speed || null,
       improvement: existingPRs.max_speed
-        ? ((activity.max_speed - existingPRs.max_speed) / existingPRs.max_speed * 100).toFixed(1)
+        ? (
+            ((activity.max_speed - existingPRs.max_speed) /
+              existingPRs.max_speed) *
+            100
+          ).toFixed(1)
         : null,
     });
   }
@@ -133,12 +176,12 @@ export function checkForPersonalRecords(activity, existingPRs = {}, activityType
  * @returns {string} Formatted string for display
  */
 export function formatPRValue(value, unit, useMetric = false) {
-  if (!value) return 'N/A';
+  if (!value) return "N/A";
 
   switch (unit) {
-    case 'meters':
+    case "meters":
       if (useMetric) {
-        return value >= 1000 
+        return value >= 1000
           ? `${(value / 1000).toFixed(2)} km`
           : `${Math.round(value)} m`;
       } else {
@@ -148,18 +191,18 @@ export function formatPRValue(value, unit, useMetric = false) {
           : `${Math.round(value * 3.28084)} ft`;
       }
 
-    case 'meters_per_second':
+    case "meters_per_second":
       if (useMetric) {
         return `${(value * 3.6).toFixed(1)} km/h`;
       } else {
         return `${(value * 2.23694).toFixed(1)} mph`;
       }
 
-    case 'seconds':
+    case "seconds": {
       const hours = Math.floor(value / 3600);
       const minutes = Math.floor((value % 3600) / 60);
       const seconds = Math.floor(value % 60);
-      
+
       if (hours > 0) {
         return `${hours}h ${minutes}m`;
       } else if (minutes > 0) {
@@ -167,8 +210,9 @@ export function formatPRValue(value, unit, useMetric = false) {
       } else {
         return `${seconds}s`;
       }
+    }
 
-    case 'calories':
+    case "calories":
       return `${Math.round(value)} cal`;
 
     default:
@@ -184,7 +228,7 @@ export function getCurrentTimeScopes() {
   const now = new Date();
   return {
     year: now.getFullYear().toString(),
-    month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`,
+    month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`,
   };
 }
 
@@ -195,7 +239,7 @@ export function getCurrentTimeScopes() {
  * @returns {Array} Filtered activities
  */
 export function filterActivitiesByTimeScope(activities, timeScope) {
-  if (timeScope === 'all_time') {
+  if (timeScope === "all_time") {
     return activities;
   }
 
@@ -203,14 +247,14 @@ export function filterActivitiesByTimeScope(activities, timeScope) {
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
 
-  return activities.filter(activity => {
+  return activities.filter((activity) => {
     const activityDate = new Date(activity.start_date);
     const activityYear = activityDate.getFullYear();
     const activityMonth = activityDate.getMonth();
 
-    if (timeScope === 'year') {
+    if (timeScope === "year") {
       return activityYear === currentYear;
-    } else if (timeScope === 'month') {
+    } else if (timeScope === "month") {
       return activityYear === currentYear && activityMonth === currentMonth;
     }
 
@@ -226,23 +270,29 @@ export function filterActivitiesByTimeScope(activities, timeScope) {
  * @param {string} timeScope - 'all_time', 'year', or 'month'
  * @returns {Object} Object with PR values by category
  */
-export function calculatePRsFromActivities(activities, activityType, timeScope = 'all_time') {
+export function calculatePRsFromActivities(
+  activities,
+  activityType,
+  timeScope = "all_time",
+) {
   // Filter by activity type and time scope
   const filtered = activities
-    .filter(a => a.type === activityType)
-    .filter(a => {
-      if (timeScope === 'all_time') return true;
-      
+    .filter((a) => a.type === activityType)
+    .filter((a) => {
+      if (timeScope === "all_time") return true;
+
       const activityDate = new Date(a.start_date);
       const now = new Date();
-      
-      if (timeScope === 'year') {
+
+      if (timeScope === "year") {
         return activityDate.getFullYear() === now.getFullYear();
-      } else if (timeScope === 'month') {
-        return activityDate.getFullYear() === now.getFullYear() &&
-               activityDate.getMonth() === now.getMonth();
+      } else if (timeScope === "month") {
+        return (
+          activityDate.getFullYear() === now.getFullYear() &&
+          activityDate.getMonth() === now.getMonth()
+        );
       }
-      
+
       return true;
     });
 
@@ -254,67 +304,73 @@ export function calculatePRsFromActivities(activities, activityType, timeScope =
   const prs = {};
 
   // Longest distance
-  const longestDistance = Math.max(...filtered.map(a => a.distance || 0));
+  const longestDistance = Math.max(...filtered.map((a) => a.distance || 0));
   if (longestDistance > 0) {
-    const activity = filtered.find(a => a.distance === longestDistance);
+    const activity = filtered.find((a) => a.distance === longestDistance);
     prs[PR_CATEGORIES.LONGEST_DISTANCE] = {
       value: longestDistance,
-      unit: 'meters',
+      unit: "meters",
       activity,
     };
   }
 
   // Most elevation
-  const mostElevation = Math.max(...filtered.map(a => a.total_elevation_gain || 0));
+  const mostElevation = Math.max(
+    ...filtered.map((a) => a.total_elevation_gain || 0),
+  );
   if (mostElevation > 0) {
-    const activity = filtered.find(a => a.total_elevation_gain === mostElevation);
+    const activity = filtered.find(
+      (a) => a.total_elevation_gain === mostElevation,
+    );
     prs[PR_CATEGORIES.MOST_ELEVATION] = {
       value: mostElevation,
-      unit: 'meters',
+      unit: "meters",
       activity,
     };
   }
 
   // Highest average speed
-  const highestAvgSpeed = Math.max(...filtered.map(a => a.average_speed || 0));
+  const highestAvgSpeed = Math.max(
+    ...filtered.map((a) => a.average_speed || 0),
+  );
   if (highestAvgSpeed > 0) {
-    const activity = filtered.find(a => a.average_speed === highestAvgSpeed);
+    const activity = filtered.find((a) => a.average_speed === highestAvgSpeed);
     prs[PR_CATEGORIES.HIGHEST_AVG_SPEED] = {
       value: highestAvgSpeed,
-      unit: 'meters_per_second',
+      unit: "meters_per_second",
       activity,
     };
   }
 
   // Longest duration
-  const longestDuration = Math.max(...filtered.map(a => a.moving_time || 0));
+  const longestDuration = Math.max(...filtered.map((a) => a.moving_time || 0));
   if (longestDuration > 0) {
-    const activity = filtered.find(a => a.moving_time === longestDuration);
+    const activity = filtered.find((a) => a.moving_time === longestDuration);
     prs[PR_CATEGORIES.LONGEST_DURATION] = {
       value: longestDuration,
-      unit: 'seconds',
+      unit: "seconds",
       activity,
     };
   }
 
   // Most calories
-  const mostCalories = Math.max(...filtered.map(a => a.calories || 0));
+  const mostCalories = Math.max(...filtered.map((a) => a.calories || 0));
   if (mostCalories > 0) {
-    const activity = filtered.find(a => a.calories === mostCalories);
+    const activity = filtered.find((a) => a.calories === mostCalories);
     prs[PR_CATEGORIES.MOST_CALORIES] = {
       value: mostCalories,
-      unit: 'calories',
+      unit: "calories",
       activity,
     };
   }
 
   // Max speed
-  const maxSpeed = Math.max(...filtered.map(a => a.max_speed || 0));
+  const maxSpeed = Math.max(...filtered.map((a) => a.max_speed || 0));
   if (maxSpeed > 0) {
-    const activity = filtered.find(a => a.max_speed === maxSpeed);
+    const activity = filtered.find((a) => a.max_speed === maxSpeed);
     prs[PR_CATEGORIES.MAX_SPEED] = {
       value: maxSpeed,
-      unit: 'meters_per_second',
+      unit: "meters_per_second",
       activity,
     };
   }

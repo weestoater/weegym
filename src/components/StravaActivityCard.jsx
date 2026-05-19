@@ -5,7 +5,6 @@ import {
   formatDuration,
   formatSpeed,
   getActivityIcon,
-  getActivityIconColor,
   getActivityBadgeColor,
   getActivityStream,
   getActivityPRs,
@@ -36,10 +35,10 @@ function StravaActivityCard({ activity, useMetric = false }) {
     try {
       const prs = await getActivityPRs(activity.id);
       // Filter for all-time PRs only for display
-      const allTimePRs = prs.filter(pr => pr.time_scope === 'all_time');
+      const allTimePRs = prs.filter((pr) => pr.time_scope === "all_time");
       setActivityPRs(allTimePRs);
     } catch (error) {
-      console.error('Failed to load activity PRs:', error);
+      console.error("Failed to load activity PRs:", error);
     }
   };
 
@@ -85,7 +84,7 @@ function StravaActivityCard({ activity, useMetric = false }) {
     try {
       // Map activity type to machine and mode
       let machine, mode;
-      
+
       if (activity.type === "Ride") {
         machine = "Cross cycle";
         mode = "Cardio";
@@ -118,7 +117,10 @@ function StravaActivityCard({ activity, useMetric = false }) {
       };
 
       await saveActiveWellbeingSession(sessionData);
-      setToast({ message: "Activity logged to Active Wellbeing!", type: "success" });
+      setToast({
+        message: "Activity logged to Active Wellbeing!",
+        type: "success",
+      });
     } catch (error) {
       console.error("Failed to log activity to wellbeing:", error);
       setToast({
@@ -137,7 +139,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
         <div className="d-flex justify-content-between align-items-start mb-2">
           <div className="flex-grow-1">
             <h5 className="card-title mb-1">
-              <i className={`bi ${getActivityIcon(activity.type)} fs-4 me-2`}></i>
+              <i
+                className={`bi ${getActivityIcon(activity.type)} fs-4 me-2`}
+              ></i>
               {activity.name}
             </h5>
             <p className="text-muted small mb-0">
@@ -225,7 +229,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
                         <div className="d-flex align-items-center mb-2">
                           <i className="bi bi-arrow-right text-info me-2"></i>
                           <div>
-                            <small className="text-muted d-block">Average</small>
+                            <small className="text-muted d-block">
+                              Average
+                            </small>
                             <strong className="text-info">
                               {activity.average_speed
                                 ? formatSpeed(activity.average_speed, useMetric)
@@ -280,7 +286,8 @@ function StravaActivityCard({ activity, useMetric = false }) {
               <div className="card border-danger mb-3">
                 <div className="card-body">
                   <h6 className="card-subtitle mb-3 text-danger">
-                    <i className="bi bi-heart-pulse-fill me-2"></i>Heart Rate Analysis
+                    <i className="bi bi-heart-pulse-fill me-2"></i>Heart Rate
+                    Analysis
                   </h6>
                   <div className="row g-3">
                     <div className="col-md-6">
@@ -301,7 +308,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
                           <div
                             className="progress-bar bg-danger"
                             role="progressbar"
-                            style={{ width: `${(activity.average_heartrate / 200) * 100}%` }}
+                            style={{
+                              width: `${(activity.average_heartrate / 200) * 100}%`,
+                            }}
                             aria-valuenow={activity.average_heartrate}
                             aria-valuemin="0"
                             aria-valuemax="200"
@@ -328,7 +337,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
                           <div
                             className="progress-bar bg-danger"
                             role="progressbar"
-                            style={{ width: `${(activity.max_heartrate / 200) * 100}%` }}
+                            style={{
+                              width: `${(activity.max_heartrate / 200) * 100}%`,
+                            }}
                             aria-valuenow={activity.max_heartrate}
                             aria-valuemin="0"
                             aria-valuemax="200"
@@ -353,7 +364,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
                     <div className="text-center">
                       <i className="bi bi-play-circle text-info fs-4"></i>
                       <div className="mt-2">
-                        <small className="text-muted d-block">Moving Time</small>
+                        <small className="text-muted d-block">
+                          Moving Time
+                        </small>
                         <strong>{formatDuration(activity.moving_time)}</strong>
                       </div>
                     </div>
@@ -362,7 +375,9 @@ function StravaActivityCard({ activity, useMetric = false }) {
                     <div className="text-center">
                       <i className="bi bi-hourglass-split text-warning fs-4"></i>
                       <div className="mt-2">
-                        <small className="text-muted d-block">Elapsed Time</small>
+                        <small className="text-muted d-block">
+                          Elapsed Time
+                        </small>
                         <strong>{formatDuration(activity.elapsed_time)}</strong>
                       </div>
                     </div>
@@ -372,7 +387,10 @@ function StravaActivityCard({ activity, useMetric = false }) {
                   <div className="mt-2 text-center">
                     <small className="text-muted">
                       <i className="bi bi-pause-circle me-1"></i>
-                      Rest time: {formatDuration(activity.elapsed_time - activity.moving_time)}
+                      Rest time:{" "}
+                      {formatDuration(
+                        activity.elapsed_time - activity.moving_time,
+                      )}
                     </small>
                   </div>
                 )}
@@ -387,10 +405,15 @@ function StravaActivityCard({ activity, useMetric = false }) {
                 </h6>
                 {loadingRoute ? (
                   <div className="text-center py-3">
-                    <div className="spinner-border spinner-border-sm text-secondary" role="status">
+                    <div
+                      className="spinner-border spinner-border-sm text-secondary"
+                      role="status"
+                    >
                       <span className="visually-hidden">Loading route...</span>
                     </div>
-                    <p className="text-muted small mt-2 mb-0">Loading route data...</p>
+                    <p className="text-muted small mt-2 mb-0">
+                      Loading route data...
+                    </p>
                   </div>
                 ) : (
                   <RouteMap coordinates={routeData} height="350px" />
@@ -441,7 +464,13 @@ function StravaActivityCard({ activity, useMetric = false }) {
           )}
         </button>
       </div>
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

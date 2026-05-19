@@ -83,8 +83,8 @@ export async function searchByName(query, page = 1, pageSize = 20) {
       try {
         const parsed = parseProductData(data.products[i]);
         parsedProducts.push(parsed);
-      } catch (parseError) {
-        // console.warn(`⚠️ Failed to parse product ${i}:`, parseError);
+      } catch {
+        // Failed to parse product - skip and continue with next
         // Continue with next product
       }
     }

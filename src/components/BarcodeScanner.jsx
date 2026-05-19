@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import Quagga from "@ericblade/quagga2";
 
@@ -18,11 +18,11 @@ function BarcodeScanner({ onScan, onClose }) {
   const [showHelp, setShowHelp] = useState(false);
   const [scanSuccess, setScanSuccess] = useState(false);
   const [scanAttempts, setScanAttempts] = useState(0);
-  const [lastScanTime, setLastScanTime] = useState(Date.now());
+  const [lastScanTime, setLastScanTime] = useState(() => Date.now());
   const [lastDetection, setLastDetection] = useState(null);
   const scannerRef = useRef(null);
   const mountedRef = useRef(true);
-  const scanStartTimeRef = useRef(Date.now());
+  const scanStartTimeRef = useRef(null);
   const detectedCodes = useRef(new Map()); // Track detected codes with confidence
 
   // Detect if running on iOS
@@ -103,6 +103,7 @@ function BarcodeScanner({ onScan, onClose }) {
             }
 
             if (mountedRef.current) {
+              scanStartTimeRef.current = Date.now();
               Quagga.start();
               setIsScanning(true);
             }
@@ -157,7 +158,7 @@ function BarcodeScanner({ onScan, onClose }) {
         });
 
         // Track processing attempts
-        Quagga.onProcessed((result) => {
+        Quagga.onProcessed((_result) => {
           if (!mountedRef.current) return;
 
           const now = Date.now();
@@ -202,6 +203,18 @@ function BarcodeScanner({ onScan, onClose }) {
       onScan(barcode.trim());
     }
   };
+
+  // Calculate scan rate - must be before early returns
+  const scanRate = useMemo(() => {
+    if (scanAttempts === 0 || !scanStartTimeRef.current) return 0;
+    const elapsed = (Date.now() - scanStartTimeRef.current) / 1000;
+    return Math.round(scanAttempts / elapsed);
+  }, [scanAttempts]);
+
+  // Check if camera is actively scanning (within last 2 seconds)
+  const isCameraActive = useMemo(() => {
+    return Date.now() - lastScanTime < 2000;
+  }, [lastScanTime]);
 
   if (error) {
     return (
@@ -257,13 +270,6 @@ function BarcodeScanner({ onScan, onClose }) {
       </div>
     );
   }
-
-  const scanRate =
-    scanAttempts > 0
-      ? Math.round(
-          scanAttempts / ((Date.now() - scanStartTimeRef.current) / 1000),
-        )
-      : 0;
 
   return (
     <div className="card">
@@ -355,7 +361,7 @@ function BarcodeScanner({ onScan, onClose }) {
           <div className="d-grid gap-2 mb-3">
             {/* Activity Indicator */}
             <div className="small text-center mb-2">
-              {Date.now() - lastScanTime < 2000 ? (
+              {isCameraActive ? (
                 <span className="text-success">
                   <i
                     className="bi bi-circle-fill me-1"

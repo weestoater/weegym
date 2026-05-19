@@ -47,7 +47,7 @@
 
 ## 🚀 Priority Enhancements (High Value, Near-Term)
 
-### ✅ P1: Strava Webhooks for Real-Time Sync - COMPLETE!
+### P1: Strava Webhooks for Real-Time Sync - COMPLETE
 
 **Status:** Implementation Complete ✅ | Ready for Deployment 🚀
 
@@ -89,19 +89,19 @@
 
 **Implementation Options:**
 
-**Option A: External Links**
+#### Option A: External Links
 
 - Link to YouTube/fitness sites (Quick: 2 hours)
 - Curated list of trusted sources
 - Simple database field for video URL
 
-**Option B: Embedded Content**
+#### Option B: Embedded Content
 
 - Host videos in Supabase Storage (Medium: 6-8 hours)
 - Embed player in exercise details
 - Requires storage space and CDN considerations
 
-**Option C: Full Library**
+#### Option C: Full Library
 
 - Custom video library with search (Complex: 12+ hours)
 - Tag by muscle group, equipment, difficulty
@@ -170,7 +170,7 @@ CREATE TABLE programme_templates (
 
 ## 🎨 Quality of Life Improvements (Medium Priority)
 
-### ✅ Q4: App Icon & PWA Enhancement - COMPLETE!
+### Q4: App Icon & PWA Enhancement - COMPLETE
 
 **Status:** Complete ✅ | Working in Production
 
@@ -420,7 +420,7 @@ CREATE TABLE programme_templates (
 
 ## 📊 Phase Recommendations
 
-### ✅ Immediate (Completed - May 19, 2026)
+### Immediate (Completed - May 19, 2026)
 
 1. ✅ **P1: Strava Webhooks** - Implementation complete, ready for deployment
 2. ✅ **Q4: App Icon & PWA** - Complete and working
@@ -428,31 +428,31 @@ CREATE TABLE programme_templates (
 
 ### Immediate (Next 1-2 Weeks)
 
-3. **Bug Fixes** - Address known issues
+1. **Bug Fixes** - Address known issues
    - Token refresh testing
    - Edit session functionality
    - Barcode scanner error handling
-4. **Q1: UX Polish** - Improve loading states, error messages
-5. **Webhook UI** - Add controls to enable/disable webhooks from app
+2. **Q1: UX Polish** - Improve loading states, error messages
+3. **Webhook UI** - Add controls to enable/disable webhooks from app
 
 ### Short-Term (1-2 Months)
 
-5. **P2: Exercise Library** - High value for programme users
-6. **P3: Programme Templates** - Accelerate new user onboarding
-7. **Q2: Dashboard Enhancements** - Better overview of all activities
+1. **P2: Exercise Library** - High value for programme users
+2. **P3: Programme Templates** - Accelerate new user onboarding
+3. **Q2: Dashboard Enhancements** - Better overview of all activities
 
 ### Medium-Term (2-4 Months)
 
-8. **Q3: Workout Calendar** - Better planning and scheduling
-9. **A1: Advanced Analytics** - Deeper insights for data-driven users
-10. **Q1: Enhanced Exports** - Data portability and reporting
+1. **Q3: Workout Calendar** - Better planning and scheduling
+2. **A1: Advanced Analytics** - Deeper insights for data-driven users
+3. **Q1: Enhanced Exports** - Data portability and reporting
 
 ### Long-Term (4+ Months)
 
-11. **A2: Training Goals** - Comprehensive goal tracking
-12. **A3: Meal Planning** - Extend syns tracker capabilities
-13. **A4: Progress Photos** - Visual progress tracking
-14. **A5: Social Features** - Community engagement (if multi-user grows)
+1. **A2: Training Goals** - Comprehensive goal tracking
+2. **A3: Meal Planning** - Extend syns tracker capabilities
+3. **A4: Progress Photos** - Visual progress tracking
+4. **A5: Social Features** - Community engagement (if multi-user grows)
 
 ---
 
