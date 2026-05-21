@@ -292,7 +292,35 @@ CREATE TABLE programme_templates (
 
 ---
 
-## 🔬 Advanced Features (Lower Priority)
+## � Infrastructure & Monitoring (Low Priority)
+
+### M1: GitHub App Token Format Migration 🔐
+
+**Value:** Low | **Effort:** 30 minutes | **Status:** Monitor  
+**Deadline:** Before deprecation (TBA in coming weeks)
+
+**Why:** GitHub is rolling out new JWT-format installation tokens (ghs\_ prefix, ~520 chars) replacing opaque tokens.
+
+**WeeGym Impact Assessment (May 21, 2026):**
+
+- ✅ **Minimal risk** - Only uses `GITHUB_TOKEN` in semantic-release workflow
+- ✅ No token storage, validation, or length checks in codebase
+- ✅ Token passed as env variable to third-party action (semantic-release)
+- ✅ Semantic-release will auto-support new format
+
+**Action Required:**
+
+- Monitor for deprecation announcement
+- Test one release after rollout reaches WeeGym
+- Verify semantic-release still creates releases successfully
+
+**Reference:** [GitHub Changelog (May 15, 2026)](https://github.blog/changelog/2026-05-15-github-app-installation-tokens-per-request-override-header/)
+
+**Note:** Priority downgraded from P2 (Medium/2-4 hours) after codebase review confirmed no custom token handling. See CHANGELOG.md for details.
+
+---
+
+## �🔬 Advanced Features (Lower Priority)
 
 ### A1: Advanced Strava Analytics 📈
 
@@ -455,7 +483,7 @@ CREATE TABLE programme_templates (
 ### 🎯 Immediate Next (Current Week)
 
 1. ✅ **Test Strava Webhooks** - VERIFIED: Walk activity synced in real-time successfully!
-2. **Q1: UX Polish** 
+2. **Q1: UX Polish**
    - Add loading states/skeleton screens
    - Improve error messages throughout app
    - Add tooltips for complex features
