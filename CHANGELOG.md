@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.1.1 (2026-05-21)</small>
+
+* fix: remove unused import causing lint error ([284fd5e](https://github.com/weestoater/weegym/commit/284fd5e))
+
 ## 1.1.0 (2026-05-21)
 
 * feat: add Strava real-time webhook sync and PWA support ([97014e0](https://github.com/weestoater/weegym/commit/97014e0))
