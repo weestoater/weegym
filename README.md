@@ -10,6 +10,7 @@ WeeGym is a modern fitness tracking application that integrates with Strava, pro
 ## ✨ Key Features
 
 ### 🏃 Strava Integration
+
 - **OAuth Authentication** - Secure connection to your Strava account
 - **Activity Synchronization** - Manual sync and automatic real-time webhook updates
 - **Personal Records (PR) Tracking** - Automatically detect and highlight PRs across multiple categories:
@@ -22,18 +23,21 @@ WeeGym is a modern fitness tracking application that integrates with Strava, pro
 - **Rich Activity Cards** - Colored metrics, progress bars, and detailed statistics
 
 ### 📊 Calorie & Nutrition Tracking
+
 - Activity-based calorie tracking from Strava activities
 - Manual calorie entry and management
 - Slimming World syns tracking integration
 - Daily calorie goals and progress visualization
 
 ### 💪 Active Wellbeing Integration
+
 - Log Strava activities as Active Wellbeing sessions with one click
 - Intelligent activity mapping (rides → Cross cycle, runs → Outdoor Activity)
 - Smart scoring algorithm (calories, distance, or time-based)
 - Track machine-based workout sessions
 
 ### 🏋️ Workout Programme Management
+
 - Multi-user workout programme system
 - Create, edit, and manage custom fitness programmes
 - Exercise library with detailed instructions
@@ -41,6 +45,7 @@ WeeGym is a modern fitness tracking application that integrates with Strava, pro
 - Progress tracking and workout history
 
 ### 🔐 Security & Authentication
+
 - Multi-user authentication via Supabase Auth
 - Row Level Security (RLS) for data protection
 - Secure environment variable management
@@ -48,6 +53,7 @@ WeeGym is a modern fitness tracking application that integrates with Strava, pro
 - Pre-commit security checks
 
 ### 📱 Progressive Web App (PWA)
+
 - Install to device (mobile and desktop)
 - Offline support
 - App-like experience
@@ -58,6 +64,7 @@ WeeGym is a modern fitness tracking application that integrates with Strava, pro
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 18** - Modern UI library with hooks
 - **Vite 7.3.3** - Lightning-fast build tool and dev server
 - **Bootstrap 5** - Responsive UI framework
@@ -66,11 +73,13 @@ WeeGym is a modern fitness tracking application that integrates with Strava, pro
 - **React Router** - Client-side routing
 
 ### Backend & Infrastructure
+
 - **Supabase** - Backend-as-a-Service (PostgreSQL + Auth + Storage)
 - **Supabase Edge Functions** - Serverless Deno functions for webhooks
 - **Strava API v3** - Third-party fitness data integration
 
 ### Development & Quality
+
 - **Vitest** - Unit testing framework
 - **ESLint** - Code linting and quality enforcement
 - **semantic-release** - Automated versioning and changelog generation
@@ -122,6 +131,7 @@ cp .env.example .env
 #### Required Environment Variables
 
 **`.env`** (contains sensitive keys):
+
 ```env
 # Supabase Configuration
 VITE_SUPABASE_URL=https://your-project.supabase.co
@@ -138,6 +148,7 @@ STRAVA_VERIFY_TOKEN=your-random-verify-token
 ```
 
 **`.env.development`** (local development settings):
+
 ```env
 # Base path for local development (root)
 VITE_BASE_PATH=/
@@ -196,18 +207,21 @@ The app will be available at `http://localhost:5173`
 ## 📦 Available Scripts
 
 ### Development
+
 ```bash
 npm run dev          # Start Vite dev server (hot reload enabled)
 npm run preview      # Preview production build locally
 ```
 
 ### Building
+
 ```bash
 npm run build        # Build for production (outputs to /dist)
 npm run predeploy    # Alias for build (used in deployment)
 ```
 
 ### Testing
+
 ```bash
 npm run test         # Run tests in watch mode
 npm run test:ui      # Run tests with Vitest UI
@@ -216,11 +230,13 @@ npm run test:coverage # Generate coverage report
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint         # Run ESLint
 ```
 
 ### Security
+
 ```bash
 npm run security:scan    # Scan staged files for secrets
 npm run security:console # Find console.log statements
@@ -230,11 +246,13 @@ npm run precommit        # Full security check (runs pre-commit)
 ```
 
 ### Release Management
+
 ```bash
 npm run semantic-release # Automated version bump and changelog
 ```
 
 ### Deployment
+
 ```bash
 npm run deploy       # Deploy to GitHub Pages (uses gh-pages)
 ```
@@ -295,17 +313,20 @@ weegym/
 Comprehensive guides are available in the `/docs` directory:
 
 ### Getting Started
+
 - [Quick Start - Multi-User System](docs/QUICK_START_MULTI_USER.md)
 - [Quick Start - Calorie Tracker](docs/QUICK_START_CALORIE_TRACKER.md)
 - [Quick Setup Guide](docs/guides/QUICK_SETUP.md)
 
 ### Integration Guides
+
 - [Supabase Setup](docs/supabase_setup.md)
 - [Strava Integration Plan](docs/strava_integration_plan.md)
 - [Strava Webhooks Setup](docs/STRAVA_WEBHOOKS_SETUP.md)
 - [Strava PR Tracking Design](docs/strava_pr_tracking_design.md)
 
 ### Feature Documentation
+
 - [Multi-User Authentication Setup](docs/multi_user_auth_setup.md)
 - [Multi-User Programme System](docs/multi_user_programme_system.md)
 - [Calorie Tracker](docs/calorie_tracker.md)
@@ -313,16 +334,19 @@ Comprehensive guides are available in the `/docs` directory:
 - [Fitness Programme Documentation](docs/fitness_programme_documentation.md)
 
 ### Security & Best Practices
+
 - [Security Checklist](docs/SECURITY_CHECKLIST.md)
 - [Security Quick Reference](docs/SECURITY_QUICK_REFERENCE.md)
 - [Password Management](docs/password_management.md)
 
 ### Technical Guides
+
 - [Environment Troubleshooting](docs/env_troubleshooting.md)
 - [HTTPS Setup](docs/HTTPS_SETUP.md)
 - [Testing Supabase](docs/testing_supabase.md)
 
 ### Implementation Summaries
+
 - [Phase 5 Enhancements](docs/PHASE5_ENHANCEMENTS.md)
 - [Implementation Summary 2026-05-19](docs/IMPLEMENTATION_SUMMARY_2026-05-19.md)
 
@@ -360,22 +384,26 @@ The app will be deployed to: `https://yourusername.github.io/weegym/`
 This project implements multiple security layers:
 
 ### Environment Protection
+
 - `.gitignore` protects `.env` and `.env.development` files
 - Supabase secrets managed via CLI (never committed)
 - Environment variables validated at runtime
 
 ### Automated Security Checks
+
 - **Pre-commit hooks** run `npm run precommit`
 - **Secret scanning** detects passwords/API keys in staged files
 - **Console log detection** finds debugging statements
 - **Dependency auditing** via `npm audit`
 
 ### Database Security
+
 - **Row Level Security (RLS)** enabled on all tables
 - **User isolation** - users can only access their own data
 - **Service role** restricted to Edge Functions only
 
 ### API Security
+
 - Strava OAuth 2.0 with PKCE
 - Webhook signature verification
 - Rate limiting on external API calls
@@ -399,6 +427,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for versi
 ```
 
 ### Types
+
 - **feat:** New feature (triggers MINOR version bump)
 - **fix:** Bug fix (triggers PATCH version bump)
 - **docs:** Documentation only
@@ -409,6 +438,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/) for versi
 - **chore:** Maintenance tasks (no version bump)
 
 ### Examples
+
 ```bash
 git commit -m "feat: add Strava webhook real-time sync"
 git commit -m "fix: resolve blank screen on app startup"
@@ -435,12 +465,15 @@ This project is private and proprietary. All rights reserved.
 ## 🆘 Support & Contact
 
 ### Issues
+
 If you encounter any bugs or have feature requests, please [open an issue](https://github.com/weestoater/weegym/issues).
 
 ### Documentation
+
 For detailed setup and usage instructions, refer to the `/docs` directory.
 
 ### Project Maintainer
+
 **GitHub:** [@weestoater](https://github.com/weestoater)
 
 ---
@@ -450,6 +483,7 @@ For detailed setup and usage instructions, refer to the `/docs` directory.
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history and release notes.
 
 **Current Version:** 1.1.1
+
 - ✅ Strava real-time webhook sync
 - ✅ PWA support with offline capabilities
 - ✅ Personal record (PR) tracking
