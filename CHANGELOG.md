@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 (2026-05-21)
+
+* feat: add Strava real-time webhook sync and PWA support ([97014e0](https://github.com/weestoater/weegym/commit/97014e0))
+
 ## <small>1.0.1 (2026-05-21)</small>
 
 * fix: resolve blank screen and add Strava webhook UI ([7f9f2c7](https://github.com/weestoater/weegym/commit/7f9f2c7))
