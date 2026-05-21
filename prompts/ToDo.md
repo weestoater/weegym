@@ -1,11 +1,32 @@
 # WeeGym Project Roadmap - Next Stages
 
-**Last Updated:** May 19, 2026  
-**Status:** Active Development - P1 & Q4 Complete! ✅
+**Last Updated:** May 21, 2026  
+**Status:** Active Development - Production Ready! 🚀  
+**Current Version:** 1.1.1
 
 ---
 
-## 🎉 Recently Completed (May 19, 2026)
+## 🎉 Recently Completed (May 21, 2026)
+
+### ✅ P1: Strava Webhooks for Real-Time Sync - DEPLOYED & OPERATIONAL
+
+- Supabase Edge Function deployed with `--no-verify-jwt` flag
+- Webhook verification & event processing working
+- Database migration executed in production
+- Service methods tested (subscribe, view, unsubscribe)
+- UI controls added with rate limit protection (localStorage caching)
+- Comprehensive documentation completed
+- **Status:** Deployed & Ready for Testing ✅
+- **Next:** Real-world testing with Strava activity uploads
+
+### ✅ Documentation Overhaul - COMPLETE
+
+- README.md replaced boilerplate with comprehensive documentation
+- DEPLOY.md modernized with production deployment guide
+- CONTRIBUTING.md created with team workflow and conventions
+- .instructions.md updated with AI assistant guidance
+- .env.example enhanced with all required variables
+- **Status:** Production-ready documentation ✅
 
 ### ✅ Q4: App Icon & PWA Enhancement - COMPLETE
 
@@ -15,15 +36,14 @@
 - Professional appearance on mobile home screens
 - **Status:** Working ✅
 
-### ✅ P1: Strava Webhooks for Real-Time Sync - IMPLEMENTATION COMPLETE
+### ✅ Bug Fixes & Code Quality - COMPLETE
 
-- Supabase Edge Function created and ready to deploy
-- Webhook verification & event processing implemented
-- Database migration prepared
-- Service methods added (subscribe, view, unsubscribe)
-- Comprehensive setup documentation created
-- **Status:** Ready for deployment 🚀
-- **Next:** Deploy to Supabase (see `docs/STRAVA_WEBHOOKS_SETUP.md`)
+- Fixed blank screen on startup (import error in stravaService.js)
+- Removed unused imports causing lint errors
+- Version corrected from 1.0.1 to 1.1.0 (semantic-release)
+- Security hardening (.env.development in .gitignore)
+- Rate limiting protection for Strava API
+- **Status:** All critical issues resolved ✅
 
 ---
 
@@ -376,10 +396,14 @@ CREATE TABLE programme_templates (
 
 ### Bug Fixes
 
-- [ ] **Strava:** Test token refresh flow with expired token
+- [ ] **Strava:** Test token refresh flow with expired token (High Priority)
 - [ ] **Active Wellbeing:** Add edit session functionality (currently delete + re-add)
 - [ ] **Syns Tracker:** Improve barcode scanner error handling
 - [ ] **Programmes:** Add reorder exercises via drag-and-drop
+- [x] **Strava:** Fix blank screen on startup ✅ (Completed May 21)
+- [x] **Strava:** Remove unused imports causing lint errors ✅ (Completed May 21)
+- [x] **Strava:** Deploy webhooks for real-time sync ✅ (Completed May 21)
+- [x] **Security:** Protect .env.development in .gitignore ✅ (Completed May 21)
 
 ### Performance Optimizations
 
@@ -420,28 +444,33 @@ CREATE TABLE programme_templates (
 
 ## 📊 Phase Recommendations
 
-### Immediate (Completed - May 19, 2026)
+### ✅ Completed (May 21, 2026)
 
-1. ✅ **P1: Strava Webhooks** - Implementation complete, ready for deployment
+1. ✅ **P1: Strava Webhooks** - Deployed and operational
 2. ✅ **Q4: App Icon & PWA** - Complete and working
-3. 🚀 **Next:** Deploy webhooks to Supabase (see `docs/STRAVA_WEBHOOKS_SETUP.md`)
+3. ✅ **Documentation Overhaul** - Professional documentation suite
+4. ✅ **Bug Fixes** - Critical issues resolved
+5. ✅ **Security Hardening** - .env files protected, security checks passing
 
-### Immediate (Next 1-2 Weeks)
+### 🎯 Immediate Next (Current Week)
 
-1. **Bug Fixes** - Address known issues
-   - Token refresh testing
-   - Edit session functionality
-   - Barcode scanner error handling
-2. **Q1: UX Polish** - Improve loading states, error messages
-3. **Webhook UI** - Add controls to enable/disable webhooks from app
+1. **Test Strava Webhooks** - Upload new Strava activity and verify real-time sync
+2. **Q1: UX Polish** 
+   - Add loading states/skeleton screens
+   - Improve error messages throughout app
+   - Add tooltips for complex features
+3. **Bug Fixes**
+   - Test Strava token refresh flow with expired token
+   - Add Active Wellbeing edit session functionality
+   - Improve barcode scanner error handling
 
-### Short-Term (1-2 Months)
+### Short-Term (1-2 Weeks)
 
-1. **P2: Exercise Library** - High value for programme users
-2. **P3: Programme Templates** - Accelerate new user onboarding
-3. **Q2: Dashboard Enhancements** - Better overview of all activities
+1. **P2: Exercise Library** - High value for programme users (Start with Option A: External Links)
+2. **Q1: Enhanced Exports** - CSV/PDF exports for Strava activities and workout logs
+3. **Q2: Dashboard Enhancements** - Unified activity dashboard showing all fitness activities
 
-### Medium-Term (2-4 Months)
+### Medium-Term (1-2 Months)
 
 1. **Q3: Workout Calendar** - Better planning and scheduling
 2. **A1: Advanced Analytics** - Deeper insights for data-driven users
