@@ -23,6 +23,7 @@ npm run test:coverage
 ```
 
 **Requirements:**
+
 - ✅ No lint errors (warnings acceptable)
 - ✅ Line coverage >70%, branch coverage >60%
 - ✅ No secrets in staged files
@@ -38,6 +39,7 @@ WeeGym uses **semantic-release** for automated versioning:
 - Git tags are created automatically
 
 **Manual version bump** (if needed):
+
 ```bash
 # Trigger version bump with empty commit
 git commit --allow-empty -m "feat: release new version"
@@ -49,11 +51,13 @@ git push
 Verify environment variables are set correctly for target environment.
 
 **Development** (`.env.development`):
+
 ```env
 VITE_BASE_PATH=/
 ```
 
 **Production** (`.env` or platform environment):
+
 ```env
 VITE_BASE_PATH=/weegym/  # GitHub Pages
 # or
@@ -87,11 +91,13 @@ npx gh-pages -d dist
 ```
 
 **Configuration:**
+
 - Base path: `/weegym/`
 - Configured in `vite.config.js` via `VITE_BASE_PATH`
 - 404 handling via `public/404.html`
 
 **Post-Deployment Verification:**
+
 1. Visit `https://weestoater.github.io/weegym/`
 2. Test PWA installation
 3. Verify Strava OAuth redirect works
@@ -118,6 +124,7 @@ vercel
 ```
 
 **Environment Variables (Vercel Dashboard):**
+
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `VITE_STRAVA_CLIENT_ID`
@@ -126,6 +133,7 @@ vercel
 - `VITE_BASE_PATH=/`
 
 **Strava OAuth Update:**
+
 - Update redirect URI in Strava API settings to match Vercel domain
 - Example: `https://weegym.vercel.app/strava-callback`
 
@@ -142,6 +150,7 @@ vercel
    - **Node version:** 18+
 
 **Environment Variables (Netlify Dashboard):**
+
 - Add all `VITE_*` variables from `.env.example`
 - Set `VITE_BASE_PATH=/`
 
@@ -174,11 +183,11 @@ server {
     listen 80;
     server_name yourdomain.com;
     root /var/www/weegym/dist;
-    
+
     location / {
         try_files $uri $uri/ /index.html;
     }
-    
+
     # Enable gzip compression
     gzip on;
     gzip_types text/css application/javascript application/json;
@@ -191,12 +200,12 @@ server {
 <VirtualHost *:80>
     ServerName yourdomain.com
     DocumentRoot /var/www/weegym/dist
-    
+
     <Directory /var/www/weegym/dist>
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
-        
+
         # SPA fallback
         FallbackResource /index.html
     </Directory>
@@ -210,6 +219,7 @@ server {
 WeeGym uses Supabase Edge Functions for Strava webhooks.
 
 **Prerequisites:**
+
 - Supabase CLI installed and authenticated
 - Project linked: `supabase link --project-ref huqmjtxwlybjtmouwgaz`
 
@@ -236,6 +246,7 @@ curl "https://huqmjtxwlybjtmouwgaz.supabase.co/functions/v1/strava-webhook?hub.m
 **Update Strava Webhook Subscription:**
 
 After deploying, update the webhook callback URL in your application:
+
 - URL: `https://huqmjtxwlybjtmouwgaz.supabase.co/functions/v1/strava-webhook`
 - This is handled automatically by the app's Strava Connect page
 
@@ -255,8 +266,8 @@ After deploying, update the webhook callback URL in your application:
 **Verify Tables:**
 
 ```sql
-SELECT table_name 
-FROM information_schema.tables 
+SELECT table_name
+FROM information_schema.tables
 WHERE table_schema = 'public'
 ORDER BY table_name;
 ```
@@ -268,6 +279,7 @@ ORDER BY table_name;
 ### Environment Secrets
 
 **Never commit:**
+
 - `.env`
 - `.env.development`
 - `.env.local`
@@ -304,6 +316,7 @@ npm run preview
 **Test on:** `http://localhost:4173`
 
 **Validation Checklist:**
+
 - [ ] App loads without errors
 - [ ] PWA installation works
 - [ ] Strava OAuth flow completes
@@ -378,15 +391,19 @@ supabase functions deploy strava-webhook --no-verify-jwt
 ### Common Issues
 
 **Issue:** "404 on page refresh"
+
 - **Solution:** Ensure `public/404.html` exists and redirects to `index.html`
 
 **Issue:** "Strava OAuth fails after deployment"
+
 - **Solution:** Update `VITE_STRAVA_REDIRECT_URI` to match new domain
 
 **Issue:** "Webhook subscription fails"
+
 - **Solution:** Verify Edge Function deployed with `--no-verify-jwt` flag
 
 **Issue:** "Environment variables not working"
+
 - **Solution:** Ensure variables are prefixed with `VITE_` for client-side access
 
 ### Need Help?

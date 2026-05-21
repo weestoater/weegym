@@ -28,25 +28,29 @@ Thank you for contributing to WeeGym! This guide will help you understand our wo
 ### Initial Setup
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/weestoater/weegym.git
    cd weegym
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Configure environment:**
+
    ```bash
    cp .env.example .env
    cp .env.example .env.development
    ```
-   
+
    Edit `.env` with your actual credentials.
 
 4. **Link Supabase project:**
+
    ```bash
    supabase login
    supabase link --project-ref huqmjtxwlybjtmouwgaz
@@ -75,6 +79,7 @@ chore/maintenance-task  # Maintenance tasks
 ```
 
 **Examples:**
+
 - `feat/strava-webhook-sync`
 - `fix/activity-duplication`
 - `docs/update-deployment-guide`
@@ -83,6 +88,7 @@ chore/maintenance-task  # Maintenance tasks
 ### Development Process
 
 1. **Create a branch:**
+
    ```bash
    git checkout -b feat/your-feature-name
    ```
@@ -90,6 +96,7 @@ chore/maintenance-task  # Maintenance tasks
 2. **Make your changes** following code standards
 
 3. **Test your changes:**
+
    ```bash
    npm run lint
    npm run test
@@ -99,6 +106,7 @@ chore/maintenance-task  # Maintenance tasks
 4. **Commit with conventional commits** (see below)
 
 5. **Push your branch:**
+
    ```bash
    git push origin feat/your-feature-name
    ```
@@ -123,17 +131,17 @@ chore/maintenance-task  # Maintenance tasks
 
 ### Types & Version Impact
 
-| Type | Description | Version Bump |
-|------|-------------|--------------|
-| `feat:` | New feature | MINOR (1.1.0 → 1.2.0) |
-| `fix:` | Bug fix | PATCH (1.1.0 → 1.1.1) |
-| `refactor:` | Code refactoring (behavior/structure changes) | PATCH |
-| `perf:` | Performance improvement | PATCH |
-| `docs:` | Documentation only | None |
-| `test:` | Test changes | None |
-| `chore:` | Maintenance tasks | None |
-| `style:` | Pure formatting (whitespace, indentation only) | None |
-| `ci:` | CI/CD changes | None |
+| Type        | Description                                    | Version Bump          |
+| ----------- | ---------------------------------------------- | --------------------- |
+| `feat:`     | New feature                                    | MINOR (1.1.0 → 1.2.0) |
+| `fix:`      | Bug fix                                        | PATCH (1.1.0 → 1.1.1) |
+| `refactor:` | Code refactoring (behavior/structure changes)  | PATCH                 |
+| `perf:`     | Performance improvement                        | PATCH                 |
+| `docs:`     | Documentation only                             | None                  |
+| `test:`     | Test changes                                   | None                  |
+| `chore:`    | Maintenance tasks                              | None                  |
+| `style:`    | Pure formatting (whitespace, indentation only) | None                  |
+| `ci:`       | CI/CD changes                                  | None                  |
 
 ### Rules (Priority Order)
 
@@ -175,7 +183,7 @@ For breaking changes, add `!` after type:
 ```bash
 feat!: redesign settings API
 
-BREAKING CHANGE: Settings now use nested structure. 
+BREAKING CHANGE: Settings now use nested structure.
 Clients must update their API calls to use the new format.
 ```
 
@@ -184,6 +192,7 @@ This triggers a MAJOR version bump (1.x.x → 2.0.0).
 ### Scope Examples
 
 Common scopes in WeeGym:
+
 - `(strava)` - Strava integration
 - `(auth)` - Authentication system
 - `(ui)` - User interface components
@@ -199,6 +208,7 @@ Common scopes in WeeGym:
 ### General Principles
 
 **Priority Order (when rules conflict):**
+
 1. Security
 2. Testing
 3. Code Quality
@@ -210,7 +220,7 @@ Common scopes in WeeGym:
 - **ES6+ syntax:** Use modern JavaScript features
 - **Functional components:** With React hooks
 - **PropTypes:** Define prop types for all components
-- **Naming:** 
+- **Naming:**
   - Components: `PascalCase` (e.g., `StravaActivityCard`)
   - Functions/variables: `camelCase` (e.g., `fetchActivities`)
   - Constants: `UPPER_SNAKE_CASE` (e.g., `API_BASE_URL`)
@@ -221,25 +231,28 @@ Common scopes in WeeGym:
 - **Named exports for utilities**, default for components
 - **Group imports:** React → Third-party → Local
   ```javascript
-  import React, { useState } from 'react';
-  import { supabase } from '../lib/supabaseClient';
-  import { formatDistance } from '../utils/formatters';
+  import React, { useState } from "react";
+  import { supabase } from "../lib/supabaseClient";
+  import { formatDistance } from "../utils/formatters";
   ```
 
 ### Project-Specific Conventions
 
 #### Strava Integration
+
 - All API calls go through `src/services/stravaService.js`
 - Use incremental sync by default
 - **Error Handling:** On rate limit (HTTP 429), implement exponential backoff starting at 1 second, max 3 retries, using `retryWithBackoff` utility in `src/utils/retry.js`
 - Log rate limit events with `console.warn` only outside `src/`
 
 #### Supabase
+
 - All queries use Supabase client from `src/lib/supabase.js`
 - Enable RLS policies for all tables
 - Use typed queries where possible
 
 #### React Components
+
 - Keep components focused and reusable
 - Extract business logic to custom hooks
 - Use context for global state (Auth, Theme)
@@ -277,15 +290,16 @@ npm run test:coverage
 - Testing Library: React Testing Library
 
 **Example:**
-```javascript
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import MyComponent from './MyComponent';
 
-describe('MyComponent', () => {
-  it('renders correctly', () => {
+```javascript
+import { describe, it, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import MyComponent from "./MyComponent";
+
+describe("MyComponent", () => {
+  it("renders correctly", () => {
     render(<MyComponent />);
-    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.getByText("Hello")).toBeInTheDocument();
   });
 });
 ```
@@ -303,6 +317,7 @@ describe('MyComponent', () => {
 ### Before Submitting
 
 1. **Run all checks:**
+
    ```bash
    npm run lint          # ESLint - must pass
    npm run test:run      # Tests - must pass
@@ -321,9 +336,11 @@ When creating a PR, include:
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix (fix:)
 - [ ] New feature (feat:)
 - [ ] Breaking change (feat!: or fix!:)
@@ -332,11 +349,13 @@ Brief description of changes
 - [ ] Other (specify)
 
 ## Testing
+
 - [ ] Unit tests added/updated
 - [ ] Manual testing completed
 - [ ] Tested in multiple browsers
 
 ## Checklist
+
 - [ ] Code follows project conventions
 - [ ] Lint passes (npm run lint)
 - [ ] Tests pass (npm run test:run)
@@ -403,6 +422,7 @@ Contact: [Repository Owner]
 ### ESLint Configuration
 
 Project uses ESLint with React plugin:
+
 - Configuration: `eslint.config.js`
 - Run: `npm run lint`
 
