@@ -1,9 +1,6 @@
 import { supabase } from "../lib/supabaseClient";
 import { estimateCalories } from "../utils/calorieEstimator";
-import {
-  checkForPersonalRecords,
-  PR_CATEGORIES,
-} from "../utils/prCalculator";
+import { checkForPersonalRecords, PR_CATEGORIES } from "../utils/prCalculator";
 
 /**
  * Strava Integration Service
