@@ -436,21 +436,21 @@ function Dashboard() {
                       <i className="bi bi-chevron-right text-muted"></i>
                     </Link>
 
-                    {/* History */}
+                    {/* Programme & History */}
                     <Link
-                      to="/history"
+                      to="/programme"
                       className="list-group-item list-group-item-action d-flex align-items-center py-2"
                     >
-                      <i className="bi bi-clock-history text-info me-3 fs-5"></i>
+                      <i className="bi bi-journal-text text-info me-3 fs-5"></i>
                       <div className="flex-grow-1">
-                        <div className="fw-medium small">History</div>
+                        <div className="fw-medium small">Programme & History</div>
                         <div
                           className="text-muted"
                           style={{ fontSize: "0.75rem" }}
                         >
                           {isProgrammeMode
                             ? `${streak} workouts completed`
-                            : "View your progress"}
+                            : "View programme & workouts"}
                         </div>
                       </div>
                       <i className="bi bi-chevron-right text-muted"></i>

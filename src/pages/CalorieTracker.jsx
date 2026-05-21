@@ -367,19 +367,6 @@ function CalorieTracker() {
           </div>
         )}
 
-        {/* Meal Suggestions */}
-        {userProfile?.slimming_world_daily_syns && dailyTotals && (
-          <MealSuggestions
-            remainingSyns={
-              userProfile.slimming_world_daily_syns -
-              dailyTotals.slimmingWorldSyns
-            }
-            dailySyns={userProfile.slimming_world_daily_syns}
-            foodLogs={foodLogs}
-            userProfile={userProfile}
-          />
-        )}
-
         {/* Add Food Buttons */}
         {!showScanner && !showSearch && !showManual && (
           <section className="card mb-3" aria-labelledby="add-food-heading">
@@ -630,6 +617,44 @@ function CalorieTracker() {
                 }}
                 userProfile={userProfile}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Meal Suggestions - Collapsible Accordion */}
+        {userProfile?.slimming_world_daily_syns && dailyTotals && (
+          <div className="accordion mb-3" id="mealSuggestionsAccordion">
+            <div className="accordion-item">
+              <h2 className="accordion-header">
+                <button
+                  className="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseMealSuggestions"
+                  aria-expanded="false"
+                  aria-controls="collapseMealSuggestions"
+                >
+                  <i className="bi bi-lightbulb me-2" aria-hidden="true"></i>
+                  Meal Suggestions
+                </button>
+              </h2>
+              <div
+                id="collapseMealSuggestions"
+                className="accordion-collapse collapse"
+                data-bs-parent="#mealSuggestionsAccordion"
+              >
+                <div className="accordion-body p-0">
+                  <MealSuggestions
+                    remainingSyns={
+                      userProfile.slimming_world_daily_syns -
+                      dailyTotals.slimmingWorldSyns
+                    }
+                    dailySyns={userProfile.slimming_world_daily_syns}
+                    foodLogs={foodLogs}
+                    userProfile={userProfile}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

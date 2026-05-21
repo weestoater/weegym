@@ -11,6 +11,8 @@ import {
   syncActivities,
   getActivities,
   getActivityStats,
+  subscribeToWebhooks,
+  viewWebhookSubscriptions,
 } from "../services/stravaService";
 
 /**
@@ -25,7 +27,7 @@ function StravaConnect() {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
   const [error, setError] = useState(null);
-  
+
   // Activity state
   const [activities, setActivities] = useState([]);
   const [stats, setStats] = useState(null);
@@ -33,9 +35,16 @@ function StravaConnect() {
   const [activityType, setActivityType] = useState("all");
   const [useMetric, setUseMetric] = useState(false);
   const [toast, setToast] = useState(null);
+  const [webhookActive, setWebhookActive] = useState(() => {
+    // Load cached webhook status from localStorage
+    const cached = localStorage.getItem("strava_webhook_active");
+    return cached === "true";
+  });
+  const [enablingWebhook, setEnablingWebhook] = useState(false);
 
   useEffect(() => {
     loadConnection();
+    checkWebhookStatus();
   }, [user]);
 
   useEffect(() => {
@@ -43,6 +52,64 @@ function StravaConnect() {
       loadActivities();
     }
   }, [connection, dateRange, activityType]);
+
+  const checkWebhookStatus = async () => {
+    try {
+      // Check cache first - only query API once per hour
+      const cacheKey = "strava_webhook_status_checked";
+      const lastChecked = localStorage.getItem(cacheKey);
+      const oneHourAgo = Date.now() - 60 * 60 * 1000;
+
+      if (lastChecked && parseInt(lastChecked) > oneHourAgo) {
+        console.log("⏱️ Using cached webhook status");
+        return;
+      }
+
+      const subscriptions = await viewWebhookSubscriptions();
+      const isActive = subscriptions && subscriptions.length > 0;
+      setWebhookActive(isActive);
+      localStorage.setItem("strava_webhook_active", isActive.toString());
+      localStorage.setItem(cacheKey, Date.now().toString());
+    } catch (err) {
+      console.error("Error checking webhook status:", err);
+      // If rate limited, keep using cached status
+      if (err.message?.includes("Rate Limit")) {
+        console.log("⚠️ Rate limited, using cached webhook status");
+      }
+    }
+  };
+
+  const handleEnableWebhook = async () => {
+    try {
+      setEnablingWebhook(true);
+      setError(null);
+
+      const webhookUrl =
+        "https://huqmjtxwlybjtmouwgaz.supabase.co/functions/v1/strava-webhook";
+      await subscribeToWebhooks(webhookUrl);
+
+      setWebhookActive(true);
+      localStorage.setItem("strava_webhook_active", "true");
+      localStorage.setItem(
+        "strava_webhook_status_checked",
+        Date.now().toString(),
+      );
+
+      setToast({
+        message:
+          "✅ Real-time sync enabled! New activities will appear automatically.",
+        type: "success",
+      });
+    } catch (err) {
+      console.error("Error enabling webhook:", err);
+      const errorMsg = err.message?.includes("Rate Limit")
+        ? "Rate limit exceeded. Please wait 15 minutes and try again."
+        : "Failed to enable real-time sync: " + err.message;
+      setError(errorMsg);
+    } finally {
+      setEnablingWebhook(false);
+    }
+  };
 
   const loadConnection = async () => {
     if (!user) {
@@ -147,11 +214,11 @@ function StravaConnect() {
       if (result.newPRs && result.newPRs.length > 0) {
         const prCount = result.newPRs.length;
         const prList = result.newPRs
-          .map(pr => PR_LABELS[pr.category])
-          .join(', ');
+          .map((pr) => PR_LABELS[pr.category])
+          .join(", ");
         setToast({
-          message: `🎉 New Personal Record${prCount > 1 ? 's' : ''}! ${prList}`,
-          type: 'success'
+          message: `🎉 New Personal Record${prCount > 1 ? "s" : ""}! ${prList}`,
+          type: "success",
         });
       }
 
@@ -184,11 +251,11 @@ function StravaConnect() {
       if (result.newPRs && result.newPRs.length > 0) {
         const prCount = result.newPRs.length;
         const prList = result.newPRs
-          .map(pr => PR_LABELS[pr.category])
-          .join(', ');
+          .map((pr) => PR_LABELS[pr.category])
+          .join(", ");
         setToast({
-          message: `🎉 New Personal Record${prCount > 1 ? 's' : ''}! ${prList}`,
-          type: 'success'
+          message: `🎉 New Personal Record${prCount > 1 ? "s" : ""}! ${prList}`,
+          type: "success",
         });
       }
 
@@ -240,7 +307,8 @@ function StravaConnect() {
           {connection && (
             <small className="text-muted">
               <i className="bi bi-person me-1"></i>
-              {connection.athlete_data?.firstname} {connection.athlete_data?.lastname}
+              {connection.athlete_data?.firstname}{" "}
+              {connection.athlete_data?.lastname}
               {connection.last_sync && (
                 <>
                   {" • "}
@@ -262,6 +330,35 @@ function StravaConnect() {
               <div className="d-flex flex-wrap gap-2">
                 {connection ? (
                   <>
+                    {!webhookActive && (
+                      <button
+                        className="btn btn-sm btn-success"
+                        onClick={handleEnableWebhook}
+                        disabled={enablingWebhook}
+                        title="Enable real-time sync"
+                      >
+                        {enablingWebhook ? (
+                          <span
+                            className="spinner-border spinner-border-sm"
+                            role="status"
+                          ></span>
+                        ) : (
+                          <>
+                            <i className="bi bi-lightning-fill me-1"></i>
+                            Auto-Sync
+                          </>
+                        )}
+                      </button>
+                    )}
+                    {webhookActive && (
+                      <span
+                        className="badge bg-success text-white py-2 px-3"
+                        title="Real-time sync is active"
+                      >
+                        <i className="bi bi-lightning-fill me-1"></i>
+                        Auto-Sync Active
+                      </span>
+                    )}
                     <button
                       className="btn btn-sm btn-primary"
                       onClick={handleSync}
@@ -269,7 +366,10 @@ function StravaConnect() {
                       title="Sync new activities"
                     >
                       {syncing ? (
-                        <span className="spinner-border spinner-border-sm" role="status"></span>
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                        ></span>
                       ) : (
                         <i className="bi bi-arrow-repeat"></i>
                       )}
@@ -305,7 +405,10 @@ function StravaConnect() {
                     </button>
                   </>
                 ) : (
-                  <button className="btn btn-sm btn-primary w-100" onClick={handleConnect}>
+                  <button
+                    className="btn btn-sm btn-primary w-100"
+                    onClick={handleConnect}
+                  >
                     <i className="bi bi-box-arrow-up-right me-1"></i>
                     Connect to Strava
                   </button>
@@ -336,7 +439,8 @@ function StravaConnect() {
           className="alert alert-success alert-dismissible fade show"
           role="alert"
         >
-          <strong>Sync Complete!</strong> {syncResult.total} activities fetched, {syncResult.new} new
+          <strong>Sync Complete!</strong> {syncResult.total} activities fetched,{" "}
+          {syncResult.new} new
           <button
             type="button"
             className="btn-close"
@@ -348,7 +452,10 @@ function StravaConnect() {
 
       {!connection ? (
         <div className="text-center py-5">
-          <i className="bi bi-bicycle text-muted" style={{ fontSize: "4rem" }}></i>
+          <i
+            className="bi bi-bicycle text-muted"
+            style={{ fontSize: "4rem" }}
+          ></i>
           <h3 className="mt-3">Connect Your Strava Account</h3>
           <p className="text-muted">
             Sync your activities from Strava to track your progress
@@ -396,7 +503,10 @@ function StravaConnect() {
                   checked={useMetric}
                   onChange={(e) => setUseMetric(e.target.checked)}
                 />
-                <label className="form-check-label small" htmlFor="metricToggle">
+                <label
+                  className="form-check-label small"
+                  htmlFor="metricToggle"
+                >
                   Use Metric (km/kmh)
                 </label>
               </div>
@@ -406,7 +516,8 @@ function StravaConnect() {
                 <div className="text-end">
                   <label className="form-label small">Summary</label>
                   <div className="small text-muted">
-                    {stats.count} activities • {(stats.totalDistance / 1000).toFixed(0)} km
+                    {stats.count} activities •{" "}
+                    {(stats.totalDistance / 1000).toFixed(0)} km
                   </div>
                 </div>
               )}
@@ -416,7 +527,10 @@ function StravaConnect() {
           {/* Activity List */}
           {activities.length === 0 ? (
             <div className="text-center py-5">
-              <i className="bi bi-inbox text-muted" style={{ fontSize: "3rem" }}></i>
+              <i
+                className="bi bi-inbox text-muted"
+                style={{ fontSize: "3rem" }}
+              ></i>
               <p className="text-muted mt-3">
                 No activities found. Try syncing or adjusting your filters.
               </p>
@@ -425,7 +539,10 @@ function StravaConnect() {
             <div className="row">
               {activities.map((activity) => (
                 <div key={activity.id} className="col-12">
-                  <StravaActivityCard activity={activity} useMetric={useMetric} />
+                  <StravaActivityCard
+                    activity={activity}
+                    useMetric={useMetric}
+                  />
                 </div>
               ))}
             </div>

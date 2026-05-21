@@ -10,7 +10,6 @@ import {
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import WorkoutSession from "./pages/WorkoutSession";
-import History from "./pages/History";
 import Programme from "./pages/Programme";
 import ActiveWellbeing from "./pages/ActiveWellbeing";
 import CalorieTracker from "./pages/CalorieTracker";
@@ -40,7 +39,6 @@ function NavigationBar() {
     { path: "/wellbeing", icon: "bi-activity", label: "Active Wellbeing" },
     { path: "/calories", icon: "bi-star-fill", label: "Slimming World" },
     { path: "/strava", icon: "bi-bicycle", label: "Strava" },
-    { path: "/history", icon: "bi-clock-history", label: "History" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
   ];
@@ -265,14 +263,6 @@ function AppContent() {
             }
           />
           <Route
-            path="/history"
-            element={
-              <ProtectedRoute>
-                <History />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/programme"
             element={
               <ProtectedRoute>
@@ -354,8 +344,13 @@ function AppContent() {
 }
 
 function App() {
+  const basename = import.meta.env.VITE_BASE_PATH || "/weegym";
+
+  console.log("🚀 App initializing with basename:", basename);
+  console.log("🔍 VITE_BASE_PATH:", import.meta.env.VITE_BASE_PATH);
+
   return (
-    <Router basename="/weegym">
+    <Router basename={basename}>
       <AuthProvider>
         <AppContent />
       </AuthProvider>

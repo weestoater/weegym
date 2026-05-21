@@ -2,7 +2,7 @@ import { supabase } from "../lib/supabaseClient";
 import { estimateCalories } from "../utils/calorieEstimator";
 import {
   checkForPersonalRecords,
-  _calculatePRsFromActivities,
+  calculatePRsFromActivities,
   PR_CATEGORIES,
 } from "../utils/prCalculator";
 
