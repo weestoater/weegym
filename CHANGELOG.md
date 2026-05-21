@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.0.1 (2026-05-21)</small>
+
+* fix: resolve blank screen and add Strava webhook UI ([7f9f2c7](https://github.com/weestoater/weegym/commit/7f9f2c7))
+* 404 fixes ([25bbe53](https://github.com/weestoater/weegym/commit/25bbe53))
+* Implemented PWA features, added Strava webhooks, and updated documentation for project automation se ([1515fd3](https://github.com/weestoater/weegym/commit/1515fd3))
+* linting issues fixed ([f868c41](https://github.com/weestoater/weegym/commit/f868c41))
+* manifest issue fixed ([1b095aa](https://github.com/weestoater/weegym/commit/1b095aa))
+* Merge branches 'main' and 'main' of https://github.com/weestoater/weegym ([05a504c](https://github.com/weestoater/weegym/commit/05a504c))
+* test fixed v2 ([cb04bc2](https://github.com/weestoater/weegym/commit/cb04bc2))
+* tests fixed ([a67ea36](https://github.com/weestoater/weegym/commit/a67ea36))
+
 ## 1.0.0 (2026-05-16)
 
 * feat: Add calorie estimation when Strava API doesn't provide data ([224df34](https://github.com/weestoater/weegym/commit/224df34))
