@@ -8,7 +8,7 @@
 
 ## 🎉 Recently Completed (May 21, 2026)
 
-### ✅ P1: Strava Webhooks for Real-Time Sync - DEPLOYED & OPERATIONAL
+### ✅ P1: Strava Webhooks for Real-Time Sync - DEPLOYED & VERIFIED
 
 - Supabase Edge Function deployed with `--no-verify-jwt` flag
 - Webhook verification & event processing working
@@ -16,8 +16,8 @@
 - Service methods tested (subscribe, view, unsubscribe)
 - UI controls added with rate limit protection (localStorage caching)
 - Comprehensive documentation completed
-- **Status:** Deployed & Ready for Testing ✅
-- **Next:** Real-world testing with Strava activity uploads
+- **Real-world testing:** New walk activity synced successfully in real-time ✅
+- **Status:** Production Ready & Operational ✅
 
 ### ✅ Documentation Overhaul - COMPLETE
 
@@ -454,7 +454,7 @@ CREATE TABLE programme_templates (
 
 ### 🎯 Immediate Next (Current Week)
 
-1. **Test Strava Webhooks** - Upload new Strava activity and verify real-time sync
+1. ✅ **Test Strava Webhooks** - VERIFIED: Walk activity synced in real-time successfully!
 2. **Q1: UX Polish** 
    - Add loading states/skeleton screens
    - Improve error messages throughout app
