@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.1.2 (2026-05-22)</small>
+
+* fix: resolve Strava activity GPS map display issue ([c0c1f70](https://github.com/weestoater/weegym/commit/c0c1f70))
+* docs: downgrade GitHub token migration to monitoring status ([ebe4650](https://github.com/weestoater/weegym/commit/ebe4650))
+* docs: mark Strava webhooks as verified in production ([a69f525](https://github.com/weestoater/weegym/commit/a69f525))
+* docs: modernize deployment guide and add contribution guidelines ([3ef0ccc](https://github.com/weestoater/weegym/commit/3ef0ccc))
+* docs: replace boilerplate README with comprehensive documentation ([6b14640](https://github.com/weestoater/weegym/commit/6b14640))
+* docs: update project roadmap with May 21 accomplishments ([f5ebcaa](https://github.com/weestoater/weegym/commit/f5ebcaa))
+* style: format import statement in stravaService ([231bf20](https://github.com/weestoater/weegym/commit/231bf20))
+* style: improve markdown formatting in documentation ([9a462f0](https://github.com/weestoater/weegym/commit/9a462f0))
+
 ## Unreleased
 
 ### Documentation
