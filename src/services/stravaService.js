@@ -502,35 +502,21 @@ export async function getActivityDetail(userId, activityId) {
  */
 export async function getActivityStream(stravaActivityId) {
   try {
-    // Get connection and ensure token is valid
-    const connection = await getConnectionStatus();
-    if (!connection) {
-      throw new Error("Not connected to Strava");
+    // Get current user
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData?.user) {
+      throw new Error("User not authenticated");
     }
 
-    // Refresh token if expired
-    const expiresAt = new Date(connection.expires_at);
-    if (expiresAt < new Date()) {
-      const { data: userData } = await supabase.auth.getUser();
-      await refreshAccessToken(userData.user.id);
-      // Re-fetch connection with new token
-      const { data: refreshedConnection } = await supabase
-        .from("strava_connections")
-        .select("*")
-        .eq("user_id", userData.user.id)
-        .single();
-
-      if (!refreshedConnection) {
-        throw new Error("Failed to refresh connection");
-      }
-    }
+    // Get valid access token (handles refresh automatically)
+    const accessToken = await getValidAccessToken(userData.user.id);
 
     // Fetch stream data (latlng type)
     const response = await fetch(
       `${STRAVA_API_BASE}/activities/${stravaActivityId}/streams?keys=latlng&key_by_type=true`,
       {
         headers: {
-          Authorization: `Bearer ${connection.access_token}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       },
     );
