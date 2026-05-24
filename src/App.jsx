@@ -23,6 +23,7 @@ import StravaAnalytics from "./pages/StravaAnalytics";
 import StravaRecords from "./pages/StravaRecords";
 import StravaCallback from "./pages/StravaCallback";
 import GarminConnect from "./pages/GarminConnect";
+import GarminUpload from "./pages/GarminUpload";
 import StepTracker from "./pages/StepTracker";
 import GarminCallback from "./pages/GarminCallback";
 
@@ -43,6 +44,11 @@ function NavigationBar() {
     { path: "/calories", icon: "bi-star-fill", label: "Slimming World" },
     { path: "/strava", icon: "bi-bicycle", label: "Strava" },
     { path: "/steps", icon: "bi-person-walking", label: "Steps" },
+    {
+      path: "/garmin/upload",
+      icon: "bi-file-earmark-arrow-up",
+      label: "Import FIT Files",
+    },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
   ];
@@ -351,6 +357,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <GarminCallback />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/garmin/upload"
+            element={
+              <ProtectedRoute>
+                <GarminUpload />
               </ProtectedRoute>
             }
           />

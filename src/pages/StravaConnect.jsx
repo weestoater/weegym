@@ -542,6 +542,7 @@ function StravaConnect() {
                   <StravaActivityCard
                     activity={activity}
                     useMetric={useMetric}
+                    onDelete={() => loadActivities()}
                   />
                 </div>
               ))}

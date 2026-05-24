@@ -661,6 +661,36 @@ export async function disconnectStrava(userId) {
   }
 }
 
+/**
+ * Delete a single activity
+ * @param {string} userId - User ID
+ * @param {string} activityId - Activity ID (UUID from database)
+ * @returns {Promise<boolean>} Success status
+ */
+export async function deleteActivity(userId, activityId) {
+  try {
+    console.log(`🗑️ Deleting activity ${activityId} for user ${userId}`);
+
+    // Delete the activity
+    const { error } = await supabase
+      .from("strava_activities")
+      .delete()
+      .eq("id", activityId)
+      .eq("user_id", userId); // Ensure user can only delete their own activities
+
+    if (error) {
+      console.error("Error deleting activity:", error);
+      throw error;
+    }
+
+    console.log(`✅ Activity deleted successfully`);
+    return true;
+  } catch (err) {
+    console.error("Failed to delete activity:", err);
+    throw err;
+  }
+}
+
 // ============================================================================
 // PERSONAL RECORDS (PRs)
 // ============================================================================

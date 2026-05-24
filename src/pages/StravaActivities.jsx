@@ -372,6 +372,7 @@ function StravaActivities() {
               key={activity.id}
               activity={activity}
               useMetric={useMetric}
+              onDelete={() => loadActivities()}
             />
           ))}
         </div>

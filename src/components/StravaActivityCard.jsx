@@ -8,9 +8,11 @@ import {
   getActivityBadgeColor,
   getActivityStream,
   getActivityPRs,
+  deleteActivity,
 } from "../services/stravaService";
 import { PR_LABELS } from "../utils/prCalculator";
 import { saveActiveWellbeingSession } from "../lib/database";
+import { useAuth } from "../contexts/AuthContext";
 import Toast from "./Toast";
 import RouteMap from "./RouteMap";
 
@@ -18,9 +20,11 @@ import RouteMap from "./RouteMap";
  * StravaActivityCard Component
  * Displays a single Strava activity with collapsible detailed view
  */
-function StravaActivityCard({ activity, useMetric = false }) {
+function StravaActivityCard({ activity, useMetric = false, onDelete }) {
+  const { user } = useAuth();
   const [expanded, setExpanded] = useState(false);
   const [logging, setLogging] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [toast, setToast] = useState(null);
   const [routeData, setRouteData] = useState(null);
   const [loadingRoute, setLoadingRoute] = useState(false);
@@ -129,6 +133,39 @@ function StravaActivityCard({ activity, useMetric = false }) {
       });
     } finally {
       setLogging(false);
+    }
+  };
+
+  // Delete activity
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete "${activity.name}"?\n\nThis action cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await deleteActivity(user.id, activity.id);
+      setToast({
+        message: "Activity deleted successfully!",
+        type: "success",
+      });
+
+      // Notify parent component to refresh the list
+      if (onDelete) {
+        onDelete(activity.id);
+      }
+    } catch (error) {
+      console.error("Failed to delete activity:", error);
+      setToast({
+        message: "Failed to delete activity. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -440,6 +477,15 @@ function StravaActivityCard({ activity, useMetric = false }) {
                 <i className="bi bi-heart-pulse me-1"></i>
                 {logging ? "Logging..." : "Log to Active Wellbeing"}
               </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="btn btn-sm btn-outline-danger"
+                title="Delete this activity"
+              >
+                <i className="bi bi-trash me-1"></i>
+                {deleting ? "Deleting..." : "Delete"}
+              </button>
             </div>
           </div>
         )}
@@ -493,6 +539,7 @@ StravaActivityCard.propTypes = {
     calories: PropTypes.number,
   }).isRequired,
   useMetric: PropTypes.bool,
+  onDelete: PropTypes.func,
 };
 
 export default StravaActivityCard;
