@@ -6,6 +6,8 @@ import {
   getConnectionStatus,
   getActivities,
   getActivityStats,
+  getActivityIcon,
+  getActivityIconColor,
 } from "../services/stravaService";
 
 function Dashboard() {
@@ -183,7 +185,9 @@ function Dashboard() {
                   <div className="col-6 col-md-4">
                     <div className="card text-center">
                       <div className="card-body">
-                        <i className="bi bi-bicycle text-danger fs-1"></i>
+                        <i
+                          className={`bi ${lastStravaActivity ? getActivityIcon(lastStravaActivity.type) : "bi-bicycle"} ${lastStravaActivity ? getActivityIconColor(lastStravaActivity.type) : "text-danger"} fs-1`}
+                        ></i>
                         <h3 className="h2 mb-0">
                           {lastStravaActivity
                             ? new Date(
@@ -274,7 +278,9 @@ function Dashboard() {
                   <div className="col-6 col-md-4">
                     <div className="card text-center">
                       <div className="card-body">
-                        <i className="bi bi-bicycle text-danger fs-1"></i>
+                        <i
+                          className={`bi ${lastStravaActivity ? getActivityIcon(lastStravaActivity.type) : "bi-bicycle"} ${lastStravaActivity ? getActivityIconColor(lastStravaActivity.type) : "text-danger"} fs-1`}
+                        ></i>
                         <h3 className="h2 mb-0">
                           {lastStravaActivity
                             ? new Date(
@@ -443,7 +449,9 @@ function Dashboard() {
                     >
                       <i className="bi bi-journal-text text-info me-3 fs-5"></i>
                       <div className="flex-grow-1">
-                        <div className="fw-medium small">Programme & History</div>
+                        <div className="fw-medium small">
+                          Programme & History
+                        </div>
                         <div
                           className="text-muted"
                           style={{ fontSize: "0.75rem" }}

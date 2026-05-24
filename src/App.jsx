@@ -22,6 +22,9 @@ import StravaActivities from "./pages/StravaActivities";
 import StravaAnalytics from "./pages/StravaAnalytics";
 import StravaRecords from "./pages/StravaRecords";
 import StravaCallback from "./pages/StravaCallback";
+import GarminConnect from "./pages/GarminConnect";
+import StepTracker from "./pages/StepTracker";
+import GarminCallback from "./pages/GarminCallback";
 
 function NavigationBar() {
   const location = useLocation();
@@ -39,6 +42,7 @@ function NavigationBar() {
     { path: "/wellbeing", icon: "bi-activity", label: "Active Wellbeing" },
     { path: "/calories", icon: "bi-star-fill", label: "Slimming World" },
     { path: "/strava", icon: "bi-bicycle", label: "Strava" },
+    { path: "/steps", icon: "bi-person-walking", label: "Steps" },
     { path: "/programme", icon: "bi-journal-text", label: "Programme" },
     { path: "/settings", icon: "bi-gear", label: "Settings" },
   ];
@@ -331,6 +335,30 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <StravaCallback />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/garmin"
+            element={
+              <ProtectedRoute>
+                <GarminConnect />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/garmin/callback"
+            element={
+              <ProtectedRoute>
+                <GarminCallback />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/steps"
+            element={
+              <ProtectedRoute>
+                <StepTracker />
               </ProtectedRoute>
             }
           />
