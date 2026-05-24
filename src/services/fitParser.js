@@ -460,7 +460,7 @@ function calculateAverageSpeed(sessionMsg) {
 /**
  * Generate a readable activity name
  */
-function generateActivityName(sessionMsg, lapMessages) {
+function generateActivityName(sessionMsg, _lapMessages) {
   const sport = sessionMsg.sport || "Activity";
   const date = sessionMsg.startTime
     ? new Date(sessionMsg.startTime)

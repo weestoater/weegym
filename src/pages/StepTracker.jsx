@@ -344,7 +344,6 @@ function StepTracker() {
                       day.total_steps,
                       day.goal_steps,
                     );
-                    const level = getStepLevel(day.total_steps, day.goal_steps);
                     const distance = stepsToKilometers(day.total_steps);
 
                     return (

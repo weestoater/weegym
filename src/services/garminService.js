@@ -129,7 +129,7 @@ export async function getAuthorizationUrl() {
  * @param {string} oauthVerifier - OAuth verifier from callback
  * @returns {Promise<Object>} Connection data with tokens
  */
-export async function exchangeTokens(oauthToken, oauthVerifier) {
+export async function exchangeTokens(_oauthToken, _oauthVerifier) {
   if (USE_MOCK_DATA) {
     console.log("🔧 MOCK MODE: Simulating token exchange");
 
@@ -260,7 +260,7 @@ export async function syncDailySteps(userId, options = {}) {
       dailyData = generateMockDataRange(startDate, endDate);
     } else {
       // Get valid access token
-      const tokens = await getValidAccessToken(userId);
+      const _tokens = await getValidAccessToken(userId);
 
       // TODO: Call Garmin API
       // GET /wellness-api/rest/dailies
