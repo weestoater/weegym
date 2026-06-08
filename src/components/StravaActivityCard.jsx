@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import PropTypes from "prop-types";
 import {
   formatDistance,
@@ -14,7 +14,8 @@ import { PR_LABELS } from "../utils/prCalculator";
 import { saveActiveWellbeingSession } from "../lib/database";
 import { useAuth } from "../contexts/AuthContext";
 import Toast from "./Toast";
-import RouteMap from "./RouteMap";
+
+const RouteMap = lazy(() => import("./RouteMap"));
 
 /**
  * StravaActivityCard Component
@@ -440,21 +441,39 @@ function StravaActivityCard({ activity, useMetric = false, onDelete }) {
                 <h6 className="card-subtitle mb-3 text-secondary">
                   <i className="bi bi-map me-2"></i>Route Map
                 </h6>
-                {loadingRoute ? (
-                  <div className="text-center py-3">
-                    <div
-                      className="spinner-border spinner-border-sm text-secondary"
-                      role="status"
-                    >
-                      <span className="visually-hidden">Loading route...</span>
+                <Suspense
+                  fallback={
+                    <div className="text-center py-3">
+                      <div
+                        className="spinner-border spinner-border-sm text-secondary"
+                        role="status"
+                      >
+                        <span className="visually-hidden">Loading map...</span>
+                      </div>
+                      <p className="text-muted small mt-2 mb-0">
+                        Loading map component...
+                      </p>
                     </div>
-                    <p className="text-muted small mt-2 mb-0">
-                      Loading route data...
-                    </p>
-                  </div>
-                ) : (
-                  <RouteMap coordinates={routeData} height="350px" />
-                )}
+                  }
+                >
+                  {loadingRoute ? (
+                    <div className="text-center py-3">
+                      <div
+                        className="spinner-border spinner-border-sm text-secondary"
+                        role="status"
+                      >
+                        <span className="visually-hidden">
+                          Loading route...
+                        </span>
+                      </div>
+                      <p className="text-muted small mt-2 mb-0">
+                        Loading route data...
+                      </p>
+                    </div>
+                  ) : (
+                    <RouteMap coordinates={routeData} height="350px" />
+                  )}
+                </Suspense>
               </div>
             </div>
 
