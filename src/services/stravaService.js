@@ -14,12 +14,108 @@ import { checkForPersonalRecords, PR_CATEGORIES } from "../utils/prCalculator";
 
 const STRAVA_API_BASE = "https://www.strava.com/api/v3";
 const STRAVA_AUTH_BASE = "https://www.strava.com/oauth";
+const API_TIMEOUT = 30000; // 30 seconds
+const MAX_RETRIES = 3;
 
+// Validate environment variables at module load time
 const STRAVA_CONFIG = {
   clientId: import.meta.env.VITE_STRAVA_CLIENT_ID,
   clientSecret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
   redirectUri: import.meta.env.VITE_STRAVA_REDIRECT_URI,
 };
+
+// Log configuration status (without exposing secrets)
+if (
+  !STRAVA_CONFIG.clientId ||
+  !STRAVA_CONFIG.clientSecret ||
+  !STRAVA_CONFIG.redirectUri
+) {
+  console.error("❌ STRAVA CONFIGURATION ERROR:");
+  console.error("Missing required environment variables:");
+  if (!STRAVA_CONFIG.clientId) console.error("  - VITE_STRAVA_CLIENT_ID");
+  if (!STRAVA_CONFIG.clientSecret)
+    console.error("  - VITE_STRAVA_CLIENT_SECRET");
+  if (!STRAVA_CONFIG.redirectUri) console.error("  - VITE_STRAVA_REDIRECT_URI");
+  console.error("Strava integration will not work until these are configured.");
+} else {
+  console.log("✅ Strava config loaded:", {
+    clientId: STRAVA_CONFIG.clientId,
+    redirectUri: STRAVA_CONFIG.redirectUri,
+    clientSecret: STRAVA_CONFIG.clientSecret
+      ? "***" + STRAVA_CONFIG.clientSecret.slice(-4)
+      : "MISSING",
+  });
+}
+
+// Track token refresh to prevent race conditions
+let tokenRefreshPromise = null;
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Make a fetch request with timeout and retry logic
+ * @param {string} url - URL to fetch
+ * @param {Object} options - Fetch options
+ * @param {number} retries - Number of retries remaining
+ * @returns {Promise<Response>} Fetch response
+ */
+async function fetchWithTimeout(url, options = {}, retries = MAX_RETRIES) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+
+    // Check if it was a timeout
+    if (error.name === "AbortError") {
+      console.warn(`⏱️ Request timeout for ${url}`);
+      if (retries > 0) {
+        console.log(`🔄 Retrying... (${retries} attempts left)`);
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1s before retry
+        return fetchWithTimeout(url, options, retries - 1);
+      }
+      throw new Error("Request timeout - Strava API did not respond in time");
+    }
+
+    // Network error - retry if we have attempts left
+    if (
+      retries > 0 &&
+      (error.message.includes("fetch") || error.message.includes("network"))
+    ) {
+      console.warn(`🌐 Network error for ${url}:`, error.message);
+      console.log(`🔄 Retrying... (${retries} attempts left)`);
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s for network issues
+      return fetchWithTimeout(url, options, retries - 1);
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Validate Strava configuration
+ * @throws {Error} If configuration is invalid
+ */
+function validateConfig() {
+  if (
+    !STRAVA_CONFIG.clientId ||
+    !STRAVA_CONFIG.clientSecret ||
+    !STRAVA_CONFIG.redirectUri
+  ) {
+    throw new Error(
+      "Strava is not configured. Please set VITE_STRAVA_CLIENT_ID, VITE_STRAVA_CLIENT_SECRET, and VITE_STRAVA_REDIRECT_URI environment variables.",
+    );
+  }
+}
 
 // ============================================================================
 // AUTHENTICATION
@@ -30,6 +126,7 @@ const STRAVA_CONFIG = {
  * @returns {string} Authorization URL to redirect user to
  */
 export function getAuthorizationUrl() {
+  validateConfig();
   const params = new URLSearchParams({
     client_id: STRAVA_CONFIG.clientId,
     redirect_uri: STRAVA_CONFIG.redirectUri,
@@ -48,7 +145,10 @@ export function getAuthorizationUrl() {
  */
 export async function exchangeCodeForToken(code) {
   try {
-    const response = await fetch(`${STRAVA_AUTH_BASE}/token`, {
+    validateConfig();
+    console.log("🔐 Exchanging authorization code for token...");
+
+    const response = await fetchWithTimeout(`${STRAVA_AUTH_BASE}/token`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -62,19 +162,31 @@ export async function exchangeCodeForToken(code) {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(
-        `Strava token exchange failed: ${error.message || response.statusText}`,
-      );
+      const errorText = await response.text();
+      console.error("❌ Token exchange failed:", response.status, errorText);
+
+      let errorMessage = `Strava token exchange failed (${response.status})`;
+      try {
+        const error = JSON.parse(errorText);
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        // If not JSON, use status text
+        errorMessage = `${errorMessage}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
+    console.log("✅ Token exchange successful");
 
     // Get current user
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) {
+      console.error("❌ User not authenticated:", userError);
       throw new Error("User not authenticated");
     }
+
+    console.log("💾 Storing Strava connection in database...");
 
     // Store tokens in database
     const { data: connection, error: dbError } = await supabase
@@ -92,13 +204,14 @@ export async function exchangeCodeForToken(code) {
       .single();
 
     if (dbError) {
-      console.error("Error storing Strava connection:", dbError);
+      console.error("❌ Error storing Strava connection:", dbError);
       throw dbError;
     }
 
+    console.log("✅ Strava connection stored successfully");
     return connection;
   } catch (err) {
-    console.error("Failed to exchange code for token:", err);
+    console.error("❌ Failed to exchange code for token:", err);
     throw err;
   }
 }
@@ -109,62 +222,87 @@ export async function exchangeCodeForToken(code) {
  * @returns {Promise<Object>} Updated connection with new tokens
  */
 export async function refreshAccessToken(userId) {
-  try {
-    // Get current connection
-    const { data: connection, error: fetchError } = await supabase
-      .from("strava_connections")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-
-    if (fetchError) {
-      throw new Error("Strava connection not found");
-    }
-
-    // Request new token
-    const response = await fetch(`${STRAVA_AUTH_BASE}/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        client_id: STRAVA_CONFIG.clientId,
-        client_secret: STRAVA_CONFIG.clientSecret,
-        refresh_token: connection.refresh_token,
-        grant_type: "refresh_token",
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(
-        `Token refresh failed: ${error.message || response.statusText}`,
-      );
-    }
-
-    const data = await response.json();
-
-    // Update tokens in database
-    const { data: updatedConnection, error: updateError } = await supabase
-      .from("strava_connections")
-      .update({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token,
-        expires_at: new Date(data.expires_at * 1000).toISOString(),
-      })
-      .eq("user_id", userId)
-      .select()
-      .single();
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    return updatedConnection;
-  } catch (err) {
-    console.error("Failed to refresh access token:", err);
-    throw err;
+  // Prevent multiple simultaneous token refreshes
+  if (tokenRefreshPromise) {
+    console.log("⏳ Token refresh already in progress, waiting...");
+    return tokenRefreshPromise;
   }
+
+  tokenRefreshPromise = (async () => {
+    try {
+      validateConfig();
+      console.log("🔄 Refreshing access token...");
+
+      // Get current connection
+      const { data: connection, error: fetchError } = await supabase
+        .from("strava_connections")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (fetchError) {
+        console.error("❌ Strava connection not found:", fetchError);
+        throw new Error("Strava connection not found");
+      }
+
+      // Request new token
+      const response = await fetchWithTimeout(`${STRAVA_AUTH_BASE}/token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: STRAVA_CONFIG.clientId,
+          client_secret: STRAVA_CONFIG.clientSecret,
+          refresh_token: connection.refresh_token,
+          grant_type: "refresh_token",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Token refresh failed:", response.status, errorText);
+
+        let errorMessage = `Token refresh failed (${response.status})`;
+        try {
+          const error = JSON.parse(errorText);
+          errorMessage = error.message || errorMessage;
+        } catch (e) {
+          errorMessage = `${errorMessage}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data = await response.json();
+      console.log("✅ Token refreshed successfully");
+
+      // Update tokens in database
+      const { data: updatedConnection, error: updateError } = await supabase
+        .from("strava_connections")
+        .update({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+          expires_at: new Date(data.expires_at * 1000).toISOString(),
+        })
+        .eq("user_id", userId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error("❌ Error updating tokens in database:", updateError);
+        throw updateError;
+      }
+
+      return updatedConnection;
+    } catch (err) {
+      console.error("❌ Failed to refresh access token:", err);
+      throw err;
+    } finally {
+      tokenRefreshPromise = null;
+    }
+  })();
+
+  return tokenRefreshPromise;
 }
 
 /**
@@ -181,22 +319,32 @@ async function getValidAccessToken(userId) {
       .single();
 
     if (error) {
-      throw new Error("Strava connection not found");
+      console.error("❌ Strava connection not found:", error);
+      throw new Error(
+        "Strava connection not found. Please reconnect your Strava account.",
+      );
     }
 
     // Check if token is expired (refresh 5 minutes before expiry)
     const expiresAt = new Date(connection.expires_at);
     const now = new Date();
     const bufferTime = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const timeUntilExpiry = expiresAt.getTime() - now.getTime();
 
-    if (expiresAt.getTime() - now.getTime() < bufferTime) {
+    if (timeUntilExpiry < bufferTime) {
+      console.log(
+        `🔑 Token expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes, refreshing...`,
+      );
       const refreshed = await refreshAccessToken(userId);
       return refreshed.access_token;
     }
 
+    console.log(
+      `✅ Using cached token (expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes)`,
+    );
     return connection.access_token;
   } catch (err) {
-    console.error("Failed to get valid access token:", err);
+    console.error("❌ Failed to get valid access token:", err);
     throw err;
   }
 }
@@ -217,6 +365,7 @@ async function getValidAccessToken(userId) {
 export async function syncActivities(userId, options = {}) {
   try {
     const { after, page = 1, perPage = 30 } = options;
+    console.log("🚀 Starting Strava sync...", { userId, after, page, perPage });
 
     // Get valid access token
     const accessToken = await getValidAccessToken(userId);
@@ -235,7 +384,16 @@ export async function syncActivities(userId, options = {}) {
         afterTimestamp = Math.floor(
           new Date(connection.last_sync).getTime() / 1000,
         );
+        console.log(
+          `📅 Using last sync timestamp: ${afterTimestamp} (${new Date(connection.last_sync).toISOString()})`,
+        );
+      } else {
+        console.log("📅 No previous sync found, fetching all activities");
       }
+    } else if (after === 0) {
+      console.log("🔄 Full resync requested (after=0)");
+    } else {
+      console.log(`📅 Using provided after timestamp: ${afterTimestamp}`);
     }
 
     // Build API URL
@@ -250,21 +408,31 @@ export async function syncActivities(userId, options = {}) {
       params.append("after", afterTimestamp.toString());
     }
 
+    const apiUrl = `${STRAVA_API_BASE}/athlete/activities?${params.toString()}`;
+    console.log(`🌐 Fetching from: ${apiUrl}`);
+
     // Fetch activities from Strava
-    const response = await fetch(
-      `${STRAVA_API_BASE}/athlete/activities?${params.toString()}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+    const response = await fetchWithTimeout(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+    });
 
     if (!response.ok) {
-      throw new Error(`Strava API error: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("❌ Strava API error:", response.status, errorText);
+      throw new Error(
+        `Strava API error (${response.status}): ${response.statusText}`,
+      );
     }
 
     const activities = await response.json();
+    console.log(`📊 Received ${activities.length} activities from Strava`);
+
+    if (!Array.isArray(activities)) {
+      console.error("❌ Unexpected response format:", activities);
+      throw new Error("Unexpected response format from Strava API");
+    }
 
     // Store activities in database
     let newCount = 0;
@@ -275,8 +443,10 @@ export async function syncActivities(userId, options = {}) {
     const debugSamples = [];
 
     for (const activity of activities) {
+      console.log(`📝 Processing activity ${activity.id}: ${activity.name}`);
+
       // Fetch detailed activity data (list endpoint doesn't include calories)
-      const detailResponse = await fetch(
+      const detailResponse = await fetchWithTimeout(
         `${STRAVA_API_BASE}/activities/${activity.id}`,
         {
           headers: {
@@ -288,6 +458,10 @@ export async function syncActivities(userId, options = {}) {
       let detailedActivity = activity;
       if (detailResponse.ok) {
         detailedActivity = await detailResponse.json();
+      } else {
+        console.warn(
+          `⚠️ Could not fetch detailed data for activity ${activity.id}, using list data`,
+        );
       }
 
       // Strava API may provide calories in multiple ways:
@@ -361,7 +535,10 @@ export async function syncActivities(userId, options = {}) {
         });
 
       if (upsertError) {
-        console.error("Error upserting activity:", upsertError);
+        console.error(
+          `❌ Error upserting activity ${activity.id}:`,
+          upsertError,
+        );
         continue;
       }
 
@@ -374,17 +551,25 @@ export async function syncActivities(userId, options = {}) {
 
       if (count === 1) {
         newCount++;
+        console.log(`✅ New activity saved: ${detailedActivity.name}`);
       } else {
         updatedCount++;
+        console.log(`♻️ Activity updated: ${detailedActivity.name}`);
       }
     }
 
+    console.log(`💾 Updating last_sync timestamp...`);
     // Update last_sync timestamp
-    await supabase
+    const { error: syncUpdateError } = await supabase
       .from("strava_connections")
       .update({ last_sync: new Date().toISOString() })
       .eq("user_id", userId);
 
+    if (syncUpdateError) {
+      console.warn("⚠️ Could not update last_sync timestamp:", syncUpdateError);
+    }
+
+    console.log(`🏆 Checking for personal records...`);
     // Get the newly synced activities from database for PR calculation
     const { data: syncedActivities } = await supabase
       .from("strava_activities")
@@ -398,7 +583,7 @@ export async function syncActivities(userId, options = {}) {
     // Check and update personal records
     const newPRs = await updatePersonalRecords(userId, syncedActivities || []);
 
-    return {
+    const result = {
       success: true,
       total: activities.length,
       new: newCount,
@@ -412,8 +597,17 @@ export async function syncActivities(userId, options = {}) {
         samples: debugSamples,
       },
     };
+
+    console.log("✅ Sync completed successfully:", {
+      total: result.total,
+      new: result.new,
+      updated: result.updated,
+      newPRs: newPRs.length,
+    });
+
+    return result;
   } catch (err) {
-    console.error("Failed to sync activities:", err);
+    console.error("❌ Failed to sync activities:", err);
     throw err;
   }
 }
@@ -502,9 +696,12 @@ export async function getActivityDetail(userId, activityId) {
  */
 export async function getActivityStream(stravaActivityId) {
   try {
+    console.log(`🗺️ Fetching GPS stream for activity ${stravaActivityId}...`);
+
     // Get current user
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData?.user) {
+      console.error("❌ User not authenticated:", userError);
       throw new Error("User not authenticated");
     }
 
@@ -512,7 +709,7 @@ export async function getActivityStream(stravaActivityId) {
     const accessToken = await getValidAccessToken(userData.user.id);
 
     // Fetch stream data (latlng type)
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${STRAVA_API_BASE}/activities/${stravaActivityId}/streams?keys=latlng&key_by_type=true`,
       {
         headers: {
@@ -523,23 +720,30 @@ export async function getActivityStream(stravaActivityId) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        // No GPS data available for this activity
+        console.log("ℹ️ No GPS data available for this activity");
         return [];
       }
-      throw new Error(`Failed to fetch stream: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("❌ Failed to fetch stream:", response.status, errorText);
+      throw new Error(
+        `Failed to fetch stream (${response.status}): ${response.statusText}`,
+      );
     }
 
     const streamData = await response.json();
 
     // Check if latlng stream exists
     if (!streamData.latlng || !streamData.latlng.data) {
+      console.log("ℹ️ No latlng data in stream response");
       return [];
     }
+
+    console.log(`✅ Fetched ${streamData.latlng.data.length} GPS points`);
 
     // Convert to {lat, lng} format
     return streamData.latlng.data.map(([lat, lng]) => ({ lat, lng }));
   } catch (err) {
-    console.error("Failed to get activity stream:", err);
+    console.error("❌ Failed to get activity stream:", err);
     throw err;
   }
 }
@@ -1074,26 +1278,40 @@ export function getActivityBadgeColor(type) {
  */
 export async function subscribeToWebhooks(callbackUrl) {
   try {
-    console.log("🔔 Subscribing to Strava webhooks...");
+    validateConfig();
+    console.log("🔔 Subscribing to Strava webhooks...", { callbackUrl });
 
-    const response = await fetch(`${STRAVA_API_BASE}/push_subscriptions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetchWithTimeout(
+      `${STRAVA_API_BASE}/push_subscriptions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: STRAVA_CONFIG.clientId,
+          client_secret: STRAVA_CONFIG.clientSecret,
+          callback_url: callbackUrl,
+          verify_token: "WEEGYM_STRAVA_WEBHOOK", // Must match Edge Function
+        }),
       },
-      body: JSON.stringify({
-        client_id: STRAVA_CONFIG.clientId,
-        client_secret: STRAVA_CONFIG.clientSecret,
-        callback_url: callbackUrl,
-        verify_token: "WEEGYM_STRAVA_WEBHOOK", // Must match Edge Function
-      }),
-    });
+    );
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(
-        `Failed to subscribe to webhooks: ${error.message || response.statusText}`,
+      const errorText = await response.text();
+      console.error(
+        "❌ Webhook subscription failed:",
+        response.status,
+        errorText,
       );
+      let errorMessage = `Failed to subscribe to webhooks (${response.status})`;
+      try {
+        const error = JSON.parse(errorText);
+        errorMessage = error.message || errorMessage;
+      } catch (e) {
+        errorMessage = `${errorMessage}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
@@ -1125,15 +1343,28 @@ export async function subscribeToWebhooks(callbackUrl) {
  */
 export async function viewWebhookSubscriptions() {
   try {
-    const response = await fetch(
+    validateConfig();
+    console.log("📋 Viewing webhook subscriptions...");
+
+    const response = await fetchWithTimeout(
       `${STRAVA_API_BASE}/push_subscriptions?client_id=${STRAVA_CONFIG.clientId}&client_secret=${STRAVA_CONFIG.clientSecret}`,
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to view subscriptions: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(
+        "❌ Failed to view subscriptions:",
+        response.status,
+        errorText,
+      );
+      throw new Error(
+        `Failed to view subscriptions (${response.status}): ${response.statusText}`,
+      );
     }
 
-    return await response.json();
+    const subscriptions = await response.json();
+    console.log(`✅ Found ${subscriptions.length} webhook subscription(s)`);
+    return subscriptions;
   } catch (err) {
     console.error("❌ Failed to view webhook subscriptions:", err);
     throw err;
@@ -1147,9 +1378,10 @@ export async function viewWebhookSubscriptions() {
  */
 export async function unsubscribeFromWebhooks(subscriptionId) {
   try {
+    validateConfig();
     console.log("🔕 Unsubscribing from webhook:", subscriptionId);
 
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${STRAVA_API_BASE}/push_subscriptions/${subscriptionId}?client_id=${STRAVA_CONFIG.clientId}&client_secret=${STRAVA_CONFIG.clientSecret}`,
       {
         method: "DELETE",
@@ -1157,7 +1389,11 @@ export async function unsubscribeFromWebhooks(subscriptionId) {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to unsubscribe: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error("❌ Failed to unsubscribe:", response.status, errorText);
+      throw new Error(
+        `Failed to unsubscribe (${response.status}): ${response.statusText}`,
+      );
     }
 
     console.log("✅ Webhook unsubscribed successfully");

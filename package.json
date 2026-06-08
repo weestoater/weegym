@@ -19,6 +19,8 @@
     "security:audit": "npm audit",
     "security:check": "npm run security:scan && npm run security:console && npm run security:audit",
     "precommit": "npm run security:check",
+    "strava:check-config": "node scripts/check-strava-config.js",
+    "strava:test-creds": "node scripts/test-strava-credentials.js",
     "semantic-release": "semantic-release"
   },
   "dependencies": {
