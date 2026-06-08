@@ -169,7 +169,7 @@ export async function exchangeCodeForToken(code) {
       try {
         const error = JSON.parse(errorText);
         errorMessage = error.message || errorMessage;
-      } catch (e) {
+      } catch {
         // If not JSON, use status text
         errorMessage = `${errorMessage}: ${response.statusText}`;
       }
@@ -267,7 +267,7 @@ export async function refreshAccessToken(userId) {
         try {
           const error = JSON.parse(errorText);
           errorMessage = error.message || errorMessage;
-        } catch (e) {
+        } catch {
           errorMessage = `${errorMessage}: ${response.statusText}`;
         }
         throw new Error(errorMessage);
@@ -1308,7 +1308,7 @@ export async function subscribeToWebhooks(callbackUrl) {
       try {
         const error = JSON.parse(errorText);
         errorMessage = error.message || errorMessage;
-      } catch (e) {
+      } catch {
         errorMessage = `${errorMessage}: ${response.statusText}`;
       }
       throw new Error(errorMessage);

@@ -26,13 +26,13 @@ npm run dev
 
 **Check browser console for:**
 
-```
+```text
 ✅ Strava config loaded: { clientId: "239101", ... }
 ```
 
 **❌ If you see:**
 
-```
+```text
 ❌ STRAVA CONFIGURATION ERROR:
 Missing required environment variables:
   - VITE_STRAVA_CLIENT_ID
@@ -93,7 +93,7 @@ Then restart dev server.
 **Fix:**
 
 1. Check `.env`: `VITE_STRAVA_REDIRECT_URI`
-2. Go to https://www.strava.com/settings/api
+2. Go to <https://www.strava.com/settings/api>
 3. Set "Authorization Callback Domain" to `localhost` (dev) or your domain (prod)
 
 ---
@@ -183,11 +183,11 @@ Tests actual API credentials.
 
 ## 🆘 Still Having Issues?
 
-1. **Check Strava API Status:** https://status.strava.com
+1. **Check Strava API Status:** <https://status.strava.com>
 2. **Review Rate Limits:** 100 requests per 15 minutes
 3. **Full Troubleshooting Guide:** `docs/STRAVA_TROUBLESHOOTING.md`
 4. **Check Console Logs:** Look for detailed error messages with ❌
-5. **Verify Credentials:** https://www.strava.com/settings/api
+5. **Verify Credentials:** <https://www.strava.com/settings/api>
 
 ---
 

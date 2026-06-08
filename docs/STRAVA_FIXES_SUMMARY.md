@@ -196,7 +196,7 @@ npm run strava:check-config
 
 **Output:**
 
-```
+```text
 ============================================================
 🔍 Strava Configuration Check
 ============================================================
@@ -288,13 +288,13 @@ If problems occur, follow the guide at:
 
 ### On App Load
 
-```
+```text
 ✅ Strava config loaded: { clientId: "239101", redirectUri: "...", clientSecret: "***4655" }
 ```
 
 ### During Sync
 
-```
+```text
 🚀 Starting Strava sync...
 🔑 Using cached token (expires in 250 minutes)
 📅 Using last sync timestamp: 1749734400 (2026-06-08T12:00:00.000Z)
@@ -309,7 +309,7 @@ If problems occur, follow the guide at:
 
 ### On Timeout (with retry)
 
-```
+```text
 ⏱️ Request timeout for https://www.strava.com/api/v3/athlete/activities
 🔄 Retrying... (2 attempts left)
 📊 Received 5 activities from Strava
@@ -318,7 +318,7 @@ If problems occur, follow the guide at:
 
 ### On Configuration Error
 
-```
+```text
 ❌ STRAVA CONFIGURATION ERROR:
 Missing required environment variables:
   - VITE_STRAVA_CLIENT_ID
@@ -344,7 +344,7 @@ Strava integration will not work until these are configured.
 
 3. **If Issues Persist:**
    - Follow `docs/STRAVA_TROUBLESHOOTING.md`
-   - Check Strava API status: https://status.strava.com
+   - Check Strava API status: <https://status.strava.com>
    - Verify rate limits (100 requests/15 min)
 
 ---

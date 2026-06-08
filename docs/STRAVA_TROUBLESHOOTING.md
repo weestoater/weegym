@@ -81,7 +81,7 @@ This verifies:
 
 **✅ Good signs:**
 
-```
+```text
 ✅ Strava config loaded: { clientId: "239101", redirectUri: "...", clientSecret: "***4655" }
 🚀 Starting Strava sync...
 🔑 Using cached token (expires in 250 minutes)
@@ -93,7 +93,7 @@ This verifies:
 
 **❌ Bad signs:**
 
-```
+```text
 ❌ STRAVA CONFIGURATION ERROR:
 Missing required environment variables:
   - VITE_STRAVA_CLIENT_ID
@@ -107,7 +107,7 @@ This means environment variables are not loaded. Check:
 
 **⏱️ Timeout issues:**
 
-```
+```text
 ⏱️ Request timeout for https://www.strava.com/api/v3/athlete/activities
 🔄 Retrying... (2 attempts left)
 ```
@@ -116,7 +116,7 @@ This indicates network problems or Strava API slowness. The service will automat
 
 **🌐 Network errors:**
 
-```
+```text
 🌐 Network error for ...: Failed to fetch
 🔄 Retrying... (2 attempts left)
 ```
@@ -132,7 +132,7 @@ Common causes:
 
 **Signs of token issues:**
 
-```
+```text
 🔑 Token expires in 2 minutes, refreshing...
 🔄 Refreshing access token...
 ✅ Token refreshed successfully
@@ -140,7 +140,7 @@ Common causes:
 
 If you see refresh failures:
 
-```
+```text
 ❌ Token refresh failed: 400 Bad Request
 ```
 
@@ -223,7 +223,7 @@ This makes a test API call to verify credentials work.
 **Solutions:**
 
 - Wait a few minutes and try again
-- Check Strava API status: https://status.strava.com
+- Check Strava API status: <https://status.strava.com>
 - Verify you're not hitting rate limits (100 requests per 15 minutes)
 
 ---
@@ -234,7 +234,7 @@ This makes a test API call to verify credentials work.
 
 **Full error:**
 
-```
+```text
 Error: Strava is not configured. Please set VITE_STRAVA_CLIENT_ID,
 VITE_STRAVA_CLIENT_SECRET, and VITE_STRAVA_REDIRECT_URI environment variables.
 ```
@@ -250,7 +250,7 @@ VITE_STRAVA_CLIENT_SECRET, and VITE_STRAVA_REDIRECT_URI environment variables.
 
 **Full error:**
 
-```
+```text
 Error: Strava connection not found. Please reconnect your Strava account.
 ```
 
@@ -266,7 +266,7 @@ Error: Strava connection not found. Please reconnect your Strava account.
 
 **Full error:**
 
-```
+```text
 Error: Token refresh failed (400): Bad Request
 ```
 
@@ -282,7 +282,7 @@ Error: Token refresh failed (400): Bad Request
 
 **Full error:**
 
-```
+```text
 Error: Request timeout - Strava API did not respond in time
 ```
 
@@ -296,7 +296,7 @@ Error: Request timeout - Strava API did not respond in time
 
 **Fix:**
 
-- Check Strava status: https://status.strava.com
+- Check Strava status: <https://status.strava.com>
 - Try again (service auto-retries 3 times)
 - Check internet connection
 
@@ -304,14 +304,14 @@ Error: Request timeout - Strava API did not respond in time
 
 **From Strava:**
 
-```
+```text
 The redirect_uri included is not valid.
 ```
 
 **Fix:**
 
 1. Check current `VITE_STRAVA_REDIRECT_URI` in `.env`
-2. Log into Strava API settings: https://www.strava.com/settings/api
+2. Log into Strava API settings: <https://www.strava.com/settings/api>
 3. Ensure "Authorization Callback Domain" matches:
    - Local: `localhost`
    - Production: your domain (no http://, no path)
@@ -343,7 +343,7 @@ The enhanced logging uses emoji indicators for easy scanning:
 
 **Typical successful sync flow:**
 
-```
+```text
 ✅ Strava config loaded: { ... }
 🚀 Starting Strava sync...
 🔑 Using cached token (expires in 250 minutes)
@@ -386,9 +386,9 @@ The enhanced logging uses emoji indicators for easy scanning:
 
 If you've tried all troubleshooting steps and still have issues:
 
-1. **Check Strava API Status:** https://status.strava.com
+1. **Check Strava API Status:** <https://status.strava.com>
 2. **Review Rate Limits:** 100 requests per 15 minutes, 1000 per day
-3. **Check Strava API Settings:** https://www.strava.com/settings/api
+3. **Check Strava API Settings:** <https://www.strava.com/settings/api>
 4. **Enable detailed logging:** Check browser console for full error details
 5. **Test credentials:** Run `node scripts/test-strava-credentials.js`
 
@@ -430,4 +430,4 @@ Use this for rapid troubleshooting:
 - [ ] No ❌ errors in console
 - [ ] Sync shows 🚀 → 📊 → ✅ flow
 
-If all checkboxes pass and it still doesn't work, there may be an issue with Strava's API or your specific account. Check https://status.strava.com.
+If all checkboxes pass and it still doesn't work, there may be an issue with Strava's API or your specific account. Check <https://status.strava.com>.

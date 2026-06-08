@@ -29,7 +29,7 @@ function loadEnvFile(filename) {
     });
 
     return env;
-  } catch (err) {
+  } catch {
     return null;
   }
 }
