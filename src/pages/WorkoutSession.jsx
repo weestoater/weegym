@@ -170,22 +170,17 @@ function WorkoutSession() {
   const [startTime] = useState(new Date());
   const [toast, setToast] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [settings, setSettings] = useState({
-    defaultRestTime: 90,
-    shortRestTime: 60,
-    longRestTime: 120,
+  const [settings] = useState(() => {
+    const storedSettings = localStorage.getItem("gymSettings");
+    return storedSettings
+      ? JSON.parse(storedSettings)
+      : { defaultRestTime: 90, shortRestTime: 60, longRestTime: 120 };
   });
 
   useEffect(() => {
-    // Load settings
-    const storedSettings = localStorage.getItem("gymSettings");
-    if (storedSettings) {
-      setSettings(JSON.parse(storedSettings));
-    }
-  }, []);
-
-  useEffect(() => {
-    // Initialize workout with dynamic rest times
+    // Initialize workout with dynamic rest times based on settings.
+    // workout is mutable state during a session (sets completed, weights logged)
+    // so useMemo is not appropriate here.
     const programmeData = day === "1" ? PROGRAMME.day1 : PROGRAMME.day2;
 
     // Update rest times based on exercise type and settings
@@ -207,6 +202,7 @@ function WorkoutSession() {
       }),
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setWorkout(workoutWithSettings);
   }, [day, settings]);
 

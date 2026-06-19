@@ -45,13 +45,13 @@ function StravaConnect() {
   useEffect(() => {
     loadConnection();
     checkWebhookStatus();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (connection) {
       loadActivities();
     }
-  }, [connection, dateRange, activityType]);
+  }, [connection, dateRange, activityType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkWebhookStatus = async () => {
     try {

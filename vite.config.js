@@ -72,6 +72,13 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
+    css: {
+      preprocessorOptions: {
+        scss: {
+          quietDeps: true, // silence deprecation warnings from Bootstrap's own SCSS
+        },
+      },
+    },
     build: {
       rollupOptions: {
         output: {
@@ -79,6 +86,30 @@ export default defineConfig(({ mode }) => {
             if (id.includes("node_modules")) {
               if (id.includes("leaflet")) {
                 return "vendor_leaflet";
+              }
+              if (
+                id.includes("react-dom") ||
+                id.includes("react/") ||
+                id.includes("react-is") ||
+                id.includes("scheduler")
+              ) {
+                return "vendor_react";
+              }
+              if (id.includes("react-router") || id.includes("@remix-run")) {
+                return "vendor_router";
+              }
+              if (
+                id.includes("@supabase") ||
+                id.includes("@postgrest") ||
+                id.includes("realtime-supabase")
+              ) {
+                return "vendor_supabase";
+              }
+              if (id.includes("quagga") || id.includes("@ericblade")) {
+                return "vendor_scanner";
+              }
+              if (id.includes("@garmin")) {
+                return "vendor_garmin";
               }
               return "vendor";
             }

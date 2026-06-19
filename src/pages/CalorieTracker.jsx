@@ -830,8 +830,10 @@ function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
   };
 
   // Update form data when initialData changes (new product selected)
+  // Syncing an external prop into controlled form state is an intentional pattern here.
   useEffect(() => {
     if (initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         productName: initialData?.productName || "",
         brand: initialData?.brand || "",
@@ -854,6 +856,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
   }, [initialData]);
 
   // Auto-calculate Syns when nutrition values change if user is on Slimming World
+  // The computed value must be stored in formData so it is included in form submission.
   useEffect(() => {
     if (userProfile?.on_slimming_world) {
       const calories = parseFloat(formData.calories) || 0;
@@ -867,6 +870,7 @@ function FoodEntryForm({ initialData, onSubmit, onCancel, userProfile }) {
           0,
           calories / 20 + fat / 4 + sugar / 5 - protein / 10,
         );
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setFormData((prev) => ({
           ...prev,
           slimmingWorldSyns: syns.toFixed(1),

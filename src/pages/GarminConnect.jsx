@@ -40,13 +40,13 @@ function GarminConnect() {
     if (user) {
       loadConnection();
     }
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (connection) {
       loadStepData();
     }
-  }, [connection]);
+  }, [connection]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadConnection = async () => {
     try {

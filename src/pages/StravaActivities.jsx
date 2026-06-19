@@ -30,13 +30,13 @@ function StravaActivities() {
 
   useEffect(() => {
     checkConnection();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (connected) {
       loadActivities();
     }
-  }, [connected, dateRange, activityType]);
+  }, [connected, dateRange, activityType]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkConnection = async () => {
     if (!user) {

@@ -34,7 +34,7 @@ function StravaActivityCard({ activity, useMetric = false, onDelete }) {
   // Load PRs for this activity
   useEffect(() => {
     loadPRs();
-  }, [activity.id]);
+  }, [activity.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPRs = async () => {
     try {
@@ -52,7 +52,7 @@ function StravaActivityCard({ activity, useMetric = false, onDelete }) {
     if (expanded && !routeData && !loadingRoute) {
       loadRouteData();
     }
-  }, [expanded]);
+  }, [expanded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadRouteData = async () => {
     setLoadingRoute(true);

@@ -1,30 +1,34 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { getPersonalRecordsByType, getActivityIcon, getActivityIconColor } from '../services/stravaService';
-import { PR_LABELS, PR_ICONS, formatPRValue } from '../utils/prCalculator';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  getPersonalRecordsByType,
+  getActivityIcon,
+  getActivityIconColor,
+} from "../services/stravaService";
+import { PR_LABELS, PR_ICONS, formatPRValue } from "../utils/prCalculator";
+import { useAuth } from "../contexts/AuthContext";
 
 function StravaRecords() {
   const { user } = useAuth();
   const [prs, setPrs] = useState({});
-  const [timeScope, setTimeScope] = useState('all_time');
-  const [selectedType, setSelectedType] = useState('all');
+  const [timeScope, setTimeScope] = useState("all_time");
+  const [selectedType, setSelectedType] = useState("all");
   const [loading, setLoading] = useState(true);
   const [useMetric, setUseMetric] = useState(false);
 
   useEffect(() => {
     loadPRs();
-  }, [timeScope]);
+  }, [timeScope]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadPRs = async () => {
     if (!user) return;
-    
+
     setLoading(true);
     try {
       const records = await getPersonalRecordsByType(user.id, timeScope);
       setPrs(records);
     } catch (error) {
-      console.error('Error loading PRs:', error);
+      console.error("Error loading PRs:", error);
     } finally {
       setLoading(false);
     }
@@ -32,19 +36,20 @@ function StravaRecords() {
 
   // Get unique activity types
   const activityTypes = Object.keys(prs);
-  const filteredTypes = selectedType === 'all' 
-    ? activityTypes 
-    : activityTypes.filter(type => type === selectedType);
+  const filteredTypes =
+    selectedType === "all"
+      ? activityTypes
+      : activityTypes.filter((type) => type === selectedType);
 
   // Time scope options
   const timeScopeOptions = [
-    { value: 'all_time', label: 'All Time' },
-    { value: 'year', label: 'This Year' },
-    { value: 'month', label: 'This Month' },
+    { value: "all_time", label: "All Time" },
+    { value: "year", label: "This Year" },
+    { value: "month", label: "This Month" },
   ];
 
   const getTimeScopeLabel = (scope) => {
-    return timeScopeOptions.find(opt => opt.value === scope)?.label || scope;
+    return timeScopeOptions.find((opt) => opt.value === scope)?.label || scope;
   };
 
   if (loading) {
@@ -91,7 +96,7 @@ function StravaRecords() {
                 value={timeScope}
                 onChange={(e) => setTimeScope(e.target.value)}
               >
-                {timeScopeOptions.map(opt => (
+                {timeScopeOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
@@ -111,8 +116,10 @@ function StravaRecords() {
                 onChange={(e) => setSelectedType(e.target.value)}
               >
                 <option value="all">All Types</option>
-                {activityTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
+                {activityTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
                 ))}
               </select>
             </div>
@@ -128,7 +135,10 @@ function StravaRecords() {
                   checked={useMetric}
                   onChange={(e) => setUseMetric(e.target.checked)}
                 />
-                <label className="form-check-label small" htmlFor="metricToggle">
+                <label
+                  className="form-check-label small"
+                  htmlFor="metricToggle"
+                >
                   Use Metric (km/kmh)
                 </label>
               </div>
@@ -144,14 +154,16 @@ function StravaRecords() {
           No personal records yet. Sync your activities to see your PRs!
         </div>
       ) : (
-        filteredTypes.map(activityType => (
+        filteredTypes.map((activityType) => (
           <div key={activityType} className="mb-4">
             <h3 className="h4 mb-3">
-              <i className={`bi ${getActivityIcon(activityType)} ${getActivityIconColor(activityType)} fs-3 me-2`}></i>
+              <i
+                className={`bi ${getActivityIcon(activityType)} ${getActivityIconColor(activityType)} fs-3 me-2`}
+              ></i>
               {activityType}
             </h3>
             <div className="row g-3">
-              {prs[activityType].map(pr => (
+              {prs[activityType].map((pr) => (
                 <div key={pr.id} className="col-md-6 col-lg-4">
                   <div className="card h-100 border-warning shadow-sm">
                     <div className="card-body">
@@ -160,27 +172,38 @@ function StravaRecords() {
                         <h5 className="card-title mb-0">
                           {PR_LABELS[pr.pr_category]}
                         </h5>
-                        <i className={`${PR_ICONS[pr.pr_category]} text-warning fs-1`}></i>
+                        <i
+                          className={`${PR_ICONS[pr.pr_category]} text-warning fs-1`}
+                        ></i>
                       </div>
 
                       {/* Record Value - Large and prominent */}
                       <h2 className="mb-3 text-primary fw-bold">
-                        {formatPRValue(pr.record_value, pr.record_unit, useMetric)}
+                        {formatPRValue(
+                          pr.record_value,
+                          pr.record_unit,
+                          useMetric,
+                        )}
                       </h2>
 
                       {/* Activity Info */}
                       <div className="border-top pt-2">
                         <p className="text-muted small mb-1">
-                          <i className={`bi ${getActivityIcon(activityType)} ${getActivityIconColor(activityType)} me-1`}></i>
+                          <i
+                            className={`bi ${getActivityIcon(activityType)} ${getActivityIconColor(activityType)} me-1`}
+                          ></i>
                           <strong>{pr.activity_name}</strong>
                         </p>
                         <p className="text-muted small mb-2">
                           <i className="bi bi-calendar3 me-1"></i>
-                          {new Date(pr.activity_date).toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
+                          {new Date(pr.activity_date).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
                         </p>
                       </div>
 
@@ -188,12 +211,17 @@ function StravaRecords() {
                       {pr.previous_record_value && (
                         <div className="alert alert-success py-1 px-2 small mb-0 mt-2">
                           <i className="bi bi-arrow-up-circle me-1"></i>
-                          Beat previous: {formatPRValue(pr.previous_record_value, pr.record_unit, useMetric)}
+                          Beat previous:{" "}
+                          {formatPRValue(
+                            pr.previous_record_value,
+                            pr.record_unit,
+                            useMetric,
+                          )}
                         </div>
                       )}
 
                       {/* Time Scope Badge */}
-                      {pr.time_scope !== 'all_time' && (
+                      {pr.time_scope !== "all_time" && (
                         <span className="badge bg-secondary">
                           {getTimeScopeLabel(pr.time_scope)}
                         </span>

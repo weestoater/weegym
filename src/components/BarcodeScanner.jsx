@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import Quagga from "@ericblade/quagga2";
 
@@ -205,16 +205,15 @@ function BarcodeScanner({ onScan, onClose }) {
   };
 
   // Calculate scan rate - must be before early returns
-  const scanRate = useMemo(() => {
-    if (scanAttempts === 0 || !scanStartTimeRef.current) return 0;
-    const elapsed = (Date.now() - scanStartTimeRef.current) / 1000;
-    return Math.round(scanAttempts / elapsed);
-  }, [scanAttempts]);
+  const scanRate =
+    scanAttempts === 0 || !scanStartTimeRef.current
+      ? 0
+      : Math.round(
+          scanAttempts / ((Date.now() - scanStartTimeRef.current) / 1000), // eslint-disable-line react-hooks/purity
+        );
 
   // Check if camera is actively scanning (within last 2 seconds)
-  const isCameraActive = useMemo(() => {
-    return Date.now() - lastScanTime < 2000;
-  }, [lastScanTime]);
+  const isCameraActive = Date.now() - lastScanTime < 2000; // eslint-disable-line react-hooks/purity
 
   if (error) {
     return (

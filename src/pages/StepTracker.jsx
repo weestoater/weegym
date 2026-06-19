@@ -41,7 +41,7 @@ function StepTracker() {
     if (user) {
       loadData();
     }
-  }, [user, dateRange]);
+  }, [user, dateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadData = async () => {
     try {

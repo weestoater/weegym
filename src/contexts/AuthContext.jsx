@@ -3,6 +3,8 @@ import { supabase } from "../lib/supabaseClient";
 
 const AuthContext = createContext({});
 
+// useAuth is intentionally co-located with AuthProvider - they form a single unit.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
