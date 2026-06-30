@@ -4,7 +4,6 @@ import { useSettings } from "../hooks/useSettings";
 import { defaultSettingsService } from "../services/settingsService";
 import { useAuth } from "../contexts/AuthContext";
 import {
-  getConnectionStatus,
   getAllConnections,
   getAvailableApps,
   getAuthorizationUrl,
@@ -29,7 +28,6 @@ function Settings() {
   const navigate = useNavigate();
 
   // Strava connection state
-  const [stravaConnection, setStravaConnection] = useState(null);
   const [allConnections, setAllConnections] = useState([]);
   const [availableApps, setAvailableApps] = useState([]);
   const [stravaLoading, setStravaLoading] = useState(false);
@@ -57,12 +55,10 @@ function Settings() {
   const loadStravaConnections = async () => {
     try {
       setStravaLoading(true);
-      const [status, connections, apps] = await Promise.all([
-        getConnectionStatus(),
+      const [connections, apps] = await Promise.all([
         getAllConnections(),
         Promise.resolve(getAvailableApps()),
       ]);
-      setStravaConnection(status);
       setAllConnections(connections);
       setAvailableApps(apps);
     } catch (err) {
