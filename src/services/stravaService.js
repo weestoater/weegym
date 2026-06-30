@@ -18,11 +18,21 @@ const API_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
 
 // Validate environment variables at module load time
-const STRAVA_CONFIG = {
-  clientId: import.meta.env.VITE_STRAVA_CLIENT_ID,
-  clientSecret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
-  redirectUri: import.meta.env.VITE_STRAVA_REDIRECT_URI,
+const STRAVA_APPS = {
+  primary: {
+    clientId: import.meta.env.VITE_STRAVA_CLIENT_ID,
+    clientSecret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
+    redirectUri: import.meta.env.VITE_STRAVA_REDIRECT_URI,
+  },
+  secondary: {
+    clientId: import.meta.env.VITE_STRAVA_SECONDARY_CLIENT_ID,
+    clientSecret: import.meta.env.VITE_STRAVA_SECONDARY_CLIENT_SECRET,
+    redirectUri: import.meta.env.VITE_STRAVA_SECONDARY_REDIRECT_URI,
+  },
 };
+
+// For backward compatibility, STRAVA_CONFIG refers to primary app
+const STRAVA_CONFIG = STRAVA_APPS.primary;
 
 // Log configuration status (without exposing secrets)
 if (
@@ -38,13 +48,30 @@ if (
   if (!STRAVA_CONFIG.redirectUri) console.error("  - VITE_STRAVA_REDIRECT_URI");
   console.error("Strava integration will not work until these are configured.");
 } else {
-  console.log("✅ Strava config loaded:", {
+  console.log("✅ Strava primary app config loaded:", {
     clientId: STRAVA_CONFIG.clientId,
     redirectUri: STRAVA_CONFIG.redirectUri,
     clientSecret: STRAVA_CONFIG.clientSecret
       ? "***" + STRAVA_CONFIG.clientSecret.slice(-4)
       : "MISSING",
   });
+
+  // Check for secondary app
+  if (
+    STRAVA_APPS.secondary.clientId &&
+    STRAVA_APPS.secondary.clientSecret &&
+    STRAVA_APPS.secondary.redirectUri
+  ) {
+    console.log("✅ Strava secondary app config loaded:", {
+      clientId: STRAVA_APPS.secondary.clientId,
+      redirectUri: STRAVA_APPS.secondary.redirectUri,
+      clientSecret: STRAVA_APPS.secondary.clientSecret
+        ? "***" + STRAVA_APPS.secondary.clientSecret.slice(-4)
+        : "MISSING",
+    });
+  } else {
+    console.log("ℹ️ No secondary Strava app configured (optional)");
+  }
 }
 
 // Track token refresh to prevent race conditions
@@ -102,19 +129,61 @@ async function fetchWithTimeout(url, options = {}, retries = MAX_RETRIES) {
 }
 
 /**
- * Validate Strava configuration
+ * Validate Strava configuration for a specific app
+ * @param {string} appName - App name ('primary' or 'secondary')
  * @throws {Error} If configuration is invalid
  */
-function validateConfig() {
+function validateConfig(appName = "primary") {
+  const config = STRAVA_APPS[appName];
   if (
-    !STRAVA_CONFIG.clientId ||
-    !STRAVA_CONFIG.clientSecret ||
-    !STRAVA_CONFIG.redirectUri
+    !config ||
+    !config.clientId ||
+    !config.clientSecret ||
+    !config.redirectUri
   ) {
     throw new Error(
-      "Strava is not configured. Please set VITE_STRAVA_CLIENT_ID, VITE_STRAVA_CLIENT_SECRET, and VITE_STRAVA_REDIRECT_URI environment variables.",
+      `Strava ${appName} app is not configured. Please set the required environment variables.`,
     );
   }
+}
+
+/**
+ * Get configuration for a specific app
+ * @param {string} appName - App name ('primary' or 'secondary')
+ * @returns {Object} App configuration
+ */
+function getAppConfig(appName = "primary") {
+  const config = STRAVA_APPS[appName];
+  if (!config) {
+    throw new Error(`Unknown Strava app: ${appName}`);
+  }
+  return config;
+}
+
+/**
+ * Get list of available Strava apps
+ * @returns {Array<Object>} List of configured apps with their names
+ */
+export function getAvailableApps() {
+  const apps = [];
+
+  if (
+    STRAVA_APPS.primary.clientId &&
+    STRAVA_APPS.primary.clientSecret &&
+    STRAVA_APPS.primary.redirectUri
+  ) {
+    apps.push({ name: "primary", label: "Primary Account" });
+  }
+
+  if (
+    STRAVA_APPS.secondary.clientId &&
+    STRAVA_APPS.secondary.clientSecret &&
+    STRAVA_APPS.secondary.redirectUri
+  ) {
+    apps.push({ name: "secondary", label: "Secondary Account" });
+  }
+
+  return apps;
 }
 
 // ============================================================================
@@ -123,16 +192,20 @@ function validateConfig() {
 
 /**
  * Generate Strava OAuth authorization URL
+ * @param {string} appName - App name ('primary' or 'secondary')
  * @returns {string} Authorization URL to redirect user to
  */
-export function getAuthorizationUrl() {
-  validateConfig();
+export function getAuthorizationUrl(appName = "primary") {
+  validateConfig(appName);
+  const config = getAppConfig(appName);
+
   const params = new URLSearchParams({
-    client_id: STRAVA_CONFIG.clientId,
-    redirect_uri: STRAVA_CONFIG.redirectUri,
+    client_id: config.clientId,
+    redirect_uri: config.redirectUri,
     response_type: "code",
     scope: "read,activity:read_all",
     approval_prompt: "auto",
+    state: appName, // Pass app name in state to identify on callback
   });
 
   return `${STRAVA_AUTH_BASE}/authorize?${params.toString()}`;
@@ -141,12 +214,14 @@ export function getAuthorizationUrl() {
 /**
  * Exchange authorization code for access tokens
  * @param {string} code - Authorization code from OAuth callback
+ * @param {string} appName - App name ('primary' or 'secondary')
  * @returns {Promise<Object>} Token data with access_token, refresh_token, expires_at
  */
-export async function exchangeCodeForToken(code) {
+export async function exchangeCodeForToken(code, appName = "primary") {
   try {
-    validateConfig();
-    console.log("🔐 Exchanging authorization code for token...");
+    validateConfig(appName);
+    const config = getAppConfig(appName);
+    console.log(`🔐 Exchanging authorization code for ${appName} app token...`);
 
     const response = await fetchWithTimeout(`${STRAVA_AUTH_BASE}/token`, {
       method: "POST",
@@ -154,8 +229,8 @@ export async function exchangeCodeForToken(code) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        client_id: STRAVA_CONFIG.clientId,
-        client_secret: STRAVA_CONFIG.clientSecret,
+        client_id: config.clientId,
+        client_secret: config.clientSecret,
         code: code,
         grant_type: "authorization_code",
       }),
@@ -186,19 +261,30 @@ export async function exchangeCodeForToken(code) {
       throw new Error("User not authenticated");
     }
 
-    console.log("💾 Storing Strava connection in database...");
+    console.log(`💾 Storing ${appName} Strava connection in database...`);
+
+    // Check if this is the first connection for this user
+    const { data: existingConnections } = await supabase
+      .from("strava_connections")
+      .select("id")
+      .eq("user_id", userData.user.id);
+
+    const isFirstConnection =
+      !existingConnections || existingConnections.length === 0;
 
     // Store tokens in database
     const { data: connection, error: dbError } = await supabase
       .from("strava_connections")
       .upsert({
         user_id: userData.user.id,
+        app_name: appName,
         athlete_id: data.athlete.id,
         access_token: data.access_token,
         refresh_token: data.refresh_token,
         expires_at: new Date(data.expires_at * 1000).toISOString(),
         athlete_data: data.athlete,
         connected_at: new Date().toISOString(),
+        is_active: isFirstConnection, // First connection is active by default
       })
       .select()
       .single();
@@ -208,7 +294,7 @@ export async function exchangeCodeForToken(code) {
       throw dbError;
     }
 
-    console.log("✅ Strava connection stored successfully");
+    console.log(`✅ ${appName} Strava connection stored successfully`);
     return connection;
   } catch (err) {
     console.error("❌ Failed to exchange code for token:", err);
@@ -219,9 +305,10 @@ export async function exchangeCodeForToken(code) {
 /**
  * Refresh expired access token
  * @param {string} userId - User ID
+ * @param {string} appName - App name ('primary' or 'secondary')
  * @returns {Promise<Object>} Updated connection with new tokens
  */
-export async function refreshAccessToken(userId) {
+export async function refreshAccessToken(userId, appName = "primary") {
   // Prevent multiple simultaneous token refreshes
   if (tokenRefreshPromise) {
     console.log("⏳ Token refresh already in progress, waiting...");
@@ -230,14 +317,16 @@ export async function refreshAccessToken(userId) {
 
   tokenRefreshPromise = (async () => {
     try {
-      validateConfig();
-      console.log("🔄 Refreshing access token...");
+      validateConfig(appName);
+      const config = getAppConfig(appName);
+      console.log(`🔄 Refreshing access token for ${appName} app...`);
 
       // Get current connection
       const { data: connection, error: fetchError } = await supabase
         .from("strava_connections")
         .select("*")
         .eq("user_id", userId)
+        .eq("app_name", appName)
         .single();
 
       if (fetchError) {
@@ -252,8 +341,8 @@ export async function refreshAccessToken(userId) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          client_id: STRAVA_CONFIG.clientId,
-          client_secret: STRAVA_CONFIG.clientSecret,
+          client_id: config.clientId,
+          client_secret: config.clientSecret,
           refresh_token: connection.refresh_token,
           grant_type: "refresh_token",
         }),
@@ -285,6 +374,7 @@ export async function refreshAccessToken(userId) {
           expires_at: new Date(data.expires_at * 1000).toISOString(),
         })
         .eq("user_id", userId)
+        .eq("app_name", appName)
         .select()
         .single();
 
@@ -308,22 +398,22 @@ export async function refreshAccessToken(userId) {
 /**
  * Get valid access token, refreshing if expired
  * @param {string} userId - User ID
+ * @param {string} appName - App name (default: uses active connection's app_name)
  * @returns {Promise<string>} Valid access token
  */
-async function getValidAccessToken(userId) {
+async function getValidAccessToken(userId, appName = null) {
   try {
-    const { data: connection, error } = await supabase
-      .from("strava_connections")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
+    // Get connection - if appName not specified, get active connection
+    const connection = await getConnectionStatus(appName);
 
-    if (error) {
-      console.error("❌ Strava connection not found:", error);
+    if (!connection) {
+      console.error("❌ Strava connection not found");
       throw new Error(
         "Strava connection not found. Please reconnect your Strava account.",
       );
     }
+
+    const actualAppName = connection.app_name;
 
     // Check if token is expired (refresh 5 minutes before expiry)
     const expiresAt = new Date(connection.expires_at);
@@ -333,14 +423,14 @@ async function getValidAccessToken(userId) {
 
     if (timeUntilExpiry < bufferTime) {
       console.log(
-        `🔑 Token expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes, refreshing...`,
+        `🔑 Token for ${actualAppName} expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes, refreshing...`,
       );
-      const refreshed = await refreshAccessToken(userId);
+      const refreshed = await refreshAccessToken(userId, actualAppName);
       return refreshed.access_token;
     }
 
     console.log(
-      `✅ Using cached token (expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes)`,
+      `✅ Using cached token for ${actualAppName} (expires in ${Math.round(timeUntilExpiry / 1000 / 60)} minutes)`,
     );
     return connection.access_token;
   } catch (err) {
@@ -360,26 +450,40 @@ async function getValidAccessToken(userId) {
  * @param {number} options.after - Unix timestamp to fetch activities after (optional)
  * @param {number} options.page - Page number for pagination (default: 1)
  * @param {number} options.perPage - Activities per page (default: 30, max: 200)
+ * @param {string} options.appName - App name to sync from (default: active connection)
  * @returns {Promise<Object>} Sync result with count of new/updated activities
  */
 export async function syncActivities(userId, options = {}) {
   try {
-    const { after, page = 1, perPage = 30 } = options;
-    console.log("🚀 Starting Strava sync...", { userId, after, page, perPage });
+    const { after, page = 1, perPage = 30, appName = null } = options;
+    console.log("🚀 Starting Strava sync...", {
+      userId,
+      after,
+      page,
+      perPage,
+      appName,
+    });
+
+    // Get the connection (active or specific app)
+    const connection = await getConnectionStatus(appName);
+    if (!connection) {
+      throw new Error(
+        appName
+          ? `No ${appName} connection found`
+          : "No active Strava connection found",
+      );
+    }
+
+    const activeAppName = connection.app_name;
+    console.log(`📱 Using ${activeAppName} connection`);
 
     // Get valid access token
-    const accessToken = await getValidAccessToken(userId);
+    const accessToken = await getValidAccessToken(userId, activeAppName);
 
     // If no 'after' timestamp provided, get last sync time
     // Note: Use undefined check, not falsy check, so after: 0 works for full resync
     let afterTimestamp = after;
     if (after === undefined) {
-      const { data: connection } = await supabase
-        .from("strava_connections")
-        .select("last_sync")
-        .eq("user_id", userId)
-        .single();
-
       if (connection?.last_sync) {
         afterTimestamp = Math.floor(
           new Date(connection.last_sync).getTime() / 1000,
@@ -511,6 +615,7 @@ export async function syncActivities(userId, options = {}) {
 
       const activityData = {
         user_id: userId,
+        app_name: activeAppName,
         strava_id: detailedActivity.id,
         name: detailedActivity.name,
         type: detailedActivity.type,
@@ -531,7 +636,7 @@ export async function syncActivities(userId, options = {}) {
       const { error: upsertError } = await supabase
         .from("strava_activities")
         .upsert(activityData, {
-          onConflict: "user_id,strava_id",
+          onConflict: "user_id,app_name,strava_id",
         });
 
       if (upsertError) {
@@ -558,12 +663,13 @@ export async function syncActivities(userId, options = {}) {
       }
     }
 
-    console.log(`💾 Updating last_sync timestamp...`);
-    // Update last_sync timestamp
+    console.log(`💾 Updating last_sync timestamp for ${activeAppName}...`);
+    // Update last_sync timestamp for this specific app
     const { error: syncUpdateError } = await supabase
       .from("strava_connections")
       .update({ last_sync: new Date().toISOString() })
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .eq("app_name", activeAppName);
 
     if (syncUpdateError) {
       console.warn("⚠️ Could not update last_sync timestamp:", syncUpdateError);
@@ -625,16 +731,41 @@ export async function syncActivities(userId, options = {}) {
  * @param {Date} options.endDate - Filter activities before this date
  * @param {number} options.limit - Number of activities to return (default: 30)
  * @param {number} options.offset - Pagination offset (default: 0)
+ * @param {string} options.appName - App name filter (default: active connection)
+ * @param {boolean} options.allApps - If true, fetch from all apps (ignores appName)
  * @returns {Promise<Array>} Array of activities
  */
 export async function getActivities(userId, options = {}) {
   try {
-    const { type, startDate, endDate, limit = 30, offset = 0 } = options;
+    const {
+      type,
+      startDate,
+      endDate,
+      limit = 30,
+      offset = 0,
+      appName = null,
+      allApps = false,
+    } = options;
 
     let query = supabase
       .from("strava_activities")
       .select("*")
-      .eq("user_id", userId)
+      .eq("user_id", userId);
+
+    // Filter by app_name unless allApps is true
+    if (!allApps) {
+      if (appName) {
+        query = query.eq("app_name", appName);
+      } else {
+        // Get active connection's app_name
+        const connection = await getConnectionStatus();
+        if (connection) {
+          query = query.eq("app_name", connection.app_name);
+        }
+      }
+    }
+
+    query = query
       .order("start_date", { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -794,9 +925,10 @@ export async function getActivityStats(userId, options = {}) {
 
 /**
  * Get Strava connection status for current user
+ * @param {string} appName - Optional app name. If not provided, returns active connection
  * @returns {Promise<Object|null>} Connection data or null if not connected
  */
-export async function getConnectionStatus() {
+export async function getConnectionStatus(appName = null) {
   try {
     const { data: userData, error: userError } = await supabase.auth.getUser();
 
@@ -804,11 +936,20 @@ export async function getConnectionStatus() {
       return null;
     }
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("strava_connections")
       .select("*")
-      .eq("user_id", userData.user.id)
-      .single();
+      .eq("user_id", userData.user.id);
+
+    if (appName) {
+      // Get specific app connection
+      query = query.eq("app_name", appName);
+    } else {
+      // Get active connection
+      query = query.eq("is_active", true);
+    }
+
+    const { data, error } = await query.single();
 
     if (error && error.code !== "PGRST116") {
       console.error("Error fetching connection status:", error);
@@ -819,6 +960,77 @@ export async function getConnectionStatus() {
   } catch (err) {
     console.error("Failed to get connection status:", err);
     return null;
+  }
+}
+
+/**
+ * Get all Strava connections for current user
+ * @returns {Promise<Array>} List of all connections
+ */
+export async function getAllConnections() {
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData?.user) {
+      return [];
+    }
+
+    const { data, error } = await supabase
+      .from("strava_connections")
+      .select("*")
+      .eq("user_id", userData.user.id)
+      .order("connected_at", { ascending: true });
+
+    if (error) {
+      console.error("Error fetching connections:", error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error("Failed to get all connections:", err);
+    return [];
+  }
+}
+
+/**
+ * Switch active Strava connection
+ * @param {string} appName - App name to activate
+ * @returns {Promise<boolean>} Success status
+ */
+export async function switchActiveConnection(appName) {
+  try {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData?.user) {
+      throw new Error("User not authenticated");
+    }
+
+    console.log(`🔄 Switching active connection to ${appName}...`);
+
+    // Deactivate all connections
+    await supabase
+      .from("strava_connections")
+      .update({ is_active: false })
+      .eq("user_id", userData.user.id);
+
+    // Activate the specified connection
+    const { error: activateError } = await supabase
+      .from("strava_connections")
+      .update({ is_active: true })
+      .eq("user_id", userData.user.id)
+      .eq("app_name", appName);
+
+    if (activateError) {
+      console.error("❌ Error activating connection:", activateError);
+      throw activateError;
+    }
+
+    console.log(`✅ Switched to ${appName} connection`);
+    return true;
+  } catch (err) {
+    console.error("Failed to switch active connection:", err);
+    throw err;
   }
 }
 
@@ -834,28 +1046,61 @@ export async function isConnected() {
 /**
  * Disconnect Strava and remove all data
  * @param {string} userId - User ID
+ * @param {string} appName - Optional app name. If not provided, disconnects all apps
  * @returns {Promise<boolean>} Success status
  */
-export async function disconnectStrava(userId) {
+export async function disconnectStrava(userId, appName = null) {
   try {
-    // Delete all activities
-    const { error: activitiesError } = await supabase
-      .from("strava_activities")
-      .delete()
-      .eq("user_id", userId);
+    if (appName) {
+      console.log(`🔌 Disconnecting ${appName} Strava connection...`);
 
-    if (activitiesError) {
-      console.error("Error deleting activities:", activitiesError);
-    }
+      // Delete activities for this app
+      const { error: activitiesError } = await supabase
+        .from("strava_activities")
+        .delete()
+        .eq("user_id", userId)
+        .eq("app_name", appName);
 
-    // Delete connection (this will cascade delete activities due to foreign key)
-    const { error: connectionError } = await supabase
-      .from("strava_connections")
-      .delete()
-      .eq("user_id", userId);
+      if (activitiesError) {
+        console.error("Error deleting activities:", activitiesError);
+      }
 
-    if (connectionError) {
-      throw connectionError;
+      // Delete connection for this app
+      const { error: connectionError } = await supabase
+        .from("strava_connections")
+        .delete()
+        .eq("user_id", userId)
+        .eq("app_name", appName);
+
+      if (connectionError) {
+        throw connectionError;
+      }
+
+      console.log(`✅ ${appName} connection disconnected`);
+    } else {
+      console.log("🔌 Disconnecting all Strava connections...");
+
+      // Delete all activities
+      const { error: activitiesError } = await supabase
+        .from("strava_activities")
+        .delete()
+        .eq("user_id", userId);
+
+      if (activitiesError) {
+        console.error("Error deleting activities:", activitiesError);
+      }
+
+      // Delete all connections
+      const { error: connectionError } = await supabase
+        .from("strava_connections")
+        .delete()
+        .eq("user_id", userId);
+
+      if (connectionError) {
+        throw connectionError;
+      }
+
+      console.log("✅ All connections disconnected");
     }
 
     return true;

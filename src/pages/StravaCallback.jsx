@@ -14,8 +14,9 @@ function StravaCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      // Get authorization code from URL
+      // Get authorization code and state from URL
       const code = searchParams.get("code");
+      const state = searchParams.get("state"); // App name
       const errorParam = searchParams.get("error");
 
       // Check for error from Strava
@@ -37,8 +38,12 @@ function StravaCallback() {
       try {
         setStatus("processing");
 
+        // Determine app name (default to 'primary' if state not provided)
+        const appName = state || "primary";
+        console.log(`📱 Connecting ${appName} Strava app...`);
+
         // Exchange code for tokens
-        await exchangeCodeForToken(code);
+        await exchangeCodeForToken(code, appName);
 
         setStatus("success");
 
