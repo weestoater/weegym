@@ -1,8 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSettings } from "../hooks/useSettings";
 import { defaultSettingsService } from "../services/settingsService";
 import { useAuth } from "../contexts/AuthContext";
+import {
+  getConnectionStatus,
+  getAllConnections,
+  getAvailableApps,
+  getAuthorizationUrl,
+  disconnectStrava,
+  switchActiveConnection,
+} from "../services/stravaService";
+import Toast from "../components/Toast";
 
 /**
  * Settings Page - Refactored for Testability
@@ -19,6 +28,13 @@ function Settings() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
+  // Strava connection state
+  const [stravaConnection, setStravaConnection] = useState(null);
+  const [allConnections, setAllConnections] = useState([]);
+  const [availableApps, setAvailableApps] = useState([]);
+  const [stravaLoading, setStravaLoading] = useState(false);
+  const [toast, setToast] = useState(null);
+
   // Inject database service through custom hook
   const {
     settings,
@@ -30,6 +46,84 @@ function Settings() {
     resetSettings,
     updateSetting,
   } = useSettings(defaultSettingsService);
+
+  // Load Strava connections on mount
+  useEffect(() => {
+    if (user) {
+      loadStravaConnections();
+    }
+  }, [user]);
+
+  const loadStravaConnections = async () => {
+    try {
+      setStravaLoading(true);
+      const [status, connections, apps] = await Promise.all([
+        getConnectionStatus(),
+        getAllConnections(),
+        Promise.resolve(getAvailableApps()),
+      ]);
+      setStravaConnection(status);
+      setAllConnections(connections);
+      setAvailableApps(apps);
+    } catch (err) {
+      console.error("Error loading Strava connections:", err);
+    } finally {
+      setStravaLoading(false);
+    }
+  };
+
+  const handleStravaConnect = (appName = "primary") => {
+    const authUrl = getAuthorizationUrl(appName);
+    window.location.href = authUrl;
+  };
+
+  const handleStravaSwitch = async (appName) => {
+    try {
+      setStravaLoading(true);
+      await switchActiveConnection(appName);
+      await loadStravaConnections();
+      setToast({
+        message: `✅ Switched to ${appName} account`,
+        type: "success",
+      });
+    } catch (err) {
+      console.error("Error switching connection:", err);
+      setToast({
+        message: "Failed to switch connection: " + err.message,
+        type: "error",
+      });
+    } finally {
+      setStravaLoading(false);
+    }
+  };
+
+  const handleStravaDisconnect = async (appName) => {
+    if (
+      !window.confirm(
+        `Disconnect ${appName} account? This will remove all activities from this account.`,
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setStravaLoading(true);
+      await disconnectStrava(user.id, appName);
+      await loadStravaConnections();
+      setToast({
+        message: `${appName} account disconnected`,
+        type: "success",
+      });
+    } catch (err) {
+      console.error("Error disconnecting:", err);
+      setToast({
+        message: "Failed to disconnect: " + err.message,
+        type: "error",
+      });
+    } finally {
+      setStravaLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     const result = await saveSettings(settings);
@@ -139,6 +233,155 @@ function Settings() {
               Sign Out
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Connected Services Card */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <h3 className="h6 mb-0">
+            <i className="bi bi-plug me-2"></i>
+            Connected Services
+          </h3>
+        </div>
+        <div className="card-body">
+          {stravaLoading ? (
+            <div className="text-center py-3">
+              <div
+                className="spinner-border spinner-border-sm text-primary"
+                role="status"
+              >
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <h6 className="text-muted mb-3">
+                <i className="bi bi-bicycle me-1"></i>
+                Strava
+              </h6>
+
+              {allConnections && allConnections.length > 0 ? (
+                <>
+                  <div className="list-group mb-3">
+                    {allConnections.map((conn) => (
+                      <div
+                        key={conn.id}
+                        className={`list-group-item ${
+                          conn.is_active ? "list-group-item-primary" : ""
+                        }`}
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <strong>
+                              {conn.app_name === "primary"
+                                ? "🔵 Primary Account"
+                                : "🟢 Secondary Account"}
+                            </strong>
+                            {conn.is_active && (
+                              <span className="badge bg-success ms-2">
+                                Active
+                              </span>
+                            )}
+                            <div className="small text-muted">
+                              {conn.athlete_data?.firstname}{" "}
+                              {conn.athlete_data?.lastname}
+                              {" • "}
+                              Connected{" "}
+                              {new Date(conn.connected_at).toLocaleDateString()}
+                            </div>
+                          </div>
+
+                          <div className="btn-group">
+                            {!conn.is_active && (
+                              <button
+                                className="btn btn-sm btn-outline-primary"
+                                onClick={() =>
+                                  handleStravaSwitch(conn.app_name)
+                                }
+                                disabled={stravaLoading}
+                                title="Switch to this account"
+                              >
+                                Switch
+                              </button>
+                            )}
+                            <button
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() =>
+                                handleStravaDisconnect(conn.app_name)
+                              }
+                              disabled={stravaLoading}
+                              title="Disconnect this account"
+                            >
+                              <i className="bi bi-x-circle"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add Another Account */}
+                  {availableApps &&
+                    availableApps.length > allConnections.length && (
+                      <div className="d-grid gap-2">
+                        {availableApps
+                          .filter(
+                            (app) =>
+                              !allConnections.find(
+                                (c) => c.app_name === app.name,
+                              ),
+                          )
+                          .map((app) => (
+                            <button
+                              key={app.name}
+                              className="btn btn-outline-success btn-sm"
+                              onClick={() => handleStravaConnect(app.name)}
+                              disabled={stravaLoading}
+                            >
+                              <i className="bi bi-plus-circle me-1"></i>
+                              Connect {app.label}
+                            </button>
+                          ))}
+                      </div>
+                    )}
+                </>
+              ) : (
+                <div className="text-center py-3">
+                  <p className="text-muted mb-2">
+                    No Strava accounts connected
+                  </p>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    onClick={() => handleStravaConnect("primary")}
+                    disabled={stravaLoading}
+                  >
+                    <i className="bi bi-box-arrow-up-right me-1"></i>
+                    Connect Strava Account
+                  </button>
+                </div>
+              )}
+
+              <div className="mt-3">
+                <button
+                  className="btn btn-outline-primary btn-sm w-100"
+                  onClick={() => navigate("/strava")}
+                >
+                  <i className="bi bi-bicycle me-1"></i>
+                  View Strava Activities
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

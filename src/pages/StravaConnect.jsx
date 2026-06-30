@@ -7,7 +7,6 @@ import { PR_LABELS } from "../utils/prCalculator";
 import {
   getConnectionStatus,
   getAllConnections,
-  getAvailableApps,
   getAuthorizationUrl,
   disconnectStrava,
   syncActivities,
@@ -15,7 +14,6 @@ import {
   getActivityStats,
   subscribeToWebhooks,
   viewWebhookSubscriptions,
-  switchActiveConnection,
 } from "../services/stravaService";
 
 /**
@@ -28,7 +26,6 @@ function StravaConnect() {
   const navigate = useNavigate();
   const [connection, setConnection] = useState(null);
   const [allConnections, setAllConnections] = useState([]);
-  const [availableApps, setAvailableApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
@@ -50,7 +47,6 @@ function StravaConnect() {
 
   useEffect(() => {
     loadConnection();
-    loadAvailableApps();
     checkWebhookStatus();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -59,12 +55,6 @@ function StravaConnect() {
       loadActivities();
     }
   }, [connection, dateRange, activityType]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadAvailableApps = () => {
-    const apps = getAvailableApps();
-    setAvailableApps(apps);
-    console.log("📱 Available Strava apps:", apps);
-  };
 
   const checkWebhookStatus = async () => {
     try {
@@ -193,31 +183,9 @@ function StravaConnect() {
     }
   };
 
-  const handleConnect = (appName = "primary") => {
-    const authUrl = getAuthorizationUrl(appName);
+  const handleConnect = () => {
+    const authUrl = getAuthorizationUrl();
     window.location.href = authUrl;
-  };
-
-  const handleSwitchConnection = async (appName) => {
-    try {
-      setLoading(true);
-      setError(null);
-      await switchActiveConnection(appName);
-
-      // Reload connection and activities
-      await loadConnection();
-      await loadActivities();
-
-      setToast({
-        message: `✅ Switched to ${appName} account`,
-        type: "success",
-      });
-    } catch (err) {
-      console.error("Error switching connection:", err);
-      setError("Failed to switch connection: " + err.message);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleDisconnect = async () => {
@@ -490,120 +458,20 @@ function StravaConnect() {
         </div>
       )}
 
-      {/* Multi-Account Management */}
+      {/* Account Management Link */}
       {connection && allConnections && allConnections.length > 0 && (
-        <div className="row mb-4">
-          <div className="col-lg-8">
-            <div className="card mb-3">
-              <div className="card-body">
-                <h6 className="card-subtitle mb-3 text-primary">
-                  <i className="bi bi-link-45deg me-1"></i>
-                  Connected Accounts
-                </h6>
-
-                <div className="list-group">
-                  {allConnections.map((conn) => (
-                    <div
-                      key={conn.id}
-                      className={`list-group-item ${
-                        conn.is_active ? "list-group-item-primary" : ""
-                      }`}
-                    >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <strong>
-                            {conn.app_name === "primary"
-                              ? "🔵 Primary Account"
-                              : "🟢 Secondary Account"}
-                          </strong>
-                          {conn.is_active && (
-                            <span className="badge bg-success ms-2">
-                              Active
-                            </span>
-                          )}
-                          <div className="small text-muted">
-                            {conn.athlete_data?.firstname}{" "}
-                            {conn.athlete_data?.lastname}
-                            {" • "}
-                            Connected{" "}
-                            {new Date(conn.connected_at).toLocaleDateString()}
-                          </div>
-                        </div>
-
-                        <div className="btn-group">
-                          {!conn.is_active && (
-                            <button
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() =>
-                                handleSwitchConnection(conn.app_name)
-                              }
-                              title="Switch to this account"
-                            >
-                              Switch
-                            </button>
-                          )}
-                          <button
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => {
-                              if (
-                                window.confirm(
-                                  `Disconnect ${conn.app_name} account? This will remove all activities from this account.`,
-                                )
-                              ) {
-                                disconnectStrava(user.id, conn.app_name).then(
-                                  () => {
-                                    loadConnection();
-                                    setToast({
-                                      message: `${conn.app_name} account disconnected`,
-                                      type: "success",
-                                    });
-                                  },
-                                );
-                              }
-                            }}
-                            title="Disconnect this account"
-                          >
-                            <i className="bi bi-x-circle"></i>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Connect New Account Button */}
-          {availableApps && availableApps.length > allConnections.length && (
-            <div className="col-lg-4">
-              <div className="card mb-3 border-success">
-                <div className="card-body">
-                  <h6 className="card-subtitle mb-3 text-success">
-                    <i className="bi bi-plus-circle me-1"></i>
-                    Add Another Account
-                  </h6>
-                  <div className="d-grid gap-2">
-                    {availableApps
-                      .filter(
-                        (app) =>
-                          !allConnections.find((c) => c.app_name === app.name),
-                      )
-                      .map((app) => (
-                        <button
-                          key={app.name}
-                          className="btn btn-outline-success"
-                          onClick={() => handleConnect(app.name)}
-                        >
-                          <i className="bi bi-box-arrow-up-right me-1"></i>
-                          Connect {app.label}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+        <div className="alert alert-info mb-4">
+          <i className="bi bi-info-circle me-2"></i>
+          <strong>Manage Strava Accounts:</strong> You have{" "}
+          {allConnections.length} Strava account
+          {allConnections.length > 1 ? "s" : ""} connected. To switch accounts,
+          add new accounts, or disconnect,{" "}
+          <button
+            className="btn btn-link p-0 align-baseline"
+            onClick={() => navigate("/settings")}
+          >
+            go to Settings <i className="bi bi-arrow-right"></i>
+          </button>
         </div>
       )}
 
