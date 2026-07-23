@@ -1,7 +1,7 @@
 {
   "name": "weegym",
   "private": true,
-  "version": "1.1.4",
+  "version": "1.2.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,6 +20,9 @@
     "security:check": "npm run security:scan && npm run security:console && npm run security:audit",
     "precommit": "npm run security:check",
     "strava:check-config": "node scripts/check-strava-config.js",
+    "strava:check-app-configs": "node scripts/check-strava-app-configs.js",
+    "strava:check-connections": "node scripts/check-strava-connections.js",
+    "strava:check-activities": "node scripts/check-strava-activities.js",
     "strava:test-creds": "node scripts/test-strava-credentials.js",
     "semantic-release": "semantic-release"
   },

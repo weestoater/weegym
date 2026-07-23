@@ -183,9 +183,14 @@ function StravaConnect() {
     }
   };
 
-  const handleConnect = () => {
-    const authUrl = getAuthorizationUrl();
-    window.location.href = authUrl;
+  const handleConnect = async () => {
+    try {
+      const authUrl = await getAuthorizationUrl();
+      window.location.href = authUrl;
+    } catch (err) {
+      console.error("Error getting authorization URL:", err);
+      setError("Failed to connect to Strava: " + err.message);
+    }
   };
 
   const handleDisconnect = async () => {

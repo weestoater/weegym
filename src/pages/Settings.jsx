@@ -68,9 +68,17 @@ function Settings() {
     }
   };
 
-  const handleStravaConnect = (appName = "primary") => {
-    const authUrl = getAuthorizationUrl(appName);
-    window.location.href = authUrl;
+  const handleStravaConnect = async (_appName = "primary") => {
+    try {
+      const authUrl = await getAuthorizationUrl();
+      window.location.href = authUrl;
+    } catch (err) {
+      console.error("Error connecting to Strava:", err);
+      setToast({
+        type: "error",
+        message: "Failed to connect to Strava: " + err.message,
+      });
+    }
   };
 
   const handleStravaSwitch = async (appName) => {

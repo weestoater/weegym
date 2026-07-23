@@ -17,65 +17,143 @@ const STRAVA_AUTH_BASE = "https://www.strava.com/oauth";
 const API_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
 
-// Validate environment variables at module load time
-const STRAVA_APPS = {
-  primary: {
+// Cache for database configuration
+let configCache = null;
+let configLoadPromise = null;
+
+/**
+ * Load Strava app configuration from database
+ * Falls back to environment variables if database config not available
+ * @param {boolean} forceReload - Force reload from database, bypassing cache
+ * @returns {Promise<Object>} Active Strava app configuration
+ */
+async function loadStravaConfig(forceReload = false) {
+  // Return cached config if available and not forcing reload
+  if (configCache && !forceReload) {
+    return configCache;
+  }
+
+  // If already loading, wait for that promise
+  if (configLoadPromise && !forceReload) {
+    return configLoadPromise;
+  }
+
+  // Load from database
+  configLoadPromise = (async () => {
+    try {
+      console.log("🔧 Loading Strava configuration from database...");
+
+      const { data, error } = await supabase
+        .from("strava_app_configs")
+        .select("*")
+        .eq("is_active", true)
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") {
+          // No rows found - fall back to env vars
+          console.warn(
+            "⚠️ No active Strava config in database, using environment variables",
+          );
+          configCache = getEnvConfig();
+          return configCache;
+        }
+        throw error;
+      }
+
+      if (!data) {
+        console.warn(
+          "⚠️ No active Strava config found, using environment variables",
+        );
+        configCache = getEnvConfig();
+        return configCache;
+      }
+
+      console.log("✅ Strava config loaded from database:", {
+        appName: data.app_name,
+        clientId: data.client_id,
+        redirectUri: data.redirect_uri,
+        clientSecret: data.client_secret
+          ? "***" + data.client_secret.slice(-4)
+          : "MISSING",
+      });
+
+      configCache = {
+        appName: data.app_name,
+        clientId: data.client_id,
+        clientSecret: data.client_secret,
+        redirectUri: data.redirect_uri,
+        description: data.description,
+      };
+
+      return configCache;
+    } catch (err) {
+      console.error("❌ Error loading Strava config from database:", err);
+      console.warn("⚠️ Falling back to environment variables");
+      configCache = getEnvConfig();
+      return configCache;
+    } finally {
+      configLoadPromise = null;
+    }
+  })();
+
+  return configLoadPromise;
+}
+
+/**
+ * Get configuration from environment variables (fallback)
+ * @returns {Object} Strava app configuration from env vars
+ */
+function getEnvConfig() {
+  const config = {
+    appName: "env-primary",
     clientId: import.meta.env.VITE_STRAVA_CLIENT_ID,
     clientSecret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
     redirectUri: import.meta.env.VITE_STRAVA_REDIRECT_URI,
-  },
-  secondary: {
-    clientId: import.meta.env.VITE_STRAVA_SECONDARY_CLIENT_ID,
-    clientSecret: import.meta.env.VITE_STRAVA_SECONDARY_CLIENT_SECRET,
-    redirectUri: import.meta.env.VITE_STRAVA_SECONDARY_REDIRECT_URI,
-  },
-};
+    description: "Configuration from environment variables",
+  };
 
-// For backward compatibility, STRAVA_CONFIG refers to primary app
-const STRAVA_CONFIG = STRAVA_APPS.primary;
+  if (!config.clientId || !config.clientSecret || !config.redirectUri) {
+    console.error("❌ STRAVA CONFIGURATION ERROR:");
+    console.error(
+      "Missing required configuration in both database and environment variables",
+    );
+    if (!config.clientId)
+      console.error("  - VITE_STRAVA_CLIENT_ID or database config");
+    if (!config.clientSecret)
+      console.error("  - VITE_STRAVA_CLIENT_SECRET or database config");
+    if (!config.redirectUri)
+      console.error("  - VITE_STRAVA_REDIRECT_URI or database config");
+    throw new Error("Strava is not configured properly");
+  }
 
-// Log configuration status (without exposing secrets)
-if (
-  !STRAVA_CONFIG.clientId ||
-  !STRAVA_CONFIG.clientSecret ||
-  !STRAVA_CONFIG.redirectUri
-) {
-  console.error("❌ STRAVA CONFIGURATION ERROR:");
-  console.error("Missing required environment variables:");
-  if (!STRAVA_CONFIG.clientId) console.error("  - VITE_STRAVA_CLIENT_ID");
-  if (!STRAVA_CONFIG.clientSecret)
-    console.error("  - VITE_STRAVA_CLIENT_SECRET");
-  if (!STRAVA_CONFIG.redirectUri) console.error("  - VITE_STRAVA_REDIRECT_URI");
-  console.error("Strava integration will not work until these are configured.");
-} else {
-  console.log("✅ Strava primary app config loaded:", {
-    clientId: STRAVA_CONFIG.clientId,
-    redirectUri: STRAVA_CONFIG.redirectUri,
-    clientSecret: STRAVA_CONFIG.clientSecret
-      ? "***" + STRAVA_CONFIG.clientSecret.slice(-4)
+  console.log("ℹ️ Using Strava config from environment variables:", {
+    clientId: config.clientId,
+    redirectUri: config.redirectUri,
+    clientSecret: config.clientSecret
+      ? "***" + config.clientSecret.slice(-4)
       : "MISSING",
   });
 
-  // Check for secondary app
-  if (
-    STRAVA_APPS.secondary.clientId &&
-    STRAVA_APPS.secondary.clientSecret &&
-    STRAVA_APPS.secondary.redirectUri
-  ) {
-    console.log("✅ Strava secondary app config loaded:", {
-      clientId: STRAVA_APPS.secondary.clientId,
-      redirectUri: STRAVA_APPS.secondary.redirectUri,
-      clientSecret: STRAVA_APPS.secondary.clientSecret
-        ? "***" + STRAVA_APPS.secondary.clientSecret.slice(-4)
-        : "MISSING",
-    });
-  } else {
-    console.log("ℹ️ No secondary Strava app configured (optional)");
-  }
+  return config;
+}
+
+/**
+ * Reload configuration from database
+ * @returns {Promise<Object>} Refreshed configuration
+ */
+export async function reloadStravaConfig() {
+  console.log("🔄 Reloading Strava configuration...");
+  return await loadStravaConfig(true);
 }
 
 // Track token refresh to prevent race conditions
 let tokenRefreshPromise = null;
+
+// Load initial config
+loadStravaConfig().catch((err) => {
+  console.error("❌ Failed to load initial Strava config:", err);
+});
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -129,12 +207,11 @@ async function fetchWithTimeout(url, options = {}, retries = MAX_RETRIES) {
 }
 
 /**
- * Validate Strava configuration for a specific app
- * @param {string} appName - App name ('primary' or 'secondary')
+ * Validate that Strava configuration is loaded and valid
+ * @param {Object} config - Configuration object to validate
  * @throws {Error} If configuration is invalid
  */
-function validateConfig(appName = "primary") {
-  const config = STRAVA_APPS[appName];
+function validateConfig(config) {
   if (
     !config ||
     !config.clientId ||
@@ -142,48 +219,96 @@ function validateConfig(appName = "primary") {
     !config.redirectUri
   ) {
     throw new Error(
-      `Strava ${appName} app is not configured. Please set the required environment variables.`,
+      "Strava app is not configured. Please configure in database or environment variables.",
     );
   }
 }
 
 /**
- * Get configuration for a specific app
- * @param {string} appName - App name ('primary' or 'secondary')
- * @returns {Object} App configuration
+ * Get all Strava app configurations from database
+ * @returns {Promise<Array<Object>>} List of all app configurations
  */
-function getAppConfig(appName = "primary") {
-  const config = STRAVA_APPS[appName];
-  if (!config) {
-    throw new Error(`Unknown Strava app: ${appName}`);
+export async function getAllAppConfigs() {
+  try {
+    const { data, error } = await supabase
+      .from("strava_app_configs")
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching app configs:", err);
+    return [];
   }
-  return config;
+}
+
+/**
+ * Set which Strava app configuration is active
+ * @param {string} appName - App name to activate
+ * @returns {Promise<boolean>} Success status
+ */
+export async function setActiveApp(appName) {
+  try {
+    const { error } = await supabase
+      .from("strava_app_configs")
+      .update({ is_active: true })
+      .eq("app_name", appName);
+
+    if (error) throw error;
+
+    // Reload config cache
+    await reloadStravaConfig();
+    return true;
+  } catch (err) {
+    console.error("Error setting active app:", err);
+    return false;
+  }
 }
 
 /**
  * Get list of available Strava apps
- * @returns {Array<Object>} List of configured apps with their names
+ * Returns configured apps from database (or env as fallback)
+ * @returns {Promise<Array<Object>>} List of apps with name and label
  */
-export function getAvailableApps() {
-  const apps = [];
+export async function getAvailableApps() {
+  try {
+    // First try to get from database
+    const configs = await getAllAppConfigs();
 
-  if (
-    STRAVA_APPS.primary.clientId &&
-    STRAVA_APPS.primary.clientSecret &&
-    STRAVA_APPS.primary.redirectUri
-  ) {
-    apps.push({ name: "primary", label: "Primary Account" });
+    if (configs && configs.length > 0) {
+      return configs.map((config) => ({
+        name: config.app_name,
+        label: config.description || config.app_name,
+        clientId: config.client_id,
+        isActive: config.is_active,
+      }));
+    }
+
+    // Fallback to environment variables if no database configs
+    console.warn("No database configs found, checking environment variables");
+    const apps = [];
+
+    const envConfig = {
+      clientId: import.meta.env.VITE_STRAVA_CLIENT_ID,
+      clientSecret: import.meta.env.VITE_STRAVA_CLIENT_SECRET,
+      redirectUri: import.meta.env.VITE_STRAVA_REDIRECT_URI,
+    };
+
+    if (envConfig.clientId && envConfig.clientSecret && envConfig.redirectUri) {
+      apps.push({
+        name: "primary",
+        label: "Primary Account (from .env)",
+        clientId: envConfig.clientId,
+        isActive: true,
+      });
+    }
+
+    return apps;
+  } catch (err) {
+    console.error("Error getting available apps:", err);
+    return [];
   }
-
-  if (
-    STRAVA_APPS.secondary.clientId &&
-    STRAVA_APPS.secondary.clientSecret &&
-    STRAVA_APPS.secondary.redirectUri
-  ) {
-    apps.push({ name: "secondary", label: "Secondary Account" });
-  }
-
-  return apps;
 }
 
 // ============================================================================
@@ -192,12 +317,12 @@ export function getAvailableApps() {
 
 /**
  * Generate Strava OAuth authorization URL
- * @param {string} appName - App name ('primary' or 'secondary')
- * @returns {string} Authorization URL to redirect user to
+ * Uses the active Strava app configuration from database
+ * @returns {Promise<string>} Authorization URL to redirect user to
  */
-export function getAuthorizationUrl(appName = "primary") {
-  validateConfig(appName);
-  const config = getAppConfig(appName);
+export async function getAuthorizationUrl() {
+  const config = await loadStravaConfig();
+  validateConfig(config);
 
   const params = new URLSearchParams({
     client_id: config.clientId,
@@ -205,7 +330,7 @@ export function getAuthorizationUrl(appName = "primary") {
     response_type: "code",
     scope: "read,activity:read_all",
     approval_prompt: "auto",
-    state: appName, // Pass app name in state to identify on callback
+    state: config.appName, // Pass app name in state to identify on callback
   });
 
   return `${STRAVA_AUTH_BASE}/authorize?${params.toString()}`;
@@ -213,15 +338,17 @@ export function getAuthorizationUrl(appName = "primary") {
 
 /**
  * Exchange authorization code for access tokens
+ * Uses the active Strava app configuration from database
  * @param {string} code - Authorization code from OAuth callback
- * @param {string} appName - App name ('primary' or 'secondary')
  * @returns {Promise<Object>} Token data with access_token, refresh_token, expires_at
  */
-export async function exchangeCodeForToken(code, appName = "primary") {
+export async function exchangeCodeForToken(code) {
   try {
-    validateConfig(appName);
-    const config = getAppConfig(appName);
-    console.log(`🔐 Exchanging authorization code for ${appName} app token...`);
+    const config = await loadStravaConfig();
+    validateConfig(config);
+    console.log(
+      `🔐 Exchanging authorization code for ${config.appName} app token...`,
+    );
 
     const response = await fetchWithTimeout(`${STRAVA_AUTH_BASE}/token`, {
       method: "POST",
@@ -261,7 +388,9 @@ export async function exchangeCodeForToken(code, appName = "primary") {
       throw new Error("User not authenticated");
     }
 
-    console.log(`💾 Storing ${appName} Strava connection in database...`);
+    console.log(
+      `💾 Storing ${config.appName} Strava connection in database...`,
+    );
 
     // Check if this is the first connection for this user
     const { data: existingConnections } = await supabase
@@ -277,7 +406,7 @@ export async function exchangeCodeForToken(code, appName = "primary") {
       .from("strava_connections")
       .upsert({
         user_id: userData.user.id,
-        app_name: appName,
+        app_name: config.appName,
         athlete_id: data.athlete.id,
         access_token: data.access_token,
         refresh_token: data.refresh_token,
@@ -294,7 +423,7 @@ export async function exchangeCodeForToken(code, appName = "primary") {
       throw dbError;
     }
 
-    console.log(`✅ ${appName} Strava connection stored successfully`);
+    console.log(`✅ ${config.appName} Strava connection stored successfully`);
     return connection;
   } catch (err) {
     console.error("❌ Failed to exchange code for token:", err);
@@ -304,11 +433,12 @@ export async function exchangeCodeForToken(code, appName = "primary") {
 
 /**
  * Refresh expired access token
+ * Uses the current active Strava app configuration
  * @param {string} userId - User ID
- * @param {string} appName - App name ('primary' or 'secondary')
+ * @param {string} appName - Optional app name override
  * @returns {Promise<Object>} Updated connection with new tokens
  */
-export async function refreshAccessToken(userId, appName = "primary") {
+export async function refreshAccessToken(userId, appName = null) {
   // Prevent multiple simultaneous token refreshes
   if (tokenRefreshPromise) {
     console.log("⏳ Token refresh already in progress, waiting...");
@@ -317,16 +447,17 @@ export async function refreshAccessToken(userId, appName = "primary") {
 
   tokenRefreshPromise = (async () => {
     try {
-      validateConfig(appName);
-      const config = getAppConfig(appName);
-      console.log(`🔄 Refreshing access token for ${appName} app...`);
+      const config = await loadStravaConfig();
+      validateConfig(config);
+      const activeAppName = appName || config.appName;
+      console.log(`🔄 Refreshing access token for ${activeAppName} app...`);
 
       // Get current connection
       const { data: connection, error: fetchError } = await supabase
         .from("strava_connections")
         .select("*")
         .eq("user_id", userId)
-        .eq("app_name", appName)
+        .eq("app_name", activeAppName)
         .single();
 
       if (fetchError) {
@@ -374,7 +505,7 @@ export async function refreshAccessToken(userId, appName = "primary") {
           expires_at: new Date(data.expires_at * 1000).toISOString(),
         })
         .eq("user_id", userId)
-        .eq("app_name", appName)
+        .eq("app_name", activeAppName)
         .select()
         .single();
 
@@ -1523,7 +1654,8 @@ export function getActivityBadgeColor(type) {
  */
 export async function subscribeToWebhooks(callbackUrl) {
   try {
-    validateConfig();
+    const config = await loadStravaConfig();
+    validateConfig(config);
     console.log("🔔 Subscribing to Strava webhooks...", { callbackUrl });
 
     const response = await fetchWithTimeout(
@@ -1534,8 +1666,8 @@ export async function subscribeToWebhooks(callbackUrl) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          client_id: STRAVA_CONFIG.clientId,
-          client_secret: STRAVA_CONFIG.clientSecret,
+          client_id: config.clientId,
+          client_secret: config.clientSecret,
           callback_url: callbackUrl,
           verify_token: "WEEGYM_STRAVA_WEBHOOK", // Must match Edge Function
         }),
@@ -1588,11 +1720,12 @@ export async function subscribeToWebhooks(callbackUrl) {
  */
 export async function viewWebhookSubscriptions() {
   try {
-    validateConfig();
+    const config = await loadStravaConfig();
+    validateConfig(config);
     console.log("📋 Viewing webhook subscriptions...");
 
     const response = await fetchWithTimeout(
-      `${STRAVA_API_BASE}/push_subscriptions?client_id=${STRAVA_CONFIG.clientId}&client_secret=${STRAVA_CONFIG.clientSecret}`,
+      `${STRAVA_API_BASE}/push_subscriptions?client_id=${config.clientId}&client_secret=${config.clientSecret}`,
     );
 
     if (!response.ok) {
@@ -1623,11 +1756,12 @@ export async function viewWebhookSubscriptions() {
  */
 export async function unsubscribeFromWebhooks(subscriptionId) {
   try {
-    validateConfig();
+    const config = await loadStravaConfig();
+    validateConfig(config);
     console.log("🔕 Unsubscribing from webhook:", subscriptionId);
 
     const response = await fetchWithTimeout(
-      `${STRAVA_API_BASE}/push_subscriptions/${subscriptionId}?client_id=${STRAVA_CONFIG.clientId}&client_secret=${STRAVA_CONFIG.clientSecret}`,
+      `${STRAVA_API_BASE}/push_subscriptions/${subscriptionId}?client_id=${config.clientId}&client_secret=${config.clientSecret}`,
       {
         method: "DELETE",
       },
