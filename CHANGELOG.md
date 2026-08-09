@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.1.3 (2026-08-09)</small>
+
+* fix: add missing SkeletonListItem import in Programme.jsx ([9cfd53c](https://github.com/weestoater/weegym/commit/9cfd53c))
+* 1.1.3 ([5be56b9](https://github.com/weestoater/weegym/commit/5be56b9))
+* added cardio tracker and refactored utils ([e9b22dc](https://github.com/weestoater/weegym/commit/e9b22dc))
+* adding second account ([7a11f34](https://github.com/weestoater/weegym/commit/7a11f34))
+* archived from other accounts also in db now ([af8bc69](https://github.com/weestoater/weegym/commit/af8bc69))
+* fixed linting issues ([9195a03](https://github.com/weestoater/weegym/commit/9195a03))
+* fixing linting errors ([ec84bdb](https://github.com/weestoater/weegym/commit/ec84bdb))
+* garmin functionality added ([24c6f3b](https://github.com/weestoater/weegym/commit/24c6f3b))
+* garmin step tracker phase 1 ([e7dbdda](https://github.com/weestoater/weegym/commit/e7dbdda))
+* lint & build warning fixed ([26ac738](https://github.com/weestoater/weegym/commit/26ac738))
+* linting errors fixed ([9ab319c](https://github.com/weestoater/weegym/commit/9ab319c))
+* refactored strava accounts into settings area ([ae087c0](https://github.com/weestoater/weegym/commit/ae087c0))
+* refactoring the strava connection stuff ([9c39f3b](https://github.com/weestoater/weegym/commit/9c39f3b))
+* removed surplus functions, with Gemini ([462d59e](https://github.com/weestoater/weegym/commit/462d59e))
+* strava connectivity fixed ([bc8007c](https://github.com/weestoater/weegym/commit/bc8007c))
+* v1.1.4 ([ac70b5c](https://github.com/weestoater/weegym/commit/ac70b5c))
+* chore: trigger deployment for v1.1.2 ([5375126](https://github.com/weestoater/weegym/commit/5375126))
+
 ## <small>1.1.2 (2026-05-22)</small>
 
 - fix: resolve Strava activity GPS map display issue ([c0c1f70](https://github.com/weestoater/weegym/commit/c0c1f70))
