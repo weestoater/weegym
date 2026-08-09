@@ -17,6 +17,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "6-8",
         restSeconds: 90,
+        muscleGroups: ["Chest", "Triceps", "Front Shoulders"],
+        formTips: [
+          "Keep feet flat on floor",
+          "Press shoulder blades into the pad",
+          "Push straight forward, not up",
+          "Full extension without locking elbows",
+        ],
         demoUrl:
           "https://exrx.net/WeightExercises/PectoralSternal/LVChestPress",
       },
@@ -27,6 +34,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        muscleGroups: ["Lats", "Upper Back", "Biceps"],
+        formTips: [
+          "Lean back slightly (15-20 degrees)",
+          "Pull bar to upper chest",
+          "Lead with elbows, not hands",
+          "Squeeze shoulder blades together at bottom",
+        ],
         demoUrl:
           "https://exrx.net/WeightExercises/LatissimusDorsi/LVFrontPulldown",
       },
@@ -37,6 +51,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        muscleGroups: ["Mid Back", "Lats", "Rear Shoulders"],
+        formTips: [
+          "Sit upright with chest proud",
+          "Pull handle to lower chest/upper abs",
+          "Keep elbows close to body",
+          "Squeeze shoulder blades at the back",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/BackGeneral/CBSeatedRow",
       },
       {
@@ -46,6 +67,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "12-15",
         restSeconds: 60,
+        muscleGroups: ["Rear Shoulders", "Upper Back", "Rotator Cuff"],
+        formTips: [
+          "Pull rope towards face/forehead level",
+          "Separate rope ends as you pull",
+          "Externally rotate shoulders at peak",
+          "Focus on rear delt squeeze",
+        ],
         demoUrl:
           "https://exrx.net/WeightExercises/DeltoidPosterior/CBStandingRearDeltRowRope",
       },
@@ -56,6 +84,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "10-12",
         restSeconds: 90,
+        muscleGroups: ["Quadriceps"],
+        formTips: [
+          "Adjust seat so knees align with pivot point",
+          "Grip handles for stability",
+          "Extend legs fully, pause at top",
+          "Control the weight down slowly",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/Quadriceps/LVLegExtension",
       },
       {
@@ -65,6 +100,13 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        muscleGroups: ["Side Shoulders"],
+        formTips: [
+          "Stand with slight knee bend",
+          "Raise one arm to shoulder height",
+          "Lead with elbow, slight bend in arm",
+          "Pour the pitcher at top (thumb down)",
+        ],
         demoUrl:
           "https://exrx.net/WeightExercises/DeltoidLateral/DBLateralRaise",
       },
@@ -75,6 +117,13 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        muscleGroups: ["Triceps"],
+        formTips: [
+          "Keep elbows pinned to sides",
+          "Start with rope at chest height",
+          "Push down and slightly apart at bottom",
+          "Fully extend arms, squeeze triceps",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/Triceps/CBPushdown",
       },
     ],
@@ -91,6 +140,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "6-8",
         restSeconds: 90,
+        muscleGroups: ["Mid Back", "Lats", "Biceps"],
+        formTips: [
+          "Sit tall with chest up",
+          "Pull handles to lower chest",
+          "Squeeze shoulder blades together",
+          "Keep core tight throughout",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/BackGeneral/LVSeatedRow",
       },
       {
@@ -100,6 +156,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        muscleGroups: ["Lats", "Mid Back", "Traps"],
+        formTips: [
+          "Hinge at hips, flat back",
+          "Pull weight to chest",
+          "Lead with elbows",
+          "Control the negative",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/BackGeneral/LVTBarRow",
       },
       {
@@ -109,6 +172,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "10-12",
         restSeconds: 60,
+        muscleGroups: ["Lats", "Mid Back", "Biceps"],
+        formTips: [
+          "Support yourself on bench",
+          "Pull dumbbell to hip",
+          "Keep back flat, don't rotate",
+          "Feel the lat stretch at bottom",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/BackGeneral/DBBentOverRow",
       },
       {
@@ -118,6 +188,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "10-12",
         restSeconds: 90,
+        muscleGroups: ["Hamstrings"],
+        formTips: [
+          "Lie flat, align knees with machine pivot",
+          "Curl heels towards glutes",
+          "Squeeze hamstrings at top",
+          "Don't lift hips off pad",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/Hamstrings/LVLyingLegCurl",
       },
       {
@@ -127,6 +204,13 @@ const PROGRAMME = {
         sets: 3,
         reps: "8-10",
         restSeconds: 90,
+        muscleGroups: ["Front Shoulders", "Side Shoulders", "Triceps"],
+        formTips: [
+          "Sit upright, core engaged",
+          "Press straight overhead",
+          "Don't lock elbows at top",
+          "Lower with control to ear level",
+        ],
         demoUrl:
           "https://exrx.net/WeightExercises/DeltoidAnterior/LVShoulderPress",
       },
@@ -137,6 +221,13 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        muscleGroups: ["Biceps", "Forearms"],
+        formTips: [
+          "Stand with neutral grip (thumbs up)",
+          "Keep elbows at sides",
+          "Curl to shoulder height",
+          "No swinging or momentum",
+        ],
         demoUrl:
           "https://exrx.net/WeightExercises/Brachioradialis/DBHammerCurl",
       },
@@ -147,6 +238,13 @@ const PROGRAMME = {
         sets: 2,
         reps: "10-12",
         restSeconds: 60,
+        muscleGroups: ["Triceps"],
+        formTips: [
+          "Extend arms overhead",
+          "Keep elbows close to head",
+          "Lower behind head with control",
+          "Press up to full extension",
+        ],
         demoUrl: "https://exrx.net/WeightExercises/Triceps/CBTriExt",
       },
     ],
@@ -333,13 +431,42 @@ function WorkoutSession() {
 
     return (
       <div className="container mt-4">
+        {/* Day Selection Tabs */}
+        <div className="mb-4">
+          <h2>
+            <i className="bi bi-play-circle me-2"></i>
+            Workout
+          </h2>
+          <p className="text-muted">Choose your workout day and exercise</p>
+        </div>
+
+        <div className="btn-group w-100 mb-4" role="group">
+          <button
+            type="button"
+            className={`btn ${
+              day === "1" ? "btn-primary" : "btn-outline-primary"
+            }`}
+            onClick={() => navigate("/workout?day=1")}
+          >
+            <i className="bi bi-calendar-check me-2"></i>
+            Day 1 - Upper Body
+          </button>
+          <button
+            type="button"
+            className={`btn ${
+              day === "2" ? "btn-primary" : "btn-outline-primary"
+            }`}
+            onClick={() => navigate("/workout?day=2")}
+          >
+            <i className="bi bi-calendar-check me-2"></i>
+            Day 2 - Mixed Areas
+          </button>
+        </div>
+
         {/* Workout Info Banner */}
         <div className="card mb-4 border-primary">
           <div className="card-body">
-            <h2 className="h5 mb-1">
-              <i className="bi bi-list-check me-2"></i>
-              {workout.name}
-            </h2>
+            <h3 className="h6 mb-1">{workout.name}</h3>
             <p className="text-muted small mb-0">
               <i className="bi bi-bullseye me-1"></i>
               {workout.target}
@@ -426,14 +553,26 @@ function WorkoutSession() {
                   disabled={isCompleted}
                 >
                   <div className="d-flex justify-content-between align-items-center">
-                    <div>
+                    <div className="flex-grow-1">
                       <h5 className="mb-1">
                         {isCompleted && (
                           <i className="bi bi-check-circle-fill text-success me-2"></i>
                         )}
                         {exercise.name}
                       </h5>
-                      <small className="text-muted">
+                      <div className="d-flex flex-wrap gap-1 mb-1">
+                        {exercise.muscleGroups &&
+                          exercise.muscleGroups.map((muscle, idx) => (
+                            <span
+                              key={idx}
+                              className="badge bg-light text-dark"
+                              style={{ fontSize: "0.7rem" }}
+                            >
+                              {muscle}
+                            </span>
+                          ))}
+                      </div>
+                      <small className="text-muted d-block">
                         {exercise.sets} sets × {exercise.reps} reps
                         <span className="ms-2">
                           <i className="bi bi-circle-fill me-1"></i>
@@ -452,7 +591,7 @@ function WorkoutSession() {
                         </a>
                       )}
                     </div>
-                    <div className="text-end">
+                    <div className="text-end ms-2">
                       {isCompleted ? (
                         <span className="badge bg-success">Complete</span>
                       ) : setsCompleted > 0 ? (
@@ -487,6 +626,30 @@ function WorkoutSession() {
           onClose={() => setToast(null)}
         />
       )}
+
+      {/* Day Selection Tabs */}
+      <div className="btn-group w-100 mb-3" role="group">
+        <button
+          type="button"
+          className={`btn btn-sm ${
+            day === "1" ? "btn-primary" : "btn-outline-primary"
+          }`}
+          onClick={() => navigate("/workout?day=1")}
+        >
+          <i className="bi bi-calendar-check me-1"></i>
+          Day 1
+        </button>
+        <button
+          type="button"
+          className={`btn btn-sm ${
+            day === "2" ? "btn-primary" : "btn-outline-primary"
+          }`}
+          onClick={() => navigate("/workout?day=2")}
+        >
+          <i className="bi bi-calendar-check me-1"></i>
+          Day 2
+        </button>
+      </div>
 
       {/* Header with back button */}
       <div className="d-flex justify-content-between align-items-center mb-3">
@@ -546,19 +709,27 @@ function WorkoutSession() {
       <div className="card mb-4">
         <div className="card-body">
           <div className="d-flex justify-content-between align-items-start mb-3">
-            <div>
-              <h2 className="h4 mb-1">{currentExercise.name}</h2>
-              <span className="badge bg-secondary">
-                {currentExercise.type === "M" ? "Machine" : "Free Weights"}
-              </span>
+            <div className="flex-grow-1">
+              <h2 className="h4 mb-2">{currentExercise.name}</h2>
+              <div className="d-flex flex-wrap gap-2 mb-2">
+                <span className="badge bg-secondary">
+                  {currentExercise.type === "M" ? "Machine" : "Free Weights"}
+                </span>
+                {currentExercise.muscleGroups &&
+                  currentExercise.muscleGroups.map((muscle, idx) => (
+                    <span key={idx} className="badge bg-info">
+                      {muscle}
+                    </span>
+                  ))}
+              </div>
               {currentExercise.demoUrl && (
                 <a
                   href={currentExercise.demoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="d-block mt-2 small text-primary"
+                  className="btn btn-sm btn-outline-primary mt-2"
                 >
-                  <i className="bi bi-play-circle me-1"></i>Watch demo
+                  <i className="bi bi-play-circle me-1"></i>Watch Demo Video
                 </a>
               )}
             </div>
@@ -566,10 +737,30 @@ function WorkoutSession() {
               Set {currentSet}/{currentExercise.sets}
             </span>
           </div>
-          <p className="text-muted mb-0">
-            <i className="bi bi-arrow-repeat me-2"></i>
-            Target: {currentExercise.reps} reps
-          </p>
+
+          <div className="mb-3">
+            <p className="text-muted mb-2">
+              <i className="bi bi-arrow-repeat me-2"></i>
+              Target: {currentExercise.reps} reps
+            </p>
+          </div>
+
+          {/* Form Tips */}
+          {currentExercise.formTips && currentExercise.formTips.length > 0 && (
+            <div className="alert alert-light border-start border-primary border-4 mb-0">
+              <div className="d-flex align-items-center mb-2">
+                <i className="bi bi-info-circle text-primary me-2"></i>
+                <strong className="text-primary">Form Guide</strong>
+              </div>
+              <ul className="mb-0 ps-3" style={{ fontSize: "0.9rem" }}>
+                {currentExercise.formTips.map((tip, idx) => (
+                  <li key={idx} className="mb-1">
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
@@ -578,7 +769,10 @@ function WorkoutSession() {
         <div className="card mb-4">
           <div className="card-body">
             <div className="mb-3">
-              <label className="form-label fw-bold">Weight (kg)</label>
+              <label className="form-label fw-bold">
+                Weight (kg)
+                <FieldTooltip content="Enter the weight used for this set" />
+              </label>
               <input
                 type="number"
                 className="form-control form-control-lg"
@@ -590,7 +784,10 @@ function WorkoutSession() {
               />
             </div>
             <div className="mb-3">
-              <label className="form-label fw-bold">Reps</label>
+              <label className="form-label fw-bold">
+                Reps
+                <FieldTooltip content="How many repetitions did you complete?" />
+              </label>
               <input
                 type="number"
                 className="form-control form-control-lg"

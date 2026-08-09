@@ -4,18 +4,149 @@ All notable changes to this project will be documented in this file.
 
 ## <small>1.1.2 (2026-05-22)</small>
 
-* fix: resolve Strava activity GPS map display issue ([c0c1f70](https://github.com/weestoater/weegym/commit/c0c1f70))
-* docs: downgrade GitHub token migration to monitoring status ([ebe4650](https://github.com/weestoater/weegym/commit/ebe4650))
-* docs: mark Strava webhooks as verified in production ([a69f525](https://github.com/weestoater/weegym/commit/a69f525))
-* docs: modernize deployment guide and add contribution guidelines ([3ef0ccc](https://github.com/weestoater/weegym/commit/3ef0ccc))
-* docs: replace boilerplate README with comprehensive documentation ([6b14640](https://github.com/weestoater/weegym/commit/6b14640))
-* docs: update project roadmap with May 21 accomplishments ([f5ebcaa](https://github.com/weestoater/weegym/commit/f5ebcaa))
-* style: format import statement in stravaService ([231bf20](https://github.com/weestoater/weegym/commit/231bf20))
-* style: improve markdown formatting in documentation ([9a462f0](https://github.com/weestoater/weegym/commit/9a462f0))
+- fix: resolve Strava activity GPS map display issue ([c0c1f70](https://github.com/weestoater/weegym/commit/c0c1f70))
+- docs: downgrade GitHub token migration to monitoring status ([ebe4650](https://github.com/weestoater/weegym/commit/ebe4650))
+- docs: mark Strava webhooks as verified in production ([a69f525](https://github.com/weestoater/weegym/commit/a69f525))
+- docs: modernize deployment guide and add contribution guidelines ([3ef0ccc](https://github.com/weestoater/weegym/commit/3ef0ccc))
+- docs: replace boilerplate README with comprehensive documentation ([6b14640](https://github.com/weestoater/weegym/commit/6b14640))
+- docs: update project roadmap with May 21 accomplishments ([f5ebcaa](https://github.com/weestoater/weegym/commit/f5ebcaa))
+- style: format import statement in stravaService ([231bf20](https://github.com/weestoater/weegym/commit/231bf20))
+- style: improve markdown formatting in documentation ([9a462f0](https://github.com/weestoater/weegym/commit/9a462f0))
 
-## Unreleased
+## <small>1.2.3 (2026-08-09)</small>
+
+### Features
+
+- **Cardio Tracker**: Added dedicated cardio equipment tracking page ([2026-08-09])
+  - Track treadmill, rowing machine, cross trainer, stationary bike, elliptical, and stair climber workouts
+  - Log duration, distance, calories, heart rate, and notes
+  - Filter sessions by equipment type
+  - View summary statistics (total sessions, time, distance, calories)
+  - New database table: `cardio_sessions` with Row Level Security
+  - New page: `src/pages/CardioTracker.jsx`
+  - Database functions: `saveCardioSession`, `getCardioSessions`, `updateCardioSession`, `deleteCardioSession`
+  - Updated navigation menu with new "Cardio Tracker" item
+  - Added activity icons for Treadmill, Cross Trainer, and Rowing Machine
+
+### Enhancements
+
+- **Loading States**: Comprehensive skeleton loading system ([2026-08-09])
+  - Created skeleton component library (`src/components/Skeleton.jsx`) with 7+ variants
+  - Added CSS animations (skeleton-wave, skeleton-pulse)
+  - Implemented on 5 pages: Dashboard, StravaActivities, CardioTracker, ActiveWellbeing, Programme
+  - Replaced generic spinners with content-shaped placeholders
+  - Improved perceived performance during data loading
+
+- **Error Handling**: User-friendly error components and utilities ([2026-08-09])
+  - Created error component library (`src/components/ErrorMessage.jsx`)
+  - Components: ErrorAlert, NetworkError, AuthError, NotFoundError, EmptyState, ValidationErrors, ApiError
+  - Created error utilities (`src/utils/errorUtils.js`)
+  - Functions: formatErrorMessage, validateForm, retryWithBackoff, logError
+  - Updated StravaActivities with improved error display with retry functionality
+
+- **Tooltips**: Contextual help system ([2026-08-09])
+  - Created tooltip component library (`src/components/Tooltip.jsx`)
+  - Components: Tooltip, InfoTooltip, HelpTooltip, FieldTooltip, BadgeTooltip
+  - Added contextual help to 10 form fields across 3 pages
+  - Keyboard navigation and mobile-friendly
+  - WCAG 2.1 AA accessibility compliant
+
+### Bug Fixes
+
+- **CardioTracker**: Fixed date formatting issue in edit workflow ([2026-08-09])
+  - Date field now correctly displays YYYY-MM-DD format instead of full ISO timestamp
+  - Enhanced `setFieldsFromSession` in `useSessionManager` to handle date conversion
+
+- **CalorieTracker**: Converted alerts to toast notifications ([2026-08-09])
+  - Replaced 5 `window.alert()` calls with non-blocking toast notifications
+  - Improved user experience with auto-dismissing 3-second toasts
+
+- **Programme**: Fixed missing import ([2026-08-09])
+  - Added missing `exportWorkouts` import from `exportUtils`
+
+- **Linting**: Fixed 5 ESLint errors ([2026-08-09])
+  - Removed unused variable in `StatCard.jsx`
+  - Fixed unnecessary escape characters in `errorUtils.js` regex
+  - Added missing import in `Programme.jsx`
+  - Fixed useEffect dependency warning in `useSessionManager.js`
+
+### Code Quality
+
+- **CardioTracker Refactoring**: Reduced complexity from 564 to 524 lines (-7%) ([2026-08-09])
+  - Extracted CRUD operations to `useSessionManager` hook
+  - Extracted form state to `useFormFields` hook
+  - Extracted edit workflow to `useEditableForm` hook
+  - Replaced manual view toggle with `LogHistoryToggle` component
+  - Improved maintainability and reusability
+
+- **Reusable Hooks**: Created comprehensive hook library ([2026-08-09])
+  - `useSessionManager`: Common CRUD patterns for session-based pages (220 lines)
+  - `useFormFields`: Form state management with field updates
+  - `useEditableForm`: Edit workflow state and transitions
+  - `useViewToggle`: View switching state management
+
+- **Reusable Components**: Created component library ([2026-08-09])
+  - `StatCard`: Stat display components (220 lines) with 7 variants
+  - `ViewToggle`: View switching components (180 lines) with 4 styles
+  - `ConfirmDialog`: User-friendly confirmation dialogs (160 lines)
+  - `LogHistoryToggle`: Pre-configured log/history toggle
+
+- **Error Handling**: Enhanced error messaging ([2026-08-09])
+  - Integrated `formatErrorMessage` into `useSessionManager`
+  - Added smart error detection for network, auth, rate limiting, database errors
+  - Added detailed console logging with emojis for debugging
+
+### Infrastructure
+
+- **Database Migration**: Added cardio_sessions table ([2026-08-09])
+  - Created migration script: `supabase-config/migration_cardio_sessions.sql`
+  - Comprehensive RLS policies for user data isolation
+  - Indexes for optimized query performance
+
+- **Exercise Library**: All 14 exercises now include form tips and muscle groups ([2026-08-09])
+  - Added formTips (4 coaching cues per exercise) to guide proper technique
+  - Added muscleGroups arrays showing primary/secondary muscles worked
+  - Form tips displayed prominently during workout execution in alert box
+  - Muscle groups shown as badges on exercise selection and execution screens
+  - Enhanced demo link button styling and prominence
+
+- **Data Export**: CSV export functionality across all activity pages ([2026-08-09])
+  - New utility: `src/utils/exportUtils.js` with comprehensive export functions
+  - Export buttons added to: Strava Activities, Cardio Tracker, Active Wellbeing, Programme History
+  - CSV includes formatted dates, durations, distances, calories, heart rate, and notes
+  - Automatic filename generation with current date (e.g., `strava-activities-2026-08-09.csv`)
+  - Helper functions: `arrayToCSV`, `downloadCSV`, `formatDateForCSV`, `formatDuration`, `formatDistance`
+
+- **Quick Wins UX Improvements**: Navigation polish and bug fixes ([2026-08-09])
+  - Added visual dividers to navigation menu grouping items into logical sections (Training, Activity Tracking, Nutrition, Settings)
+  - Added descriptive subtitles to menu items for better context
+  - Added page subtitles to Dashboard, Active Wellbeing, and Cardio Tracker
+  - Enhanced Dashboard with clickable stats cards linking to detail pages ("View All →" links)
+  - Integrated cardio sessions summary on Dashboard
+  - **Bug Fix**: Added edit functionality to Active Wellbeing sessions (matching CardioTracker pattern)
+  - New database function: `updateActiveWellbeingSession(id, updates)`
+  - Improved visual hierarchy and user flow
 
 ### Documentation
+
+- **Quick Wins Implementation**: Detailed documentation of UX improvements ([2026-08-09])
+  - Created `docs/QUICK_WINS_IMPLEMENTATION.md` with comprehensive implementation details
+  - Testing checklist for all improvements
+  - Files changed summary and performance impact notes
+
+- **UI Navigation Review**: Comprehensive analysis of app navigation and UX ([2026-08-09])
+  - Created `docs/UI_NAVIGATION_REVIEW.md` with navigation pain points and recommendations
+  - Identified menu overload issue (10 items)
+  - Proposed solutions: categorized sub-menus, dashboard quick actions, tab bar navigation
+  - Recommended phased implementation approach
+  - Added accessibility and mobile optimization suggestions
+
+- **Cardio Tracker Guide**: Complete setup and usage documentation ([2026-08-09])
+  - Created `docs/CARDIO_TRACKER_GUIDE.md`
+  - Setup instructions and database migration guide
+  - Usage tips and best practices
+  - Troubleshooting section
+  - Clear guidance on when to use Cardio Tracker vs Strava vs Active Wellbeing
 
 - **ToDo.md**: Downgraded GitHub App token migration task from P2 to M1 (Monitor) after codebase analysis ([2026-05-21])
   - Reviewed GitHub workflows - only uses GITHUB_TOKEN in semantic-release

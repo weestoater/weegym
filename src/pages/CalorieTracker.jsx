@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import BarcodeScanner from "../components/BarcodeScanner";
 import MealSuggestions from "../components/MealSuggestions";
 import ProgressIndicator from "../components/ProgressIndicator";
+import Toast from "../components/Toast";
 import { getUserProfile } from "../services/userProfileService";
 import {
   searchByBarcode,
@@ -12,6 +13,7 @@ import {
   calculateDailyTotals,
   getNutritionalSummary,
 } from "../services/nutritionService";
+import { formatErrorMessage } from "../utils/errorUtils";
 import "../styles/accessibility.css";
 
 function CalorieTracker() {
@@ -32,6 +34,7 @@ function CalorieTracker() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [tableNotFound, setTableNotFound] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
   const loadFoodLogs = useCallback(async () => {
     if (!user) {
@@ -63,7 +66,11 @@ function CalorieTracker() {
         );
         setTableNotFound(true);
       } else {
-        alert("Failed to load food logs: " + error.message);
+        setToast({
+          show: true,
+          message: formatErrorMessage(error, "Failed to load food logs"),
+          type: "error",
+        });
       }
     } finally {
       setLoading(false);
@@ -119,7 +126,18 @@ function CalorieTracker() {
       setSearchResults([]);
     } catch (error) {
       console.error("Error fetching product:", error);
-      alert("Product not found. Please try manual entry or search by name.");
+      const errorMessage = formatErrorMessage(
+        error,
+        `Product with barcode ${barcode} not found in database. Try searching by name or add it manually.`,
+      );
+      setToast({
+        show: true,
+        message: errorMessage,
+        type: "error",
+      });
+      // Show manual entry form so user can add it
+      setShowManual(true);
+      setShowSearch(true);
     } finally {
       setLoading(false);
     }
@@ -143,9 +161,14 @@ function CalorieTracker() {
       setLastSearchQuery(searchQuery); // Track what we just searched for
     } catch (error) {
       console.error("❌ Error searching products:", error);
-      alert(
-        `Search failed: ${error.message}. Please check your internet connection and try again.`,
-      );
+      setToast({
+        show: true,
+        message: formatErrorMessage(
+          error,
+          "Search failed. Please check your internet connection and try again.",
+        ),
+        type: "error",
+      });
     } finally {
       setSearching(false);
     }
@@ -189,14 +212,26 @@ function CalorieTracker() {
       setShowManual(false);
       setSelectedProduct(null);
       loadFoodLogs();
+      setToast({
+        show: true,
+        message: "Food log added successfully!",
+        type: "success",
+      });
     } catch (error) {
       console.error("Error adding food log:", error);
-      alert("Failed to add food log: " + error.message);
+      setToast({
+        show: true,
+        message: formatErrorMessage(error, "Failed to add food log"),
+        type: "error",
+      });
     }
   };
 
   const handleDeleteLog = async (logId) => {
-    if (!user || !confirm("Delete this food entry?")) return;
+    if (!user) return;
+
+    if (!window.confirm("Delete this food entry? This cannot be undone."))
+      return;
 
     try {
       const { error } = await supabase
@@ -207,9 +242,18 @@ function CalorieTracker() {
 
       if (error) throw error;
       loadFoodLogs();
+      setToast({
+        show: true,
+        message: "Food log deleted successfully!",
+        type: "success",
+      });
     } catch (error) {
       console.error("Error deleting food log:", error);
-      alert("Failed to delete food log: " + error.message);
+      setToast({
+        show: true,
+        message: formatErrorMessage(error, "Failed to delete food log"),
+        type: "error",
+      });
     }
   };
 
@@ -780,6 +824,14 @@ function CalorieTracker() {
           </div>
         </section>
       </main>
+
+      {/* Toast Notifications */}
+      <Toast
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ show: false, message: "", type: "" })}
+      />
     </div>
   );
 }

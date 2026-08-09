@@ -1570,7 +1570,11 @@ export function getActivityIcon(type) {
     Yoga: "bi-flower1",
     Crossfit: "bi-award",
     Elliptical: "bi-arrow-repeat",
+    "Cross Trainer": "bi-arrow-repeat",
+    Treadmill: "bi-arrow-repeat",
+    "Rowing Machine": "bi-water",
     StairStepper: "bi-arrow-up",
+    "Stair Climber": "bi-arrow-up",
     AlpineSki: "bi-snow",
     NordicSki: "bi-snow",
     Snowboard: "bi-snow",
@@ -1610,6 +1614,11 @@ export function getActivityIconColor(type) {
     Workout: "text-warning",
     WeightTraining: "text-dark",
     Yoga: "text-purple",
+    Treadmill: "text-danger",
+    "Cross Trainer": "text-success",
+    "Rowing Machine": "text-info",
+    Elliptical: "text-primary",
+    "Stair Climber": "text-warning",
     default: "text-muted",
   };
 

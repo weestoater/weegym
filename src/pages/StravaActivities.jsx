@@ -8,6 +8,12 @@ import {
   isConnected,
   syncActivities,
 } from "../services/stravaService";
+import { exportStravaActivities } from "../utils/exportUtils";
+import {
+  SkeletonActivityCard,
+  SkeletonStatsCard,
+  SkeletonBox,
+} from "../components/Skeleton";
 
 /**
  * StravaActivities Component
@@ -132,11 +138,40 @@ function StravaActivities() {
   if (loading) {
     return (
       <div className="container mt-4">
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading activities...</span>
+        {/* Header Skeleton */}
+        <div className="mb-4">
+          <SkeletonBox height="32px" width="250px" className="mb-3" />
+          <div className="d-flex gap-2 mb-3">
+            <SkeletonBox height="32px" width="80px" />
+            <SkeletonBox height="32px" width="100px" />
           </div>
         </div>
+
+        {/* Stats Skeleton */}
+        <div className="card mb-4">
+          <div className="card-body">
+            <SkeletonBox height="20px" width="100px" className="mb-3" />
+            <div className="row g-3">
+              <div className="col-6 col-md-3">
+                <SkeletonStatsCard />
+              </div>
+              <div className="col-6 col-md-3">
+                <SkeletonStatsCard />
+              </div>
+              <div className="col-6 col-md-3">
+                <SkeletonStatsCard />
+              </div>
+              <div className="col-6 col-md-3">
+                <SkeletonStatsCard />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Activities Skeleton */}
+        <SkeletonActivityCard />
+        <SkeletonActivityCard />
+        <SkeletonActivityCard />
       </div>
     );
   }
@@ -200,42 +235,47 @@ function StravaActivities() {
             </button>
           </div>
         </div>
-        <button
-          className="btn btn-primary"
-          onClick={handleSync}
-          disabled={syncing}
-        >
-          {syncing ? (
-            <>
-              <span
-                className="spinner-border spinner-border-sm me-2"
-                role="status"
-                aria-hidden="true"
-              ></span>
-              Syncing...
-            </>
-          ) : (
-            <>
-              <i className="bi bi-arrow-repeat me-1"></i>
-              Sync
-            </>
-          )}
-        </button>
+        <div className="btn-group" role="group">
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => exportStravaActivities(activities)}
+            disabled={!activities || activities.length === 0}
+            title="Export to CSV"
+          >
+            <i className="bi bi-download me-1"></i>
+            Export
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={handleSync}
+            disabled={syncing}
+          >
+            {syncing ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                  aria-hidden="true"
+                ></span>
+                Syncing...
+              </>
+            ) : (
+              <>
+                <i className="bi bi-arrow-repeat me-1"></i>
+                Sync
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div
-          className="alert alert-danger alert-dismissible fade show"
-          role="alert"
-        >
-          {error}
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setError(null)}
-            aria-label="Close"
-          ></button>
-        </div>
+        <ErrorAlert
+          title="Failed to Load Activities"
+          message={error}
+          onRetry={loadActivities}
+          onDismiss={() => setError(null)}
+        />
       )}
 
       {/* Stats Summary */}

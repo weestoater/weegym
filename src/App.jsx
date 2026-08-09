@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import WorkoutSession from "./pages/WorkoutSession";
 import Programme from "./pages/Programme";
 import ActiveWellbeing from "./pages/ActiveWellbeing";
+import CardioTracker from "./pages/CardioTracker";
 import CalorieTracker from "./pages/CalorieTracker";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
@@ -39,18 +40,64 @@ function NavigationBar() {
 
   const navItems = [
     { path: "/", icon: "bi-house-door", label: "Home" },
-    { path: "/workout", icon: "bi-play-circle", label: "Workout" },
-    { path: "/wellbeing", icon: "bi-activity", label: "Active Wellbeing" },
-    { path: "/calories", icon: "bi-star-fill", label: "Slimming World" },
-    { path: "/strava", icon: "bi-bicycle", label: "Strava" },
-    { path: "/steps", icon: "bi-person-walking", label: "Steps" },
+    { path: "divider", label: "Training" },
+    {
+      path: "/workout",
+      icon: "bi-play-circle",
+      label: "Workout",
+      subtitle: "Strength training",
+    },
+    {
+      path: "/wellbeing",
+      icon: "bi-activity",
+      label: "Active Wellbeing",
+      subtitle: "Gym machines",
+    },
+    {
+      path: "/cardio",
+      icon: "bi-speedometer2",
+      label: "Cardio Tracker",
+      subtitle: "Treadmill, rower, etc.",
+    },
+    {
+      path: "/programme",
+      icon: "bi-journal-text",
+      label: "Programme",
+      subtitle: "View your plan",
+    },
+    { path: "divider", label: "Activity Tracking" },
+    {
+      path: "/strava",
+      icon: "bi-bicycle",
+      label: "Strava",
+      subtitle: "Outdoor activities",
+    },
+    {
+      path: "/steps",
+      icon: "bi-person-walking",
+      label: "Steps",
+      subtitle: "Daily step count",
+    },
     {
       path: "/garmin/upload",
       icon: "bi-file-earmark-arrow-up",
       label: "Import FIT Files",
+      subtitle: "Garmin data",
     },
-    { path: "/programme", icon: "bi-journal-text", label: "Programme" },
-    { path: "/settings", icon: "bi-gear", label: "Settings" },
+    { path: "divider", label: "Nutrition" },
+    {
+      path: "/calories",
+      icon: "bi-star-fill",
+      label: "Slimming World",
+      subtitle: "Track meals & syns",
+    },
+    { path: "divider", label: "Settings" },
+    {
+      path: "/settings",
+      icon: "bi-gear",
+      label: "Settings",
+      subtitle: "Preferences",
+    },
   ];
 
   const handleNavClick = () => {
@@ -93,22 +140,50 @@ function NavigationBar() {
               ></button>
             </div>
             <div className="list-group list-group-flush">
-              {navItems.map((item) => (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`list-group-item list-group-item-action d-flex align-items-center py-3 ${
-                    location.pathname === item.path ? "active" : ""
-                  }`}
-                  onClick={handleNavClick}
-                >
-                  <i className={`${item.icon} fs-4 me-3`}></i>
-                  <span className="fw-semibold">{item.label}</span>
-                  {location.pathname === item.path && (
-                    <i className="bi bi-check2 ms-auto fs-5"></i>
-                  )}
-                </Link>
-              ))}
+              {navItems.map((item, index) => {
+                if (item.path === "divider") {
+                  return (
+                    <div
+                      key={`divider-${index}`}
+                      className="list-group-item bg-light py-2 px-3"
+                      style={{ cursor: "default" }}
+                    >
+                      <small
+                        className="text-muted fw-bold text-uppercase"
+                        style={{ fontSize: "0.7rem" }}
+                      >
+                        {item.label}
+                      </small>
+                    </div>
+                  );
+                }
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`list-group-item list-group-item-action d-flex align-items-center py-3 ${
+                      location.pathname === item.path ? "active" : ""
+                    }`}
+                    onClick={handleNavClick}
+                  >
+                    <i className={`${item.icon} fs-4 me-3`}></i>
+                    <div className="flex-grow-1">
+                      <div className="fw-semibold">{item.label}</div>
+                      {item.subtitle && (
+                        <small
+                          className="text-muted d-block"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          {item.subtitle}
+                        </small>
+                      )}
+                    </div>
+                    {location.pathname === item.path && (
+                      <i className="bi bi-check2 ms-auto fs-5"></i>
+                    )}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -261,6 +336,14 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <ActiveWellbeing />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cardio"
+            element={
+              <ProtectedRoute>
+                <CardioTracker />
               </ProtectedRoute>
             }
           />

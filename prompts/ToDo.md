@@ -6,6 +6,64 @@
 
 ---
 
+## 🎉 Recently Completed (August 9, 2026)
+
+### ✅ Q2: Quick Wins UX Improvements - COMPLETE
+
+**Status:** ✅ Complete | Deployed
+
+**Completed:**
+
+1. ✅ **Exercise Library Enhancement (Option A)**
+   - Added formTips (4 coaching cues) and muscleGroups to all 14 exercises
+   - Form tips displayed prominently during workout execution
+   - Muscle groups shown as badges on exercise cards
+   - Enhanced demo links with better visual hierarchy
+
+2. ✅ **Enhanced Data Export (CSV)**
+   - Created centralized export utility (`src/utils/exportUtils.js`)
+   - Export buttons added to: Strava Activities, Cardio Tracker, Active Wellbeing, Programme History
+   - CSV includes all relevant fields (dates, stats, notes)
+   - Automatic filename with current date
+
+3. ✅ **Navigation Menu Enhancements**
+   - Added visual dividers grouping menu items into sections (Training, Activity Tracking, Nutrition, Settings)
+   - Added descriptive subtitles to menu items
+   - Improved visual hierarchy with section headers
+
+4. ✅ **Page Subtitles**
+   - Dashboard: "Your fitness overview and quick actions"
+   - Active Wellbeing: "Track your gym circuit machines with score-based performance"
+   - Cardio Tracker: "Track treadmill, rowing machine, cross trainer, and other cardio equipment"
+
+5. ✅ **Dashboard Enhancements**
+   - Added cardio sessions summary card with "View All →" link
+   - Made Wellbeing stats card clickable with "View All →" link
+   - Integrated cardio data loading in dashboard
+
+6. ✅ **Bug Fix: Active Wellbeing Edit Functionality**
+   - Added `updateActiveWellbeingSession()` to database.js
+   - Implemented edit workflow (edit button, form population, update vs create)
+   - Added "Cancel Edit" button when editing
+   - Dynamic submit button label and icon
+
+**Files Modified:**
+
+- `src/App.jsx` - Navigation dividers and subtitles
+- `src/lib/database.js` - Added updateActiveWellbeingSession function
+- `src/pages/ActiveWellbeing.jsx` - Edit functionality
+- `src/pages/Dashboard.jsx` - Cardio integration and View All links
+- `src/pages/CardioTracker.jsx` - Page subtitle
+
+**Documentation:**
+
+- Created `docs/QUICK_WINS_IMPLEMENTATION.md`
+- Updated CHANGELOG.md with all improvements
+
+**See:** `docs/QUICK_WINS_IMPLEMENTATION.md` for implementation details
+
+---
+
 ## 🎉 Recently Completed (May 21, 2026)
 
 ### ✅ P1: Strava Webhooks for Real-Time Sync - DEPLOYED & VERIFIED
@@ -242,17 +300,23 @@ CREATE TABLE programme_templates (
 
 ### Q2: Dashboard Enhancements 🏠
 
-**Value:** Medium | **Effort:** 4-5 hours | **Status:** Not Started
+**Value:** Medium | **Effort:** 4-5 hours | **Status:** ✅ Partially Complete
 
-**What:**
+**Completed (August 9, 2026):**
 
-- Unified activity dashboard showing all fitness activities
-- Weekly overview: Strava + Gym + Active Wellbeing + Syns
-- Weekly calorie burn summary across all sources
-- Activity streak tracking (consecutive active days)
-- Quick stats widgets
+- ✅ Added cardio sessions integration
+- ✅ Clickable stats cards with "View All →" links
+- ✅ Improved Quick Access section
 
-**Dashboard Sections:**
+**Remaining:**
+
+- [ ] Unified activity feed showing all fitness activities across types
+- [ ] Weekly overview: Strava + Gym + Active Wellbeing + Cardio + Syns
+- [ ] Activity streak tracking (consecutive active days)
+- [ ] Progress Towards Goals section
+- [ ] Personal Records Highlights
+
+**Dashboard Sections (Planned):**
 
 - This Week Summary (distance, workouts, syns, calories)
 - Recent Activities (last 5 across all types)
@@ -425,7 +489,7 @@ CREATE TABLE programme_templates (
 ### Bug Fixes
 
 - [ ] **Strava:** Test token refresh flow with expired token (High Priority)
-- [ ] **Active Wellbeing:** Add edit session functionality (currently delete + re-add)
+- [x] **Active Wellbeing:** Add edit session functionality ✅ (Completed August 9, 2026)
 - [ ] **Syns Tracker:** Improve barcode scanner error handling
 - [ ] **Programmes:** Add reorder exercises via drag-and-drop
 - [x] **Strava:** Fix blank screen on startup ✅ (Completed May 21)
@@ -442,6 +506,9 @@ CREATE TABLE programme_templates (
 
 ### UX Improvements
 
+- [x] **Navigation Menu:** Add visual dividers and subtitles ✅ (Completed August 9)
+- [x] **Page Context:** Add page subtitles for better context ✅ (Completed August 9)
+- [x] **Dashboard Links:** Add "View All" links to stat cards ✅ (Completed August 9)
 - [ ] **Loading States:** Add skeleton screens for better perceived performance
 - [ ] **Error Messages:** Make error messages more user-friendly
 - [ ] **Onboarding:** Create first-time user walkthrough
@@ -472,6 +539,12 @@ CREATE TABLE programme_templates (
 
 ## 📊 Phase Recommendations
 
+### ✅ Completed (August 9, 2026)
+
+1. ✅ **Q2: Quick Wins UX Improvements** - Navigation polish, page subtitles, dashboard enhancements
+2. ✅ **Bug Fix: Active Wellbeing Edit** - Full edit functionality implemented
+3. ✅ **Documentation:** Quick Wins Implementation Guide created
+
 ### ✅ Completed (May 21, 2026)
 
 1. ✅ **P1: Strava Webhooks** - Deployed and operational
@@ -483,13 +556,13 @@ CREATE TABLE programme_templates (
 ### 🎯 Immediate Next (Current Week)
 
 1. ✅ **Test Strava Webhooks** - VERIFIED: Walk activity synced in real-time successfully!
-2. **Q1: UX Polish**
+2. ✅ **Q2: Quick Wins UX** - COMPLETE: Navigation, subtitles, dashboard improvements
+3. **Q1: UX Polish (Remaining)**
    - Add loading states/skeleton screens
    - Improve error messages throughout app
    - Add tooltips for complex features
-3. **Bug Fixes**
+4. **Bug Fixes**
    - Test Strava token refresh flow with expired token
-   - Add Active Wellbeing edit session functionality
    - Improve barcode scanner error handling
 
 ### Short-Term (1-2 Weeks)

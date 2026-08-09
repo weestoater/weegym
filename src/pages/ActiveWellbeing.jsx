@@ -2,9 +2,13 @@ import { useState, useEffect } from "react";
 import {
   getActiveWellbeingSessions,
   saveActiveWellbeingSession,
+  updateActiveWellbeingSession,
   deleteActiveWellbeingSession,
 } from "../lib/database";
 import Toast from "../components/Toast";
+import { exportWellbeingSessions } from "../utils/exportUtils";
+import { SkeletonBox, SkeletonListItem } from "../components/Skeleton";
+import { FieldTooltip } from "../components/Tooltip";
 
 function ActiveWellbeing() {
   const availableModes = ["Cardio", "Strength", "Stamina"];
@@ -40,6 +44,7 @@ function ActiveWellbeing() {
   const [filterMode, setFilterMode] = useState("all");
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [editingSession, setEditingSession] = useState(null);
 
   useEffect(() => {
     loadSessions();
@@ -62,6 +67,23 @@ function ActiveWellbeing() {
     }
   };
 
+  const resetForm = () => {
+    setSelectedMachine("");
+    setSelectedMode("");
+    setScore("");
+    setDate(new Date().toISOString().split("T")[0]);
+    setEditingSession(null);
+  };
+
+  const handleEdit = (session) => {
+    setSelectedMachine(session.machine);
+    setSelectedMode(session.mode);
+    setScore(session.score.toString());
+    setDate(new Date(session.date).toISOString().split("T")[0]);
+    setEditingSession(session);
+    setActiveView("log");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedMachine || !selectedMode || !score || !date) {
@@ -77,10 +99,16 @@ function ActiveWellbeing() {
     };
 
     try {
-      await saveActiveWellbeingSession(sessionData);
+      if (editingSession) {
+        await updateActiveWellbeingSession(editingSession.id, sessionData);
+        setToast({ message: "Session updated successfully!", type: "success" });
+      } else {
+        await saveActiveWellbeingSession(sessionData);
+        setToast({ message: "Session logged successfully!", type: "success" });
+      }
       await loadSessions();
-      setScore("");
-      setToast({ message: "Session logged successfully!", type: "success" });
+      resetForm();
+      setActiveView("history");
     } catch (error) {
       console.error("Failed to save session:", error);
       setToast({
@@ -166,15 +194,27 @@ function ActiveWellbeing() {
   if (loading) {
     return (
       <div className="container mt-4">
-        <h2 className="mb-4">
-          <i className="bi bi-activity me-2"></i>
-          Active Wellbeing
-        </h2>
-        <div className="text-center py-5">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
+        {/* Header Skeleton */}
+        <div className="mb-4">
+          <SkeletonBox height="32px" width="250px" className="mb-2" />
+          <SkeletonBox height="18px" width="400px" />
+        </div>
+
+        {/* View Toggle Skeleton */}
+        <div className="mb-4">
+          <div className="btn-group" role="group">
+            <SkeletonBox height="38px" width="120px" className="me-2" />
+            <SkeletonBox height="38px" width="120px" className="me-2" />
+            <SkeletonBox height="38px" width="120px" />
           </div>
-          <p className="text-muted mt-3">Loading sessions...</p>
+        </div>
+
+        {/* Sessions List Skeleton */}
+        <div className="list-group">
+          <SkeletonListItem />
+          <SkeletonListItem />
+          <SkeletonListItem />
+          <SkeletonListItem />
         </div>
       </div>
     );
@@ -190,47 +230,69 @@ function ActiveWellbeing() {
         />
       )}
 
-      <h2 className="mb-4">
-        <i className="bi bi-activity me-2"></i>
-        Active Wellbeing
-      </h2>
+      <div className="mb-4">
+        <h2>
+          <i className="bi bi-activity me-2"></i>
+          Active Wellbeing
+        </h2>
+        <p className="text-muted">
+          Track your gym circuit machines with score-based performance
+        </p>
+      </div>
 
       {/* View Toggle */}
-      <div className="btn-group w-100 mb-4" role="group">
-        <button
-          type="button"
-          className={`btn ${activeView === "log" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => setActiveView("log")}
-        >
-          <i className="bi bi-plus-circle me-2"></i>
-          Log Session
-        </button>
-        <button
-          type="button"
-          className={`btn ${activeView === "history" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => setActiveView("history")}
-        >
-          <i className="bi bi-clock-history me-2"></i>
-          History
-        </button>
-        <button
-          type="button"
-          className={`btn ${activeView === "summary" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => setActiveView("summary")}
-        >
-          <i className="bi bi-bar-chart me-2"></i>
-          Summary
-        </button>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div className="btn-group" role="group">
+          <button
+            type="button"
+            className={`btn ${activeView === "log" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setActiveView("log")}
+          >
+            <i className="bi bi-plus-circle me-2"></i>
+            Log Session
+          </button>
+          <button
+            type="button"
+            className={`btn ${activeView === "history" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setActiveView("history")}
+          >
+            <i className="bi bi-clock-history me-2"></i>
+            History
+          </button>
+          <button
+            type="button"
+            className={`btn ${activeView === "summary" ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setActiveView("summary")}
+          >
+            <i className="bi bi-bar-chart me-2"></i>
+            Summary
+          </button>
+        </div>
+        {sessions.length > 0 && (
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => exportWellbeingSessions(sessions)}
+            title="Export to CSV"
+          >
+            <i className="bi bi-download me-1"></i>
+            Export
+          </button>
+        )}
       </div>
 
       {/* Log Session View */}
       {activeView === "log" && (
         <div className="card">
           <div className="card-body">
-            <h5 className="card-title mb-4">Log New Session</h5>
+            <h5 className="card-title mb-4">
+              {editingSession ? "Edit Session" : "Log New Session"}
+            </h5>
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label">Machine</label>
+                <label className="form-label">
+                  Machine
+                  <FieldTooltip content="Select the gym machine you used" />
+                </label>
                 <select
                   className="form-select"
                   value={selectedMachine}
@@ -247,7 +309,10 @@ function ActiveWellbeing() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Mode</label>
+                <label className="form-label">
+                  Mode
+                  <FieldTooltip content="Select workout mode: Cardio for endurance, Strength for resistance, Stamina for mixed" />
+                </label>
                 <div className="btn-group w-100" role="group">
                   {["Cardio", "Strength", "Stamina"].map((mode) => (
                     <button
@@ -264,7 +329,10 @@ function ActiveWellbeing() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Score</label>
+                <label className="form-label">
+                  Score
+                  <FieldTooltip content="Enter your performance score from the machine display" />
+                </label>
                 <input
                   type="number"
                   className="form-control"
@@ -298,10 +366,24 @@ function ActiveWellbeing() {
                 />
               </div>
 
-              <button type="submit" className="btn btn-primary w-100">
-                <i className="bi bi-check-circle me-2"></i>
-                Log Session
-              </button>
+              <div className="d-grid gap-2">
+                <button type="submit" className="btn btn-primary">
+                  <i
+                    className={`bi ${editingSession ? "bi-check-circle" : "bi-plus-circle"} me-2`}
+                  ></i>
+                  {editingSession ? "Update Session" : "Log Session"}
+                </button>
+                {editingSession && (
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={resetForm}
+                  >
+                    <i className="bi bi-x-circle me-2"></i>
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </div>
@@ -381,13 +463,22 @@ function ActiveWellbeing() {
                         })}
                       </small>
                     </div>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => deleteSession(session.id)}
-                      aria-label="Delete session"
-                    >
-                      <i className="bi bi-trash"></i>
-                    </button>
+                    <div className="btn-group btn-group-sm">
+                      <button
+                        className="btn btn-outline-primary"
+                        onClick={() => handleEdit(session)}
+                        aria-label="Edit session"
+                      >
+                        <i className="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        className="btn btn-outline-danger"
+                        onClick={() => deleteSession(session.id)}
+                        aria-label="Delete session"
+                      >
+                        <i className="bi bi-trash"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

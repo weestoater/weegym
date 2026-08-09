@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getWorkouts, getActiveWellbeingSessions } from "../lib/database";
+import {
+  getWorkouts,
+  getActiveWellbeingSessions,
+  getCardioSessions,
+} from "../lib/database";
 import { getUserProfile } from "../services/userProfileService";
 import {
   getConnectionStatus,
@@ -9,6 +13,7 @@ import {
   getActivityIcon,
   getActivityIconColor,
 } from "../services/stravaService";
+import { SkeletonDashboard } from "../components/Skeleton";
 
 function Dashboard() {
   const [userProfile, setUserProfile] = useState(null);
@@ -16,6 +21,7 @@ function Dashboard() {
   const [streak, setStreak] = useState(0);
   const [wellbeingSessions, setWellbeingSessions] = useState(0);
   const [lastWellbeing, setLastWellbeing] = useState(null);
+  const [cardioSessions, setCardioSessions] = useState(0);
   const [stravaConnected, setStravaConnected] = useState(false);
   const [stravaStats, setStravaStats] = useState(null);
   const [lastStravaActivity, setLastStravaActivity] = useState(null);
@@ -51,6 +57,17 @@ function Dashboard() {
           (a, b) => new Date(b.date) - new Date(a.date),
         );
         setLastWellbeing(sorted[0]);
+      }
+
+      // Load Cardio sessions
+      try {
+        const cardio = await getCardioSessions({ limit: 10 });
+        if (cardio && cardio.length > 0) {
+          setCardioSessions(cardio.length);
+        }
+      } catch {
+        // Cardio tracking not set up yet
+        setCardioSessions(0);
       }
 
       // Check Strava connection status
@@ -109,11 +126,7 @@ function Dashboard() {
   return (
     <div className="container mt-4">
       {loading ? (
-        <div className="text-center py-5">
-          <div className="spinner-border text-primary" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
+        <SkeletonDashboard />
       ) : (
         <>
           {/* Welcome Section */}
@@ -122,12 +135,185 @@ function Dashboard() {
               <h2 className="h5 mb-1">Welcome back, {displayName}!</h2>
               <p className="mb-0 opacity-75">
                 {isProgrammeMode
-                  ? "Ready to crush your workout?"
-                  : "Ready to log your wellbeing activity?"}
+                  ? "Your fitness overview and quick actions"
+                  : "Your wellbeing overview and activity tracking"}
               </p>
             </div>
           </div>
 
+          {/* Quick Access Features - Accordion */}
+          <div className="accordion mb-4" id="quickAccessAccordion">
+            <div className="accordion-item">
+              <h2 className="accordion-header">
+                <button
+                  className="accordion-button collapsed"
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target="#collapseQuickAccess"
+                  aria-expanded="false"
+                  aria-controls="collapseQuickAccess"
+                >
+                  <i className="bi bi-grid-3x3-gap me-2"></i>
+                  Quick Access
+                </button>
+              </h2>
+              <div
+                id="collapseQuickAccess"
+                className="accordion-collapse collapse"
+                data-bs-parent="#quickAccessAccordion"
+              >
+                <div className="accordion-body py-2">
+                  <div className="list-group list-group-flush">
+                    {/* Workout Links - Only in Programme Mode */}
+                    {isProgrammeMode && (
+                      <>
+                        <Link
+                          to="/workout?day=1"
+                          className="list-group-item list-group-item-action d-flex align-items-center py-2"
+                        >
+                          <i className="bi bi-play-circle text-primary me-3 fs-5"></i>
+                          <div className="flex-grow-1">
+                            <div className="fw-medium small">Day 1 Workout</div>
+                            <div
+                              className="text-muted"
+                              style={{ fontSize: "0.75rem" }}
+                            >
+                              Chest • Shoulders • Arms
+                            </div>
+                          </div>
+                          <i className="bi bi-chevron-right text-muted"></i>
+                        </Link>
+                        <Link
+                          to="/workout?day=2"
+                          className="list-group-item list-group-item-action d-flex align-items-center py-2"
+                        >
+                          <i className="bi bi-play-circle text-primary me-3 fs-5"></i>
+                          <div className="flex-grow-1">
+                            <div className="fw-medium small">Day 2 Workout</div>
+                            <div
+                              className="text-muted"
+                              style={{ fontSize: "0.75rem" }}
+                            >
+                              Legs • Shoulders • Core
+                            </div>
+                          </div>
+                          <i className="bi bi-chevron-right text-muted"></i>
+                        </Link>
+                      </>
+                    )}
+
+                    {/* Slimming World */}
+                    <Link
+                      to="/calories"
+                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
+                    >
+                      <i className="bi bi-star-fill text-warning me-3 fs-5"></i>
+                      <div className="flex-grow-1">
+                        <div className="fw-medium small">Slimming World</div>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          Track meals & syns
+                        </div>
+                      </div>
+                      <i className="bi bi-chevron-right text-muted"></i>
+                    </Link>
+
+                    {/* Strava */}
+                    <Link
+                      to={stravaConnected ? "/strava/activities" : "/strava"}
+                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
+                    >
+                      <i className="bi bi-bicycle text-danger me-3 fs-5"></i>
+                      <div className="flex-grow-1">
+                        <div className="fw-medium small">
+                          Strava Activities
+                          {stravaConnected && (
+                            <i
+                              className="bi bi-check-circle-fill text-success ms-2"
+                              style={{ fontSize: "0.75rem" }}
+                            ></i>
+                          )}
+                        </div>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          {stravaConnected
+                            ? "View your activities"
+                            : "Connect your account"}
+                        </div>
+                      </div>
+                      <i className="bi bi-chevron-right text-muted"></i>
+                    </Link>
+
+                    {/* Cardio Tracker */}
+                    <Link
+                      to="/cardio"
+                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
+                    >
+                      <i className="bi bi-speedometer2 text-info me-3 fs-5"></i>
+                      <div className="flex-grow-1">
+                        <div className="fw-medium small">Cardio Tracker</div>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          {cardioSessions > 0
+                            ? `${cardioSessions} sessions logged`
+                            : "Track treadmill, rower, etc."}
+                        </div>
+                      </div>
+                      <i className="bi bi-chevron-right text-muted"></i>
+                    </Link>
+
+                    {/* Programme & History */}
+                    <Link
+                      to="/programme"
+                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
+                    >
+                      <i className="bi bi-journal-text text-info me-3 fs-5"></i>
+                      <div className="flex-grow-1">
+                        <div className="fw-medium small">
+                          Programme & History
+                        </div>
+                        <div
+                          className="text-muted"
+                          style={{ fontSize: "0.75rem" }}
+                        >
+                          {isProgrammeMode
+                            ? `${streak} workouts completed`
+                            : "View programme & workouts"}
+                        </div>
+                      </div>
+                      <i className="bi bi-chevron-right text-muted"></i>
+                    </Link>
+
+                    {/* Programme - Only in Programme Mode */}
+                    {isProgrammeMode && (
+                      <Link
+                        to="/programme"
+                        className="list-group-item list-group-item-action d-flex align-items-center py-2"
+                      >
+                        <i className="bi bi-journal-text text-secondary me-3 fs-5"></i>
+                        <div className="flex-grow-1">
+                          <div className="fw-medium small">Programme</div>
+                          <div
+                            className="text-muted"
+                            style={{ fontSize: "0.75rem" }}
+                          >
+                            View full programme
+                          </div>
+                        </div>
+                        <i className="bi bi-chevron-right text-muted"></i>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           {/* Stats Row - Different for each mode */}
           {isProgrammeMode ? (
             // Programme Mode: Show workouts and wellbeing stats
@@ -161,13 +347,38 @@ function Dashboard() {
                 </div>
               </div>
               <div className="col-6 col-md-4">
-                <div className="card text-center">
-                  <div className="card-body">
-                    <i className="bi bi-activity text-primary fs-1"></i>
-                    <h3 className="h2 mb-0">{wellbeingSessions}</h3>
-                    <p className="text-muted small mb-0">Wellbeing</p>
+                <Link to="/wellbeing" className="text-decoration-none">
+                  <div className="card text-center h-100">
+                    <div className="card-body">
+                      <i className="bi bi-activity text-primary fs-1"></i>
+                      <h3 className="h2 mb-0">{wellbeingSessions}</h3>
+                      <p className="text-muted small mb-0">Wellbeing</p>
+                      <small
+                        className="text-primary"
+                        style={{ fontSize: "0.7rem" }}
+                      >
+                        View All →
+                      </small>
+                    </div>
                   </div>
-                </div>
+                </Link>
+              </div>
+              <div className="col-6 col-md-4">
+                <Link to="/cardio" className="text-decoration-none">
+                  <div className="card text-center h-100">
+                    <div className="card-body">
+                      <i className="bi bi-speedometer2 text-info fs-1"></i>
+                      <h3 className="h2 mb-0">{cardioSessions}</h3>
+                      <p className="text-muted small mb-0">Cardio</p>
+                      <small
+                        className="text-info"
+                        style={{ fontSize: "0.7rem" }}
+                      >
+                        {cardioSessions > 0 ? "View All →" : "Track Now →"}
+                      </small>
+                    </div>
+                  </div>
+                </Link>
               </div>
               <div className="col-6 col-md-4">
                 <div className="card text-center">
@@ -314,180 +525,6 @@ function Dashboard() {
               )}
             </div>
           )}
-
-          {/* Quick Access Features - Accordion */}
-          <div className="accordion mb-4" id="quickAccessAccordion">
-            <div className="accordion-item">
-              <h2 className="accordion-header">
-                <button
-                  className="accordion-button collapsed"
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target="#collapseQuickAccess"
-                  aria-expanded="false"
-                  aria-controls="collapseQuickAccess"
-                >
-                  <i className="bi bi-grid-3x3-gap me-2"></i>
-                  Quick Access
-                </button>
-              </h2>
-              <div
-                id="collapseQuickAccess"
-                className="accordion-collapse collapse"
-                data-bs-parent="#quickAccessAccordion"
-              >
-                <div className="accordion-body py-2">
-                  <div className="list-group list-group-flush">
-                    {/* Workout Links - Only in Programme Mode */}
-                    {isProgrammeMode && (
-                      <>
-                        <Link
-                          to="/workout?day=1"
-                          className="list-group-item list-group-item-action d-flex align-items-center py-2"
-                        >
-                          <i className="bi bi-play-circle text-primary me-3 fs-5"></i>
-                          <div className="flex-grow-1">
-                            <div className="fw-medium small">Day 1 Workout</div>
-                            <div
-                              className="text-muted"
-                              style={{ fontSize: "0.75rem" }}
-                            >
-                              Chest • Shoulders • Arms
-                            </div>
-                          </div>
-                          <i className="bi bi-chevron-right text-muted"></i>
-                        </Link>
-                        <Link
-                          to="/workout?day=2"
-                          className="list-group-item list-group-item-action d-flex align-items-center py-2"
-                        >
-                          <i className="bi bi-play-circle text-primary me-3 fs-5"></i>
-                          <div className="flex-grow-1">
-                            <div className="fw-medium small">Day 2 Workout</div>
-                            <div
-                              className="text-muted"
-                              style={{ fontSize: "0.75rem" }}
-                            >
-                              Legs • Shoulders • Core
-                            </div>
-                          </div>
-                          <i className="bi bi-chevron-right text-muted"></i>
-                        </Link>
-                      </>
-                    )}
-
-                    {/* Slimming World */}
-                    <Link
-                      to="/calories"
-                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
-                    >
-                      <i className="bi bi-star-fill text-warning me-3 fs-5"></i>
-                      <div className="flex-grow-1">
-                        <div className="fw-medium small">Slimming World</div>
-                        <div
-                          className="text-muted"
-                          style={{ fontSize: "0.75rem" }}
-                        >
-                          Track meals & syns
-                        </div>
-                      </div>
-                      <i className="bi bi-chevron-right text-muted"></i>
-                    </Link>
-
-                    {/* Strava */}
-                    <Link
-                      to={stravaConnected ? "/strava/activities" : "/strava"}
-                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
-                    >
-                      <i className="bi bi-bicycle text-danger me-3 fs-5"></i>
-                      <div className="flex-grow-1">
-                        <div className="fw-medium small">
-                          Strava Activities
-                          {stravaConnected && (
-                            <i
-                              className="bi bi-check-circle-fill text-success ms-2"
-                              style={{ fontSize: "0.75rem" }}
-                            ></i>
-                          )}
-                        </div>
-                        <div
-                          className="text-muted"
-                          style={{ fontSize: "0.75rem" }}
-                        >
-                          {stravaConnected
-                            ? "View your activities"
-                            : "Connect your account"}
-                        </div>
-                      </div>
-                      <i className="bi bi-chevron-right text-muted"></i>
-                    </Link>
-
-                    {/* Active Wellbeing */}
-                    <Link
-                      to="/wellbeing"
-                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
-                    >
-                      <i className="bi bi-activity text-success me-3 fs-5"></i>
-                      <div className="flex-grow-1">
-                        <div className="fw-medium small">Active Wellbeing</div>
-                        <div
-                          className="text-muted"
-                          style={{ fontSize: "0.75rem" }}
-                        >
-                          {wellbeingSessions > 0
-                            ? `${wellbeingSessions} sessions logged`
-                            : "Log your activities"}
-                        </div>
-                      </div>
-                      <i className="bi bi-chevron-right text-muted"></i>
-                    </Link>
-
-                    {/* Programme & History */}
-                    <Link
-                      to="/programme"
-                      className="list-group-item list-group-item-action d-flex align-items-center py-2"
-                    >
-                      <i className="bi bi-journal-text text-info me-3 fs-5"></i>
-                      <div className="flex-grow-1">
-                        <div className="fw-medium small">
-                          Programme & History
-                        </div>
-                        <div
-                          className="text-muted"
-                          style={{ fontSize: "0.75rem" }}
-                        >
-                          {isProgrammeMode
-                            ? `${streak} workouts completed`
-                            : "View programme & workouts"}
-                        </div>
-                      </div>
-                      <i className="bi bi-chevron-right text-muted"></i>
-                    </Link>
-
-                    {/* Programme - Only in Programme Mode */}
-                    {isProgrammeMode && (
-                      <Link
-                        to="/programme"
-                        className="list-group-item list-group-item-action d-flex align-items-center py-2"
-                      >
-                        <i className="bi bi-journal-text text-secondary me-3 fs-5"></i>
-                        <div className="flex-grow-1">
-                          <div className="fw-medium small">Programme</div>
-                          <div
-                            className="text-muted"
-                            style={{ fontSize: "0.75rem" }}
-                          >
-                            View full programme
-                          </div>
-                        </div>
-                        <i className="bi bi-chevron-right text-muted"></i>
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Last Workout Summary - Only for Programme Mode */}
           {isProgrammeMode && lastWorkout && (

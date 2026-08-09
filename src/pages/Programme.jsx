@@ -5,6 +5,7 @@ import {
   updateWorkout,
 } from "../lib/database";
 import Toast from "../components/Toast";
+import { exportWorkouts } from "../utils/exportUtils";
 
 function Programme() {
   // History state management
@@ -526,7 +527,9 @@ function Programme() {
             >
               <div>
                 <div className="fw-bold">{programmeData.day1.name}</div>
-                <small className="opacity-75">{programmeData.day1.target}</small>
+                <small className="opacity-75">
+                  {programmeData.day1.target}
+                </small>
               </div>
             </button>
           </h2>
@@ -560,7 +563,9 @@ function Programme() {
                         <p className="mb-0 small">
                           {exercise.sets} × {exercise.reps}
                         </p>
-                        <p className="mb-0 text-muted small">Rest: {exercise.rest}</p>
+                        <p className="mb-0 text-muted small">
+                          Rest: {exercise.rest}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -585,7 +590,9 @@ function Programme() {
             >
               <div>
                 <div className="fw-bold">{programmeData.day2.name}</div>
-                <small className="opacity-75">{programmeData.day2.target}</small>
+                <small className="opacity-75">
+                  {programmeData.day2.target}
+                </small>
               </div>
             </button>
           </h2>
@@ -619,7 +626,9 @@ function Programme() {
                         <p className="mb-0 small">
                           {exercise.sets} × {exercise.reps}
                         </p>
-                        <p className="mb-0 text-muted small">Rest: {exercise.rest}</p>
+                        <p className="mb-0 text-muted small">
+                          Rest: {exercise.rest}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -656,11 +665,10 @@ function Programme() {
           >
             <div className="accordion-body">
               {loading ? (
-                <div className="text-center py-3">
-                  <div className="spinner-border spinner-border-sm" role="status">
-                    <span className="visually-hidden">Loading...</span>
-                  </div>
-                  <p className="text-muted mt-2 small">Loading workouts...</p>
+                <div className="list-group">
+                  <SkeletonListItem />
+                  <SkeletonListItem />
+                  <SkeletonListItem />
                 </div>
               ) : workouts.length === 0 ? (
                 <div className="text-center py-4">
@@ -674,29 +682,45 @@ function Programme() {
                   </p>
                 </div>
               ) : (
-                <div className="list-group">
-                  {workouts.map((workout) => (
+                <>
+                  <div className="d-flex justify-content-end mb-3">
                     <button
-                      key={workout.id}
-                      className="list-group-item list-group-item-action"
-                      onClick={() => setSelectedWorkout(workout)}
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => exportWorkouts(workouts)}
+                      title="Export to CSV"
                     >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <h3 className="h6 mb-1">{workout.name}</h3>
-                          <p className="text-muted small mb-0">
-                            <i className="bi bi-calendar me-1"></i>
-                            {new Date(workout.date).toLocaleDateString("en-GB")}
-                          </p>
-                        </div>
-                        <div className="text-end">
-                          <p className="mb-0 small text-muted">Duration</p>
-                          <p className="mb-0 fw-bold">{workout.duration} min</p>
-                        </div>
-                      </div>
+                      <i className="bi bi-download me-1"></i>
+                      Export
                     </button>
-                  ))}
-                </div>
+                  </div>
+                  <div className="list-group">
+                    {workouts.map((workout) => (
+                      <button
+                        key={workout.id}
+                        className="list-group-item list-group-item-action"
+                        onClick={() => setSelectedWorkout(workout)}
+                      >
+                        <div className="d-flex justify-content-between align-items-center">
+                          <div>
+                            <h3 className="h6 mb-1">{workout.name}</h3>
+                            <p className="text-muted small mb-0">
+                              <i className="bi bi-calendar me-1"></i>
+                              {new Date(workout.date).toLocaleDateString(
+                                "en-GB",
+                              )}
+                            </p>
+                          </div>
+                          <div className="text-end">
+                            <p className="mb-0 small text-muted">Duration</p>
+                            <p className="mb-0 fw-bold">
+                              {workout.duration} min
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </div>
