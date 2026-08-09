@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## <small>1.1.4 (2026-08-09)</small>
+
+* fix: update Dashboard test to match current UI (removed Active Wellbeing button) ([b6a9eb5](https://github.com/weestoater/weegym/commit/b6a9eb5))
+
 ## <small>1.1.3 (2026-08-09)</small>
 
 * fix: add missing SkeletonListItem import in Programme.jsx ([9cfd53c](https://github.com/weestoater/weegym/commit/9cfd53c))
