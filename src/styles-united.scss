@@ -1,3 +1,12 @@
-// United theme
-@import "./scss/united-variables";
-@import "bootstrap/scss/bootstrap";
+@use "sass:map";
+@use "sass:meta";
+@use "./scss/united-variables" as united;
+
+@include meta.load-css(
+  "bootstrap/scss/bootstrap",
+  $with: map.remove(
+    meta.module-variables("united"),
+    "theme",
+    "table-dark-border-color"
+  )
+);
