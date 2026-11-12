@@ -9,3 +9,8 @@
   @import "bootstrap/scss/bootstrap";
   @import "./scss/bootswatch";
 }
+
+[data-theme="darkly"] {
+  @import "./scss/darkly-variables";
+  @import "bootstrap/scss/bootstrap";
+}
