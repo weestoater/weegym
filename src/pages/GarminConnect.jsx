@@ -10,6 +10,7 @@ import {
   getTodaySteps,
   getRecentWeeklySummaries,
   isMockMode,
+  exchangeTokens,
 } from "../services/garminService";
 import {
   formatNumber,
@@ -87,7 +88,6 @@ function GarminConnect() {
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Exchange mock tokens
-        const { exchangeTokens } = await import("../services/garminService");
         await exchangeTokens("mock_token", "mock_verifier");
 
         // Reload connection

@@ -1,8 +1,6 @@
 // United 5.3.8
 // Bootswatch
 
-@use "sass:color";
-
 $theme: "united" !default;
 
 //
@@ -55,4 +53,4 @@ $font-family-sans-serif:      Ubuntu, -apple-system, BlinkMacSystemFont, "Segoe 
 // Tables
 
 $table-color:                 initial !default;
-$table-dark-border-color:     color.adjust($dark, $lightness: -5%) !default;
+$table-dark-border-color:     darken($dark, 5%) !default;

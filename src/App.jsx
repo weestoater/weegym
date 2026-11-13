@@ -27,6 +27,7 @@ import GarminConnect from "./pages/GarminConnect";
 import GarminUpload from "./pages/GarminUpload";
 import StepTracker from "./pages/StepTracker";
 import GarminCallback from "./pages/GarminCallback";
+import ThemeSelector from "./components/ThemeSelector";
 
 function NavigationBar() {
   const location = useLocation();
@@ -300,6 +301,7 @@ function AppContent() {
                   v{appVersion}
                 </small>
               </h1>
+              <ThemeSelector />
               {!isOnline && (
                 <span className="badge bg-warning text-dark">
                   <i className="bi bi-wifi-off me-1"></i>

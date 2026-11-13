@@ -76,6 +76,9 @@ export default defineConfig(({ mode }) => {
       preprocessorOptions: {
         scss: {
           quietDeps: true, // silence deprecation warnings from Bootstrap's own SCSS
+          // Bootstrap 5 and the Bootswatch themes still use @import, global
+          // functions and darken()/lighten(), so these can't be fixed locally
+          silenceDeprecations: ["import", "global-builtin", "color-functions"],
         },
       },
     },
